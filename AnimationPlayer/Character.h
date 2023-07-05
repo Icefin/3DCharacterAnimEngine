@@ -6,7 +6,6 @@
 class Character
 {
 public:
-	Character();
 	Character(Skeleton* skeleton, Motion* motion);
 	~Character();
 

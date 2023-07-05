@@ -6,7 +6,7 @@ struct Posture
 {
 	QuantizedQuaternion	rotation;
 	vec3f				translation;
-	float				length;
+	float				location;
 };
 
 class Motion
@@ -15,9 +15,9 @@ public:
 	Motion(int maxFrame);
 	~Motion();
 
-	Posture* getFrameBonePosture(int32 frame, int32 index);
+	Posture* getFrameBonePosture(int32 frame, int32 index) { return &(_keyFrameMotions[frame][index]); };
 
 private:
-	std::vector<Posture> _keyFrameMotions;
+	std::vector<std::vector<Posture>> _keyFrameMotions;
 };
 

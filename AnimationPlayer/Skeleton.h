@@ -14,11 +14,11 @@ struct Bone
 class Skeleton
 {
 public:
-	Skeleton();
 	Skeleton(Bone* root) : _root(root) {};
 	~Skeleton();
 
 	Bone* getRoot() { return _root; };
+
 private :
 	Bone* _root;
 };

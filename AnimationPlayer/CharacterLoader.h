@@ -22,5 +22,5 @@ private:
 	void		setupSkeletonHierarchy(std::vector<Bone*>& boneList, ASFData* asfData);
 
 	Motion* generateMotion(AMCData* amcData);
-
+	//curve fitting...
 };

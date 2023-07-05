@@ -15,4 +15,5 @@ void    initCharacter()
 int main()
 {
     initCharacter();
+
 }
