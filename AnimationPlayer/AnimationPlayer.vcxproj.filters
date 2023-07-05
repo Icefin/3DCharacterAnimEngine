@@ -39,6 +39,9 @@
     <ClCompile Include="Character.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharacterLoader.h">
@@ -63,6 +66,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Character.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera3D.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

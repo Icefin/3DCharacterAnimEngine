@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>C:\Users\Icefin\Documents\fltk-1.3.5\build\lib\Debug;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\Users\Icefin\Documents\fltk-1.3.5;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\user\Desktop\AnimationPlayer\deps\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -118,12 +118,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Icefin\Documents\fltk-1.3.5;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\user\Desktop\AnimationPlayer\deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glu32.lib;opengl32.lib;comctl32.lib;wsock32.lib;fltkd.lib;fltk_jpegd.lib;fltk_imagesd.lib;fltk_formsd.lib;fltk_pngd.lib;fltk_zd.lib;fltk_gld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;comctl32.lib;wsock32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,6 +148,7 @@
     <ClCompile Include="ASFParser.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="CharacterLoader.cpp" />
+    <ClCompile Include="glad.c" />
     <ClCompile Include="Motion.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="Transform.cpp" />
@@ -155,10 +156,12 @@
   <ItemGroup>
     <ClInclude Include="AMCParser.h" />
     <ClInclude Include="ASFParser.h" />
+    <ClInclude Include="Camera3D.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="CharacterLoader.h" />
     <ClInclude Include="CommonTypes.h" />
     <ClInclude Include="Motion.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="Transform.h" />
   </ItemGroup>
