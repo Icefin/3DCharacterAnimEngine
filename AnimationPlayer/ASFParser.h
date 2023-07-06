@@ -60,3 +60,4 @@ private:
 	ASFData	 _asfData;
 };
 
+//주석 예시.(20230706:신건호)

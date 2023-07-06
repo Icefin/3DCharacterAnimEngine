@@ -42,7 +42,9 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 				switch (bone.dofo[j])
 				{
 				case 1:
-					newPosture.frameRotation.x = temp;
+					{
+						newPosture.frameRotation.x = temp;
+					}
 					break;
 				case 2:
 					newPosture.frameRotation.y = temp;

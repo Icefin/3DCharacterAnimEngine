@@ -53,22 +53,19 @@ int main()
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Animation Player", NULL, NULL);
     if (window == NULL)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        std::cout << "Failed to create GLFW window" << '\n';
         glfwTerminate();
         return -1;
     }
 
     glfwMakeContextCurrent(window);
 
-    //call-back Section
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-
-    // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == false)
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
@@ -89,33 +86,22 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        //input process
         processInput(window);
 
         glClearColor(0.2, 0.3, 0.3, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         shader.setUniformMat4("projection", projection);
 
-        // camera/view transformation
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
         
-        // render boxes
         character.draw(shader, 0);
-        
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-    // ------------------------------------------------------------------------
-    //glDeleteVertexArrays(1, &vertexArrayObject);
-    //glDeleteBuffers(1, &vertexBufferObject);
 
     glfwTerminate();
     return 0;
@@ -127,13 +113,13 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
  
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_DIRECTION::FORWARD, deltaTime);
+        camera.processKeyboard(CameraDirection::Forward, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_DIRECTION::BACKWARD, deltaTime);
+        camera.processKeyboard(CameraDirection::Backward, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_DIRECTION::LEFT, deltaTime);
+        camera.processKeyboard(CameraDirection::Left, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_DIRECTION::RIGHT, deltaTime);
+        camera.processKeyboard(CameraDirection::Right, deltaTime);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)
@@ -158,7 +144,8 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos;
 
     lastX = xpos;
     lastY = ypos;

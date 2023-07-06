@@ -6,7 +6,8 @@ unsigned int vertexBufferObject, vertexArrayObject;
 
 Character::~Character()
 {
-    __noop;
+    glDeleteVertexArrays(1, &vertexArrayObject);
+    glDeleteBuffers(1, &vertexBufferObject);
 }
 
 void	Character::initialize(Skeleton* skeleton, Motion* motion)
@@ -14,7 +15,6 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
 	_skeleton = skeleton;
 	_motion = motion;
 
-    //TEST_CODE
     //vbo : object vertex set
     //vao : attribute of vertex set
     //ebo : vertex index order of object
