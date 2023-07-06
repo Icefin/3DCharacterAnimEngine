@@ -4,7 +4,7 @@
 #include "CharacterLoader.h"
 #include "Transform.h"
 
-Character* CharacterLoader::loadCharacter(std::string& asf, std::string& amc)
+void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::string& amc)
 {
 	ASFData* asfData = _asfParser.readASF(asf);
 	AMCData* amcData = _amcParser.readAMC(amc, asfData);
@@ -12,8 +12,7 @@ Character* CharacterLoader::loadCharacter(std::string& asf, std::string& amc)
 	Skeleton* skeleton = generateSkeleton(asfData);
 	Motion* motion = generateMotion(amcData);
 
-	Character* character = new Character(skeleton, motion);
-	return character;
+	character.initialize(skeleton, motion);
 }
 
 Skeleton* CharacterLoader::generateSkeleton(ASFData* asfData)

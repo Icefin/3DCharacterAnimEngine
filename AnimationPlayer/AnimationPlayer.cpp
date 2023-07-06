@@ -11,14 +11,12 @@
 
 #include "Shader.h"
 #include "Camera3D.h"
-#include "Animator.h"
 #include "CharacterLoader.h"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Animator animator;
-Character* character;
+Character character;
 
 // camera
 Camera3D camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -42,7 +40,7 @@ void    initCharacter()
     std::string asfFile = "./test/07-walk.asf";
     std::string amcFile = "./test/07_05-walk.amc";
   
-    character = characterLoader.loadCharacter(asfFile, amcFile);
+    characterLoader.loadCharacter(character, asfFile, amcFile);
 }
 
 int main()
@@ -82,7 +80,6 @@ int main()
     shader.use();
     
     initCharacter();
-    animator.initialize(character);
 
     while (glfwWindowShouldClose(window) == false)
     {
@@ -107,7 +104,7 @@ int main()
         shader.setUniformMat4("view", view);
         
         // render boxes
-        animator.draw(shader, 0);
+        character.draw(shader, 0);
         
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

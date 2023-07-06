@@ -42,9 +42,6 @@
     <ClCompile Include="glad.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Animator.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharacterLoader.h">
@@ -75,9 +72,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Camera3D.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Animator.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

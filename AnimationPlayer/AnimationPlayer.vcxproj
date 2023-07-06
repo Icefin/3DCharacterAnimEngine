@@ -145,7 +145,6 @@
   <ItemGroup>
     <ClCompile Include="AMCParser.cpp" />
     <ClCompile Include="AnimationPlayer.cpp" />
-    <ClCompile Include="Animator.cpp" />
     <ClCompile Include="ASFParser.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="CharacterLoader.cpp" />
@@ -156,7 +155,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AMCParser.h" />
-    <ClInclude Include="Animator.h" />
     <ClInclude Include="ASFParser.h" />
     <ClInclude Include="Camera3D.h" />
     <ClInclude Include="Character.h" />

@@ -8,7 +8,7 @@
 class CharacterLoader
 {
 public:
-	Character* loadCharacter(std::string& asf, std::string& amc);
+	void loadCharacter(Character& character, std::string& asf, std::string& amc);
 
 private:
 	ASFParser _asfParser;
