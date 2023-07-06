@@ -19,12 +19,12 @@ public:
 	void	draw(Shader& shader, int32 frame);
 
 private:
-    void    drawBone(Bone* bone, glm::mat4 matrix, Shader& shader);
+    void    drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 frame);
 
-	Skeleton* _skeleton;
-	Motion* _motion;
+	Skeleton*   _skeleton;
+	Motion*     _motion;
 
-    float cube[216] = {
+    float       cube[216] = {
     -0.05f, -0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
      0.05f, -0.05f, -0.05f, 0.0f, 1.0f, 0.0f,
      0.05f,  0.05f, -0.05f, 0.0f, 0.0f, 1.0f,

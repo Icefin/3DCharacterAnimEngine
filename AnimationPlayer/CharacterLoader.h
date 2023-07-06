@@ -12,7 +12,7 @@
 class CharacterLoader
 {
 public:
-	void loadCharacter(Character& character, std::string& asf, std::string& amc);
+	void		loadCharacter(Character& character, std::string& asf, std::string& amc);
 
 private:
 	Skeleton*	generateSkeleton(ASFData* asfData);
@@ -22,7 +22,7 @@ private:
 	Bone*		generateBone(ASFBone* boneData);
 	void		setupSkeletonHierarchy(std::vector<Bone*>& boneList, ASFData* asfData);
 
-	Motion* generateMotion(AMCData* amcData);
+	Motion*		generateMotion(AMCData* amcData, int32 totalBoneNumber);
 	//curve fitting...
 
 	ASFParser	_asfParser;

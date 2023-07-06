@@ -1,3 +1,4 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #pragma once
 #include <vector>
 
@@ -17,12 +18,12 @@ struct Posture
 class Motion
 {
 public:
-	Motion(int32 maxFrame);
+	Motion(int32 totalBoneNumber, int32 totalFrameNumber);
 	~Motion();
 
-	Posture* getFrameBonePosture(int32 frame, int32 index) { return &(_keyFrameMotions[frame][index]); };
+	Posture* getBonePostureAtFrame(int32 boneIndex, int32 frame) { return &(_keyFrameMotions[boneIndex][frame]); };
 
-private:
+
 	std::vector<std::vector<Posture>>	_keyFrameMotions;
 };
 

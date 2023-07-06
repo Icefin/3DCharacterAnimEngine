@@ -1,3 +1,4 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #pragma once
 #include <vector>
 
@@ -22,7 +23,7 @@ public:
 	Skeleton(Bone* root) : _root(root) {};
 	~Skeleton();
 
-	Bone* getRoot() { return _root; };
+	Bone* getRoot(void) { return _root; };
 
 private :
 	Bone* _root;

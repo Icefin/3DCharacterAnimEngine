@@ -1,3 +1,4 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #pragma once
 #include <vector>
 #include <unordered_map>
@@ -11,8 +12,8 @@
 
 struct AMCPosture
 {
-	glm::vec3	frameRotation;
-	glm::vec3	frameTranslation;
+	glm::vec3	frameRotation = glm::vec3(0);
+	glm::vec3	frameTranslation = glm::vec3(0);
 	float		frameLocation = 0.0f;
 };
 
@@ -20,7 +21,7 @@ struct AMCData
 {
 	int32					totalFrameNumber = 0;
 
-	std::unordered_map<std::string, std::vector<AMCPosture>> boneMotions;
+	std::vector<std::vector<AMCPosture>> boneMotions;
 };
 
 class AMCParser

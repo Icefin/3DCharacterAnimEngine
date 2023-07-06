@@ -1,4 +1,5 @@
-﻿#include <glad/glad.h>
+﻿// author: Geonho Shin (icefin@pearlabyss.com)
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
@@ -13,8 +14,8 @@
 #include "Camera3D.h"
 #include "CharacterLoader.h"
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+constexpr uint32 SCR_WIDTH = 800;
+constexpr uint32 SCR_HEIGHT = 600;
 
 Character character;
 
@@ -25,7 +26,7 @@ float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
 // timing
-float deltaTime = 0.0f;	// time between current frame and last frame
+float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height);
@@ -78,10 +79,9 @@ int main()
     
     initCharacter();
 
+    int32 frame = 0;
     while (glfwWindowShouldClose(window) == false)
     {
-        // per-frame time logic
-        // --------------------
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -97,8 +97,11 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
         
-        character.draw(shader, 0);
+        character.draw(shader, frame++);
 
+        if (frame == 500)
+            frame = 0;
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -124,13 +127,10 @@ void processInput(GLFWwindow* window)
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
+    // make sure the viewport matches the new window dimensions
     glViewport(0, 0, width, height);
 }
 
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
     float xpos = static_cast<float>(xposIn);
@@ -153,8 +153,6 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     camera.processMouseMovement(xoffset, yoffset);
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.processMouseScroll(static_cast<float>(yoffset));

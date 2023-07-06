@@ -1,3 +1,4 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #pragma once
 #ifndef CAMERA3D_H
 #define CAMERA3D_H
@@ -9,7 +10,8 @@
 #include <vector>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
-enum class CameraDirection {
+enum class CameraDirection 
+{
     Forward = 0,
     Backward,
     Left,
@@ -106,7 +108,7 @@ public:
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void processMouseScroll(float yoffset)
     {
-        Zoom -= (float)yoffset;
+        Zoom -= static_cast<float>(yoffset);
         if (Zoom < 1.0f)
             Zoom = 1.0f;
         if (Zoom > 45.0f)

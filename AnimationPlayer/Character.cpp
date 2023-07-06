@@ -1,4 +1,6 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #include <queue>
+
 #include "Character.h"
 #include "Transform.h"
 
@@ -42,25 +44,27 @@ void    Character::draw(Shader& shader, int32 frame)
 {
     Bone* root = _skeleton->getRoot();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    drawBone(root, modelMatrix, shader);
+    drawBone(root, modelMatrix, shader, frame);
 }
 
-void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
+void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 frame)
 {
     if (bone == NULL)
         return;
     
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), bone->translation);
 
-    glm::quat toParent = dequantizeQuaternion(bone->toParent, QUANT_SCALE);
-    glm::mat4 rotation = glm::toMat4(toParent);
+    glm::quat toParentQuat = dequantizeQuaternion(bone->toParent);
+    glm::mat4 toParentRotation = glm::toMat4(toParentQuat);
 
-    //motion...
+    Posture* motionData = _motion->getBonePostureAtFrame(bone->index, frame);
+    glm::quat motionQuat = dequantizeQuaternion(motionData->rotation);
+    glm::mat4 motionRotation = glm::toMat4(motionQuat);
 
-    glm::mat4 model = matrix * rotation * translation;
+    glm::mat4 model =  matrix * toParentRotation * translation * motionRotation;
     shader.setUniformMat4("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     
     for (Bone* child : bone->childList)
-        drawBone(child, model, shader);
+        drawBone(child, model, shader, frame);
 }

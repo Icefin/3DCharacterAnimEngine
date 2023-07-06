@@ -1,3 +1,4 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #include <fstream>
 #include <string>
 
@@ -10,7 +11,7 @@
 
 ASFParser::~ASFParser()
 {
-
+	__noop;
 }
 
 ASFData* ASFParser::readASF(std::string& filename)

@@ -1,3 +1,4 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #pragma once
 #ifndef SHADER_H
 #define SHADER_H
@@ -14,7 +15,7 @@
 class Shader
 {
 public:
-    unsigned int program;
+    uint32 program;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
     Shader(const utf8* vertexPath, const utf8* fragmentPath)
@@ -24,9 +25,6 @@ public:
         std::string fragmentCode;
         std::ifstream vShaderFile;
         std::ifstream fShaderFile;
-        // ensure ifstream objects can throw exceptions:
-        vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
         vShaderFile.open(vertexPath);
         fShaderFile.open(fragmentPath);
@@ -45,7 +43,7 @@ public:
         const utf8* fShaderCode = fragmentCode.c_str();
 
         // 2. compile shaders
-        unsigned int vertex, fragment;
+        uint32 vertex, fragment;
 
         // vertex shader
         vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -124,10 +122,10 @@ public:
 private:
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------
-    void checkCompileErrors(unsigned int shader, std::string type)
+    void checkCompileErrors(uint32 shader, std::string type)
     {
         int32 success;
-        char infoLog[1024];
+        utf8 infoLog[1024];
         if (type != "PROGRAM")
         {
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);

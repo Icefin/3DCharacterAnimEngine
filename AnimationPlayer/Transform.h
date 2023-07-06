@@ -11,5 +11,5 @@
 
 #define QUANT_SCALE 32767.0f
 
-QuantizedQuaternion quantizeQuaternion(glm::quat quaternion, float scale);
-glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, float scale);
+QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion, const float scale = QUANT_SCALE);
+glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, const float scale = QUANT_SCALE);

@@ -1,7 +1,7 @@
 // author: Geonho Shin (icefin@pearlabyss.com)
 #include "Transform.h"
 
-QuantizedQuaternion quantizeQuaternion(glm::quat quaternion, float scale)
+QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion, const float scale)
 {
 	QuantizedQuaternion quantizedQuaternion;
 
@@ -10,15 +10,15 @@ QuantizedQuaternion quantizeQuaternion(glm::quat quaternion, float scale)
 	quantizedQuaternion.qw = static_cast<int16>(quaternion.w * scale);
 	if (quaternion.x < 0)
 	{
-		quantizedQuaternion.qy *= -1;
-		quantizedQuaternion.qz *= -1;
-		quantizedQuaternion.qw *= -1;
+		quantizedQuaternion.qy *= -1.0;
+		quantizedQuaternion.qz *= -1.0;
+		quantizedQuaternion.qw *= -1.0;
 	}
 
 	return quantizedQuaternion;
 }
 
-glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, float scale)
+glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, const float scale)
 {
 	glm::quat quaternion;
 
@@ -26,7 +26,7 @@ glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, f
 	quaternion.z = static_cast<float>(quantizedQuaternion.qz) / scale;
 	quaternion.w = static_cast<float>(quantizedQuaternion.qw) / scale;
 
-	quaternion.x = sqrtf(1.0f - (quaternion.y * quaternion.y + quaternion.z * quaternion.z + quaternion.w * quaternion.w));
+	quaternion.x = sqrtf(1.0f - ((quaternion.y * quaternion.y) + (quaternion.z * quaternion.z) + (quaternion.w * quaternion.w)));
 
 	return quaternion;
 }

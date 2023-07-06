@@ -1,18 +1,20 @@
+// author: Geonho Shin (icefin@pearlabyss.com)
 #include <string>
 #include <queue>
 
 #include "CharacterLoader.h"
 #include "Transform.h"
 
-#define SCALE 0.25f
+constexpr float CHARACTER_SCALE = 0.25f;
 
 void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::string& amc)
 {
 	ASFData* asfData = _asfParser.readASF(asf);
 	AMCData* amcData = _amcParser.readAMC(amc, asfData);
+	//curve fitting logic comes here
 
 	Skeleton* skeleton = generateSkeleton(asfData);
-	Motion* motion = generateMotion(amcData);
+	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
 
 	character.initialize(skeleton, motion);
 }
@@ -38,7 +40,6 @@ Skeleton* CharacterLoader::generateSkeleton(ASFData* asfData)
 void	CharacterLoader::rotateBoneDirectionToBoneSpace(ASFData* asfData)
 {
 	std::unordered_map<std::string, ASFBone>& boneMap = asfData->boneMap;
-
 	
 	for (auto& elem : boneMap)
 	{
@@ -50,7 +51,7 @@ void	CharacterLoader::rotateBoneDirectionToBoneSpace(ASFData* asfData)
 		matrix = glm::rotate(matrix, bone.orientation.z, { 0.0f, 0.0f, 1.0f });
 		
 		bone.direction = glm::vec3(matrix * glm::vec4(bone.direction, 0.0f));
-		bone.direction = asfData->length * (bone.direction * bone.length) * SCALE;
+		bone.direction = (bone.direction * bone.length) * asfData->length * CHARACTER_SCALE;
 	}
 }
 
@@ -58,7 +59,6 @@ void	CharacterLoader::setupToParentMatrix(ASFData* asfData)
 {
 	ASFBone* root = &(asfData->boneMap["root"]);
 	root->toParent = glm::mat4(1.0f);
-
 
 	std::queue<ASFBone*> qBone;
 	qBone.push(root);
@@ -77,15 +77,15 @@ void	CharacterLoader::setupToParentMatrix(ASFData* asfData)
 void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 {
 	glm::mat4 matrix = glm::mat4(1.0f);
-
+	
 	matrix = glm::rotate(matrix, parent->orientation.x, { 1.0f, 0.0f, 0.0f });
 	matrix = glm::rotate(matrix, parent->orientation.y, { 0.0f, 1.0f, 0.0f });
 	matrix = glm::rotate(matrix, parent->orientation.z, { 0.0f, 0.0f, 1.0f });
-
+	
 	matrix = glm::rotate(matrix, -child->orientation.z, { 0.0f, 0.0f, 1.0f });
 	matrix = glm::rotate(matrix, -child->orientation.y, { 0.0f, 1.0f, 0.0f });
 	matrix = glm::rotate(matrix, -child->orientation.x, { 1.0f, 0.0f, 0.0f });
-	
+
 	child->toParent = matrix;
 }
 
@@ -97,7 +97,7 @@ Bone* CharacterLoader::generateBone(ASFBone* boneData)
 	newBone->translation = boneData->direction;
 	
 	glm::quat quat = glm::quat(boneData->toParent);
-	QuantizedQuaternion qquat = quantizeQuaternion(quat, QUANT_SCALE);
+	QuantizedQuaternion qquat = quantizeQuaternion(quat);
 
 	newBone->toParent = qquat;
 
@@ -115,8 +115,27 @@ void	CharacterLoader::setupSkeletonHierarchy(std::vector<Bone*>& boneList, ASFDa
 	}
 }
 
-Motion* CharacterLoader::generateMotion(AMCData* amcData)
+Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 {
-	__noop;
-	return NULL;
+	int32	totalFrameNumber = amcData->totalFrameNumber;
+	std::vector<std::vector<AMCPosture>>& motionDatas = amcData->boneMotions;
+		
+	Motion* motion = new Motion(totalBoneNumber, totalFrameNumber);
+	for (int32 boneIndex = 0; boneIndex < totalBoneNumber; ++boneIndex)
+	{
+		std::vector<AMCPosture>& posture = motionDatas[boneIndex];
+		if (posture.size() == 0)
+			continue;
+		for (int32 frame = 0; frame < totalFrameNumber; ++frame)
+		{
+			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), posture[frame].frameRotation.z, { 0.0, 0.0, 1.0 });
+			rotation = glm::rotate(rotation, posture[frame].frameRotation.y, { 0.0, 1.0, 0.0 });
+			rotation = glm::rotate(rotation, posture[frame].frameRotation.x, { 1.0, 0.0, 0.0 });
+
+			glm::quat quat = glm::quat(rotation);
+			QuantizedQuaternion	qquat = quantizeQuaternion(quat);
+			motion->_keyFrameMotions[boneIndex][frame].rotation = qquat;
+		}
+	}
+	return motion;
 }
