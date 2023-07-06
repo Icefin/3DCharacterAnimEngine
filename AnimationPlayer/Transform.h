@@ -2,6 +2,11 @@
 #pragma once
 #include <math.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 #include "CommonTypes.h"
 
 #define PI			3.141592f
@@ -21,11 +26,8 @@ float	dotProductVector3f(const vec3f& u, const vec3f& v);
 void	crossProductVector3f(const vec3f& u, const vec3f& v, vec3f& dest);
 float	angleBetweenVector3f(const vec3f& u, const vec3f& v);
 
-float	degreeToRadian(float degree);
-float	radianToDegree(float radian);
-
 Quaternion rotationMatrix4fToQuaternion(mat4f m);
 void quaternionToRotationMatrix4f(const Quaternion& quaternion, mat4f dest);
 
-QuantizedQuaternion quantizeQuaternion(const Quaternion& quaternion, float scale);
-Quaternion dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, float scale);
+QuantizedQuaternion quantizeQuaternion(glm::quat quaternion, float scale);
+glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, float scale);

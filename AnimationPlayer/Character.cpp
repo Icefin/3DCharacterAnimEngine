@@ -1,5 +1,6 @@
 #include <queue>
 #include "Character.h"
+#include "Transform.h"
 
 unsigned int vertexBufferObject, vertexArrayObject;
 
@@ -34,7 +35,7 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void    Character::draw(Shader& shader, int32 frame)
@@ -42,29 +43,17 @@ void    Character::draw(Shader& shader, int32 frame)
     Bone* root = _skeleton->getRoot();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     drawBone(root, modelMatrix, shader);
-    /*
-    for (unsigned int i = 0; i < 10; i++)
-    {
-        // calculate the model matrix for each object and pass it to shader before drawing
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        model = glm::translate(model, cubePositions[i]);
-        float angle = 20.0f * i;
-        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        shader.setUniformMat4("model", model);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-    */
 }
 
-void    Character::drawBone(Bone* bone, glm::mat4& matrix, Shader& shader)
+void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 {
     if (bone == NULL)
         return;
     
-    glm::mat4 translation = glm::translate(glm::mat4(), bone->translation);
-    glm::mat4 rotation = glm::rotate(glm::mat4(), bone->toParent);
-    
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), bone->translation);
+
+    glm::quat toParent = dequantizeQuaternion(bone->toParent, QUANT_SCALE);
+    glm::mat4 rotation = glm::toMat4(toParent);
     //motion...
 
     glm::mat4 model = matrix * rotation * translation;

@@ -37,26 +37,26 @@ void	CharacterLoader::rotateBoneDirectionToBoneSpace(ASFData* asfData)
 {
 	std::unordered_map<std::string, ASFBone>& boneMap = asfData->boneMap;
 
-	mat4f Rx, Ry, Rz;
-	vec3f temp1, temp2;
+	
 	for (auto& elem : boneMap)
 	{
+		glm::mat4 matrix = glm::mat4(1.0f);
 		ASFBone& bone = elem.second;
 
-		setRotationMatrix4fX(-bone.orientation.x, Rx);
-		setRotationMatrix4fY(-bone.orientation.y, Ry);
-		setRotationMatrix4fZ(-bone.orientation.z, Rz);
-
-		multiplyMatrix4fToVector3f(Rz, bone.direction, temp1);
-		multiplyMatrix4fToVector3f(Ry, temp1, temp2);
-		multiplyMatrix4fToVector3f(Rx, temp2, bone.direction);
+		matrix = glm::rotate(matrix, bone.orientation.x, { 1.0f, 0.0f, 0.0f });
+		matrix = glm::rotate(matrix, bone.orientation.y, { 0.0f, 1.0f, 0.0f });
+		matrix = glm::rotate(matrix, bone.orientation.z, { 0.0f, 0.0f, 1.0f });
+		
+		bone.direction = glm::vec3(glm::transpose(matrix) * glm::vec4(bone.direction, 0.0f));
+		bone.direction = asfData->length * bone.direction;
 	}
 }
 
 void	CharacterLoader::setupToParentMatrix(ASFData* asfData)
 {
 	ASFBone* root = &(asfData->boneMap["root"]);
-	setIdentityMatrix4f(root->toParent);
+	root->toParent = glm::mat4(1.0f);
+
 
 	std::queue<ASFBone*> qBone;
 	qBone.push(root);
@@ -74,26 +74,17 @@ void	CharacterLoader::setupToParentMatrix(ASFData* asfData)
 
 void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 {
-	mat4f Rx, Ry, Rz;
-	mat4f temp1, temp2, res;
+	glm::mat4 matrix = glm::mat4(1.0f);
 
-	setRotationMatrix4fX(-child->orientation.x, Rx);
-	setRotationMatrix4fY(-child->orientation.y, Ry);
-	setRotationMatrix4fZ(-child->orientation.z, Rz);
+	matrix = glm::rotate(matrix, -child->orientation.z, { 0.0f, 0.0f, 1.0f });
+	matrix = glm::rotate(matrix, -child->orientation.y, { 0.0f, 1.0f, 0.0f });
+	matrix = glm::rotate(matrix, -child->orientation.x, { 1.0f, 0.0f, 0.0f });
 
-	multiplyMatrix4fToMatrix4f(Rx, Ry, res);
-	multiplyMatrix4fToMatrix4f(res, Rz, temp1);
+	matrix = glm::rotate(matrix, parent->orientation.x, { 1.0f, 0.0f, 0.0f });
+	matrix = glm::rotate(matrix, parent->orientation.y, { 0.0f, 1.0f, 0.0f });
+	matrix = glm::rotate(matrix, parent->orientation.z, { 0.0f, 0.0f, 1.0f });
 
-	setRotationMatrix4fX(parent->orientation.x, Rx);
-	setRotationMatrix4fY(parent->orientation.y, Ry);
-	setRotationMatrix4fZ(parent->orientation.z, Rz);
-
-	multiplyMatrix4fToMatrix4f(Rz, Ry, res);
-	multiplyMatrix4fToMatrix4f(res, Rx, temp2);
-
-	multiplyMatrix4fToMatrix4f(temp1, temp2, res);
-	//revCx revCy revCz Pz Py Px
-	copyMatrix4f(res, child->toParent);
+	child->toParent = matrix;
 }
 
 Bone* CharacterLoader::generateBone(ASFBone* boneData)
@@ -103,7 +94,7 @@ Bone* CharacterLoader::generateBone(ASFBone* boneData)
 	newBone->index = boneData->boneIndex;
 	newBone->translation = boneData->direction;
 	
-	Quaternion quat = rotationMatrix4fToQuaternion(boneData->toParent);
+	glm::quat quat = glm::quat(boneData->toParent);
 	QuantizedQuaternion qquat = quantizeQuaternion(quat, QUANT_SCALE);
 
 	newBone->toParent = qquat;

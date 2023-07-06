@@ -91,16 +91,6 @@ float	angleBetweenVector3f(const vec3f& u, const vec3f& v)
 	return (acos(dot / (magU * magV)));
 }
 
-float	degreeToRadian(float degree)
-{
-	return (degree * PI / 180.0);
-}
-
-float	radianToDegree(float radian)
-{
-	return (radian * 180.0 / PI);
-}
-
 Quaternion rotationMatrix4fToQuaternion(mat4f m)
 {
 	Quaternion quaternion;
@@ -171,7 +161,7 @@ void quaternionToRotationMatrix4f(const Quaternion& quaternion, mat4f dest)
 	dest[3][3] = 1.0;
 }
 
-QuantizedQuaternion quantizeQuaternion(const Quaternion& quaternion, float scale)
+QuantizedQuaternion quantizeQuaternion(glm::quat quaternion, float scale)
 {
 	QuantizedQuaternion quantizedQuaternion;
 
@@ -182,9 +172,9 @@ QuantizedQuaternion quantizeQuaternion(const Quaternion& quaternion, float scale
 	return quantizedQuaternion;
 }
 
-Quaternion dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, float scale)
+glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, float scale)
 {
-	Quaternion quaternion;
+	glm::quat quaternion;
 
 	quaternion.x = 0.0f;
 	quaternion.y = static_cast<float>(quantizedQuaternion.qy) / scale;

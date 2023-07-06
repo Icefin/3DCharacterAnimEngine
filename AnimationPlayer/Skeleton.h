@@ -1,14 +1,19 @@
 #pragma once
 #include <vector>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "CommonTypes.h"
 
 struct Bone
 {
-	std::vector<Bone*>  childList;
+	std::vector<Bone*>		childList;
 
-	int32				index;
-	vec3f				translation;
-	QuantizedQuaternion toParent;
+	int32					index;
+	glm::vec3				translation;
+	QuantizedQuaternion		toParent;
 };
 
 class Skeleton

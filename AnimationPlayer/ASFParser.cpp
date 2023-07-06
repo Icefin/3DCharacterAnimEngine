@@ -1,5 +1,10 @@
 #include <fstream>
 #include <string>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "ASFParser.h"
 #include "Transform.h"
 
@@ -119,9 +124,9 @@ void	ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
 			stream >> root.orientation.z;
 			if (_asfData.isRadian == false)
 			{
-				root.orientation.x = degreeToRadian(root.orientation.x);
-				root.orientation.y = degreeToRadian(root.orientation.y);
-				root.orientation.z = degreeToRadian(root.orientation.z);
+				root.orientation.x = glm::radians(root.orientation.x);
+				root.orientation.y = glm::radians(root.orientation.y);
+				root.orientation.z = glm::radians(root.orientation.z);
 			}
 		}
 	}
@@ -166,9 +171,9 @@ void	ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
 					stream >> bone.orientation.z;
 					if (_asfData.isRadian == false)
 					{
-						bone.orientation.x = degreeToRadian(bone.orientation.x);
-						bone.orientation.y = degreeToRadian(bone.orientation.y);
-						bone.orientation.z = degreeToRadian(bone.orientation.z);
+						bone.orientation.x = glm::radians(bone.orientation.x);
+						bone.orientation.y = glm::radians(bone.orientation.y);
+						bone.orientation.z = glm::radians(bone.orientation.z);
 					}
 					stream >> buffer;
 					if (buffer == "XYZ")

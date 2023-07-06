@@ -1,6 +1,11 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "CommonTypes.h"
 
 enum class AXIS_TYPE
@@ -13,8 +18,8 @@ struct ASFBone
 	std::vector<ASFBone*>	childList;
 
 	int32				boneIndex;
-	vec3f				direction;
-	vec3f				orientation;
+	glm::vec3			direction;
+	glm::vec3			orientation;
 	float				length = 0.0f;
 	AXIS_TYPE			axisType;
 
@@ -24,7 +29,7 @@ struct ASFBone
 	bool				dofl = false;
 	int32				dofo[8] = {0};
 
-	mat4f				toParent;
+	glm::mat4			toParent;
 };
 
 struct ASFData
