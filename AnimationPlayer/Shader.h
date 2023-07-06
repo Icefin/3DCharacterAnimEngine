@@ -9,13 +9,15 @@
 #include <sstream>
 #include <iostream>
 
+#include "CommonTypes.h"
+
 class Shader
 {
 public:
     unsigned int program;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
-    Shader(const char* vertexPath, const char* fragmentPath)
+    Shader(const utf8* vertexPath, const utf8* fragmentPath)
     {
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
@@ -39,8 +41,8 @@ public:
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
 
-        const char* vShaderCode = vertexCode.c_str();
-        const char* fShaderCode = fragmentCode.c_str();
+        const utf8* vShaderCode = vertexCode.c_str();
+        const utf8* fShaderCode = fragmentCode.c_str();
 
         // 2. compile shaders
         unsigned int vertex, fragment;
@@ -70,7 +72,7 @@ public:
     }
     // activate the shader
     // ------------------------------------------------------------------------
-    void use()
+    void use(void)
     {
         glUseProgram(program);
     }
@@ -81,7 +83,7 @@ public:
         glUniform1i(glGetUniformLocation(program, name.c_str()), (int)value);
     }
     // ------------------------------------------------------------------------
-    void setUniformInt(const std::string& name, int value) const
+    void setUniformInt(const std::string& name, int32 value) const
     {
         glUniform1i(glGetUniformLocation(program, name.c_str()), value);
     }
@@ -124,7 +126,7 @@ private:
     // ------------------------------------------------------------------------
     void checkCompileErrors(unsigned int shader, std::string type)
     {
-        int success;
+        int32 success;
         char infoLog[1024];
         if (type != "PROGRAM")
         {

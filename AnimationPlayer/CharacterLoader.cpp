@@ -4,6 +4,8 @@
 #include "CharacterLoader.h"
 #include "Transform.h"
 
+#define SCALE 0.25f
+
 void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::string& amc)
 {
 	ASFData* asfData = _asfParser.readASF(asf);
@@ -47,8 +49,8 @@ void	CharacterLoader::rotateBoneDirectionToBoneSpace(ASFData* asfData)
 		matrix = glm::rotate(matrix, bone.orientation.y, { 0.0f, 1.0f, 0.0f });
 		matrix = glm::rotate(matrix, bone.orientation.z, { 0.0f, 0.0f, 1.0f });
 		
-		bone.direction = glm::vec3(glm::transpose(matrix) * glm::vec4(bone.direction, 0.0f));
-		bone.direction = asfData->length * bone.direction;
+		bone.direction = glm::vec3(matrix * glm::vec4(bone.direction, 0.0f));
+		bone.direction = asfData->length * (bone.direction * bone.length) * SCALE;
 	}
 }
 
@@ -76,14 +78,14 @@ void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 {
 	glm::mat4 matrix = glm::mat4(1.0f);
 
-	matrix = glm::rotate(matrix, -child->orientation.z, { 0.0f, 0.0f, 1.0f });
-	matrix = glm::rotate(matrix, -child->orientation.y, { 0.0f, 1.0f, 0.0f });
-	matrix = glm::rotate(matrix, -child->orientation.x, { 1.0f, 0.0f, 0.0f });
-
 	matrix = glm::rotate(matrix, parent->orientation.x, { 1.0f, 0.0f, 0.0f });
 	matrix = glm::rotate(matrix, parent->orientation.y, { 0.0f, 1.0f, 0.0f });
 	matrix = glm::rotate(matrix, parent->orientation.z, { 0.0f, 0.0f, 1.0f });
 
+	matrix = glm::rotate(matrix, -child->orientation.z, { 0.0f, 0.0f, 1.0f });
+	matrix = glm::rotate(matrix, -child->orientation.y, { 0.0f, 1.0f, 0.0f });
+	matrix = glm::rotate(matrix, -child->orientation.x, { 1.0f, 0.0f, 0.0f });
+	
 	child->toParent = matrix;
 }
 

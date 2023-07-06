@@ -15,9 +15,6 @@ public:
 	void loadCharacter(Character& character, std::string& asf, std::string& amc);
 
 private:
-	ASFParser _asfParser;
-	AMCParser _amcParser;
-
 	Skeleton*	generateSkeleton(ASFData* asfData);
 	void		rotateBoneDirectionToBoneSpace(ASFData* asfData);
 	void		setupToParentMatrix(ASFData* asfData);
@@ -27,4 +24,7 @@ private:
 
 	Motion* generateMotion(AMCData* amcData);
 	//curve fitting...
+
+	ASFParser	_asfParser;
+	AMCParser	_amcParser;
 };

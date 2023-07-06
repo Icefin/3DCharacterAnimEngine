@@ -54,6 +54,7 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 
     glm::quat toParent = dequantizeQuaternion(bone->toParent, QUANT_SCALE);
     glm::mat4 rotation = glm::toMat4(toParent);
+
     //motion...
 
     glm::mat4 model = matrix * rotation * translation;

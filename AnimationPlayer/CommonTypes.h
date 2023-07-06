@@ -17,18 +17,6 @@ typedef unsigned long long	uint64;
 typedef char				utf8;
 typedef wchar_t				utf16;
 
-typedef float				mat4f[4][4];
-
-struct vec3f
-{
-	float x = 0.0, y = 0.0, z = 0.0;
-};
-
-struct Quaternion
-{
-	float x, y, z, w;
-};
-
 struct QuantizedQuaternion
 {
 	int16 qy, qz, qw;

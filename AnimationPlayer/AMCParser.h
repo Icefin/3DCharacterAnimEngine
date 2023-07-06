@@ -1,14 +1,19 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "CommonTypes.h"
 #include "ASFParser.h"
 
 struct AMCPosture
 {
-	vec3f	frameRotation;
-	vec3f	frameTranslation;
-	float	frameLocation = 0.0f;
+	glm::vec3	frameRotation;
+	glm::vec3	frameTranslation;
+	float		frameLocation = 0.0f;
 };
 
 struct AMCData

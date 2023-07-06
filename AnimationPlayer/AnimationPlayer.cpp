@@ -127,13 +127,13 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
  
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_MOVEMENT::FORWARD, deltaTime);
+        camera.processKeyboard(CAMERA_DIRECTION::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_MOVEMENT::BACKWARD, deltaTime);
+        camera.processKeyboard(CAMERA_DIRECTION::BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_MOVEMENT::LEFT, deltaTime);
+        camera.processKeyboard(CAMERA_DIRECTION::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.processKeyboard(CAMERA_MOVEMENT::RIGHT, deltaTime);
+        camera.processKeyboard(CAMERA_DIRECTION::RIGHT, deltaTime);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)

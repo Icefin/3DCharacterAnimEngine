@@ -9,7 +9,7 @@
 #include <vector>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
-enum class CAMERA_MOVEMENT {
+enum class CAMERA_DIRECTION {
     FORWARD,
     BACKWARD,
     LEFT,
@@ -62,22 +62,22 @@ public:
     }
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    glm::mat4 getViewMatrix()
+    glm::mat4 getViewMatrix(void)
     {
         return glm::lookAt(Position, Position + Front, Up);
     }
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-    void processKeyboard(CAMERA_MOVEMENT direction, float deltaTime)
+    void processKeyboard(CAMERA_DIRECTION direction, float deltaTime)
     {
         float velocity = MovementSpeed * deltaTime;
-        if (direction == CAMERA_MOVEMENT::FORWARD)
+        if (direction == CAMERA_DIRECTION::FORWARD)
             Position += Front * velocity;
-        if (direction == CAMERA_MOVEMENT::BACKWARD)
+        if (direction == CAMERA_DIRECTION::BACKWARD)
             Position -= Front * velocity;
-        if (direction == CAMERA_MOVEMENT::LEFT)
+        if (direction == CAMERA_DIRECTION::LEFT)
             Position -= Right * velocity;
-        if (direction == CAMERA_MOVEMENT::RIGHT)
+        if (direction == CAMERA_DIRECTION::RIGHT)
             Position += Right * velocity;
     }
 
@@ -115,7 +115,7 @@ public:
 
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
-    void updateCameraVectors()
+    void updateCameraVectors(void)
     {
         // calculate the new Front vector
         glm::vec3 front;
