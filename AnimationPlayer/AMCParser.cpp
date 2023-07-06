@@ -2,6 +2,11 @@
 #include <string>
 #include "AMCParser.h"
 
+AMCParser::~AMCParser()
+{
+
+}
+
 AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 {
 	std::ifstream stream(filename, std::ios::in);

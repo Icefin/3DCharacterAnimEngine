@@ -13,7 +13,6 @@ Character* CharacterLoader::loadCharacter(std::string& asf, std::string& amc)
 	Motion* motion = generateMotion(amcData);
 
 	Character* character = new Character(skeleton, motion);
-
 	return character;
 }
 

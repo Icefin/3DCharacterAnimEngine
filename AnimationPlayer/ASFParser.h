@@ -42,6 +42,7 @@ struct ASFData
 class ASFParser
 {
 public:
+	~ASFParser();
 	ASFData* readASF(std::string& filename);
 
 private:

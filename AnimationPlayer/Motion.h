@@ -18,6 +18,6 @@ public:
 	Posture* getFrameBonePosture(int32 frame, int32 index) { return &(_keyFrameMotions[frame][index]); };
 
 private:
-	std::vector<std::vector<Posture>> _keyFrameMotions;
+	std::vector<std::vector<Posture>>	_keyFrameMotions;
 };
 

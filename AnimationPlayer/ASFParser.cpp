@@ -3,6 +3,11 @@
 #include "ASFParser.h"
 #include "Transform.h"
 
+ASFParser::~ASFParser()
+{
+
+}
+
 ASFData* ASFParser::readASF(std::string& filename)
 {
 	std::ifstream stream;
