@@ -51,8 +51,6 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 
 {
     if (bone == NULL)
         return;
-    
-    glm::mat4 translation = glm::translate(glm::mat4(1.0f), bone->translation);
 
     glm::quat toParentQuat = dequantizeQuaternion(bone->toParent);
     glm::mat4 toParentRotation = glm::toMat4(toParentQuat);
@@ -61,10 +59,11 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 
     glm::quat motionQuat = dequantizeQuaternion(motionData->rotation);
     glm::mat4 motionRotation = glm::toMat4(motionQuat);
 
-    glm::mat4 model =  matrix * toParentRotation * translation * motionRotation;
+    //glm::mat4 model =  toGlobalMatrix * toParentMatrix * motionRotation;
+    glm::mat4 model = matrix * bone->TEST_PARENT * motionData->TEST_ROTATION;
     shader.setUniformMat4("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
-    
+
     for (Bone* child : bone->childList)
         drawBone(child, model, shader, frame);
 }

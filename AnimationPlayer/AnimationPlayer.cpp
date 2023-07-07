@@ -17,13 +17,13 @@
 constexpr uint32 SCR_WIDTH = 800;
 constexpr uint32 SCR_HEIGHT = 600;
 
+// character
 Character character;
 
 // camera
 Camera3D camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
+float prevX = SCR_WIDTH / 2.0f;
+float prevY = SCR_HEIGHT / 2.0f;
 
 // timing
 float deltaTime = 0.0f;
@@ -88,7 +88,7 @@ int main()
 
         processInput(window);
 
-        glClearColor(0.2, 0.3, 0.3, 1.0);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -136,19 +136,12 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
+    float xoffset = xpos - prevX;
     // reversed since y-coordinates go from bottom to top
-    float yoffset = lastY - ypos;
+    float yoffset = prevY - ypos;
 
-    lastX = xpos;
-    lastY = ypos;
+    prevX = xpos;
+    prevY = ypos;
 
     camera.processMouseMovement(xoffset, yoffset);
 }

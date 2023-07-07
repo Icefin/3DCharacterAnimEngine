@@ -15,6 +15,8 @@ struct Bone
 	int32					index;
 	glm::vec3				translation;
 	QuantizedQuaternion		toParent;
+
+	glm::mat4				TEST_PARENT;
 };
 
 class Skeleton

@@ -28,7 +28,7 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 
 	while (stream.eof() == false)
 	{
-		for (int32 i = 0; i < movingBoneNumber; i++)
+		for (int32 i = 0; i < movingBoneNumber; ++i)
 		{
 			std::string name;
 			stream >> name;
@@ -37,7 +37,7 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 			ASFBone& bone = asfData->boneMap[name];
 			int32	boneDof = bone.dof;
 			int32	boneIndex = bone.boneIndex;
-			for (int32 j = 0; j < boneDof; j++)
+			for (int32 j = 0; j < boneDof; ++j)
 			{
 				float temp;
 				stream >> temp;
