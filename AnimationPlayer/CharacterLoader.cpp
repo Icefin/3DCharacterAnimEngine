@@ -151,31 +151,18 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 	{
 		std::vector<AMCPosture>& posture = motionDatas[boneIndex];
 		if (posture.size() == 0)
-		{
-			glm::mat4 rotation = glm::mat4(1.0f);
-			glm::mat4 translation = glm::mat4(1.0f);
-			for (int32 frame = 0; frame < totalFrameNumber; ++frame)
-			{
-				motion->_keyFrameMotions[boneIndex][frame].TEST_ROTATION = rotation;
-				motion->_keyFrameMotions[boneIndex][frame].translation = translation;
-			}
 			continue;
-		}
 		for (int32 frame = 0; frame < totalFrameNumber; ++frame)
 		{
 			glm::mat4 rotation = glm::mat4(1.0f);
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.x, { 1.0, 0.0, 0.0 });
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.y, { 0.0, 1.0, 0.0 });
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.z, { 0.0, 0.0, 1.0 });
-			
+
 			glm::mat4 translation = glm::mat4(1.0f);
 			translation = glm::translate(translation, posture[frame].frameTranslation);
 
-			glm::quat quat = glm::quat(rotation);
-			QuantizedQuaternion	qquat = quantizeQuaternion(quat);
-			motion->_keyFrameMotions[boneIndex][frame].rotation = qquat;
-
-			motion->_keyFrameMotions[boneIndex][frame].TEST_ROTATION = rotation;
+			motion->_keyFrameMotions[boneIndex][frame].rotation = rotation;
 			motion->_keyFrameMotions[boneIndex][frame].translation = translation * CHARACTER_SCALE;
 		}
 	}

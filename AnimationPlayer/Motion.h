@@ -10,9 +10,9 @@
 
 struct Posture
 {
-	QuantizedQuaternion	rotation;
-	glm::mat4			TEST_ROTATION;
-	glm::mat4			translation;
+	QuantizedQuaternion	qrotation;
+	glm::mat4			rotation = glm::mat4(1.0f);
+	glm::mat4			translation = glm::mat4(1.0f);
 };
 
 class Motion

@@ -52,9 +52,8 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 
 {
     Posture* motionData = _motion->getBonePostureAtFrame(bone->index, frame);
 
-    glm::mat4 model = matrix * bone->toParentRotation /* motionData->translation*/ * motionData->TEST_ROTATION;
+    glm::mat4 model = matrix * bone->toParentRotation  /* motionData->translation*/ * motionData->rotation;
     shader.setUniformMat4("model", model);
-    
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     model = model * bone->translation;
