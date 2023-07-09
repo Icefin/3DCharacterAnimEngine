@@ -88,7 +88,7 @@ int main()
 
         processInput(window);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -97,7 +97,7 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
         
-        character.draw(shader, frame++);
+        character.update(shader, frame++);
 
         if (frame == 500)
             frame = 0;

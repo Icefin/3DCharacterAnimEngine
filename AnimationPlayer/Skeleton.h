@@ -13,10 +13,8 @@ struct Bone
 	std::vector<Bone*>		childList;
 
 	int32					index;
-	glm::vec3				translation;
-	QuantizedQuaternion		toParent;
-
-	glm::mat4				TEST_PARENT;
+	glm::mat4				toParentRotation;
+	glm::mat4				translation;
 };
 
 class Skeleton

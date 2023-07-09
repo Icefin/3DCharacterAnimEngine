@@ -44,7 +44,7 @@ void CharacterLoader::loadCharacter(Character& character, std::string& asf, std:
 	Skeleton* skeleton = generateSkeleton(asfData);
 	TEST_PRINT_BONE_INFO(asfData);
 	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
-	TEST_PRINT_POSTURE_INFO(amcData);
+	//TEST_PRINT_POSTURE_INFO(amcData);
 
 	character.initialize(skeleton, motion);
 }
@@ -108,8 +108,6 @@ void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 {
 	glm::mat4 matrix = glm::mat4(1.0f);
 
-	matrix = glm::translate(matrix, parent->direction);
-
 	matrix = glm::rotate(matrix, -parent->orientation.z, { 0.0f, 0.0f, 1.0f });
 	matrix = glm::rotate(matrix, -parent->orientation.y, { 0.0f, 1.0f, 0.0f });
 	matrix = glm::rotate(matrix, -parent->orientation.x, { 1.0f, 0.0f, 0.0f });
@@ -126,14 +124,8 @@ Bone* CharacterLoader::generateBone(ASFBone* boneData)
 	Bone* newBone = new Bone();
 	
 	newBone->index = boneData->boneIndex;
-	newBone->translation = boneData->direction;
-	
-	newBone->TEST_PARENT = boneData->toParent;
-
-	glm::quat quat = glm::quat(boneData->toParent);
-	QuantizedQuaternion qquat = quantizeQuaternion(quat);
-
-	newBone->toParent = qquat;
+	newBone->toParentRotation = boneData->toParent;
+	newBone->translation = glm::translate(glm::mat4(1.0f), boneData->direction);
 
 	return newBone;
 }
@@ -159,19 +151,32 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 	{
 		std::vector<AMCPosture>& posture = motionDatas[boneIndex];
 		if (posture.size() == 0)
+		{
+			glm::mat4 rotation = glm::mat4(1.0f);
+			glm::mat4 translation = glm::mat4(1.0f);
+			for (int32 frame = 0; frame < totalFrameNumber; ++frame)
+			{
+				motion->_keyFrameMotions[boneIndex][frame].TEST_ROTATION = rotation;
+				motion->_keyFrameMotions[boneIndex][frame].translation = translation;
+			}
 			continue;
+		}
 		for (int32 frame = 0; frame < totalFrameNumber; ++frame)
 		{
 			glm::mat4 rotation = glm::mat4(1.0f);
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.x, { 1.0, 0.0, 0.0 });
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.y, { 0.0, 1.0, 0.0 });
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.z, { 0.0, 0.0, 1.0 });
+			
+			glm::mat4 translation = glm::mat4(1.0f);
+			translation = glm::translate(translation, posture[frame].frameTranslation);
 
 			glm::quat quat = glm::quat(rotation);
 			QuantizedQuaternion	qquat = quantizeQuaternion(quat);
 			motion->_keyFrameMotions[boneIndex][frame].rotation = qquat;
 
 			motion->_keyFrameMotions[boneIndex][frame].TEST_ROTATION = rotation;
+			motion->_keyFrameMotions[boneIndex][frame].translation = translation * CHARACTER_SCALE;
 		}
 	}
 	return motion;

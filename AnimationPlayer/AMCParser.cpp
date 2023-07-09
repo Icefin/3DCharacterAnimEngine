@@ -71,17 +71,17 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 					break;
 				case 4:
 					{
-						newPosture.frameTranslation.x = temp;
+						newPosture.frameTranslation.x = temp * asfData->length;
 					}
 					break;
 				case 5:
 					{
-						newPosture.frameTranslation.y = temp;
+						newPosture.frameTranslation.y = temp * asfData->length;
 					}
 					break;
 				case 6:
 					{
-						newPosture.frameTranslation.z = temp;
+						newPosture.frameTranslation.z = temp * asfData->length;
 					}
 					break;
 				case 7:

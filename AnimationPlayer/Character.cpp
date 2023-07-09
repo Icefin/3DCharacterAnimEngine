@@ -37,10 +37,11 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(2.0f);
 }
 
-void    Character::draw(Shader& shader, int32 frame)
+void    Character::update(Shader& shader, int32 frame)
 {
     Bone* root = _skeleton->getRoot();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -49,21 +50,14 @@ void    Character::draw(Shader& shader, int32 frame)
 
 void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 frame)
 {
-    if (bone == NULL)
-        return;
-
-    glm::quat toParentQuat = dequantizeQuaternion(bone->toParent);
-    glm::mat4 toParentRotation = glm::toMat4(toParentQuat);
-
     Posture* motionData = _motion->getBonePostureAtFrame(bone->index, frame);
-    glm::quat motionQuat = dequantizeQuaternion(motionData->rotation);
-    glm::mat4 motionRotation = glm::toMat4(motionQuat);
 
-    //glm::mat4 model =  toGlobalMatrix * toParentMatrix * motionRotation;
-    glm::mat4 model = matrix * bone->TEST_PARENT * motionData->TEST_ROTATION;
+    glm::mat4 model = matrix * bone->toParentRotation /* motionData->translation*/ * motionData->TEST_ROTATION;
     shader.setUniformMat4("model", model);
+    
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    model = model * bone->translation;
     for (Bone* child : bone->childList)
         drawBone(child, model, shader, frame);
 }
