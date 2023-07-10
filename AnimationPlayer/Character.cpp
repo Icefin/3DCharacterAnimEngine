@@ -4,7 +4,8 @@
 #include "Character.h"
 #include "Transform.h"
 
-unsigned int vertexBufferObject, vertexArrayObject;
+uint32 vertexBufferObject, vertexArrayObject;
+uint32 jointBufferObject, jointArrayObject;
 
 Character::~Character()
 {
@@ -37,12 +38,27 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    glGenBuffers(1, &jointBufferObject);
+    glGenVertexArrays(1, &jointArrayObject);
+
+    glBindVertexArray(jointArrayObject);
+
+    glBindBuffer(GL_ARRAY_BUFFER, jointBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(joint), joint, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(2.0f);
 }
 
 void    Character::update(Shader& shader, int32 frame)
 {
+    std::cout << "update!\n";
     Bone* root = _skeleton->getRoot();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     drawBone(root, modelMatrix, shader, frame);
@@ -51,10 +67,10 @@ void    Character::update(Shader& shader, int32 frame)
 void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 frame)
 {
     Posture* motionData = _motion->getBonePostureAtFrame(bone->index, frame);
-    glm::quat qrotation = dequantizeQuaternion(motionData->qrotation);
+    glm::quat qmotion = dequantizeQuaternion(motionData->qrotation);
 
     //glm::mat4 model = matrix * bone->toParent * motionData->rotation;
-    glm::mat4 model = matrix * bone->toParent * glm::mat4(qrotation);
+    glm::mat4 model = matrix * bone->toParent /* glm::mat4(qmotion) */;
 
     glm::vec3 direction = glm::vec3(bone->toParent[3][0], bone->toParent[3][1], bone->toParent[3][2]);
     glm::vec3 rotAxis = glm::cross({ 0.0f, 0.0f, 1.0f }, direction);
@@ -62,9 +78,15 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 
     glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
     
     float length = glm::length(direction);
+    std::cout << "Current Length : " << length << '\n';
     glm::mat4 scaler = glm::scale(glm::mat4(1.0f), {1.0f, 1.0f, length});
 
+    glBindVertexArray(vertexArrayObject);
     shader.setUniformMat4("model", model * boneRotation * scaler);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    glBindVertexArray(jointArrayObject);
+    shader.setUniformMat4("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     for (Bone* child : bone->childList)

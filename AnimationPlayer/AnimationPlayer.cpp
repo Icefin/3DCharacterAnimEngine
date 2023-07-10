@@ -78,7 +78,6 @@ int main()
     shader.use();
     
     initCharacter();
-
     int32 frame = 0;
     while (glfwWindowShouldClose(window) == false)
     {
