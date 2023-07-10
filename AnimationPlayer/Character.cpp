@@ -27,7 +27,7 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glBindVertexArray(vertexArrayObject);
 
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(axis), axis, GL_STATIC_DRAW); //copy user-defined data into buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(bone), bone, GL_STATIC_DRAW); //copy user-defined data into buffer
 
     // position attribute
     //lcoation = 0, sizeof attrib(vec3), type, want to be normalized?, stride(space btw vertattb.), offset
@@ -37,7 +37,7 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(2.0f);
 }
 
@@ -53,8 +53,17 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 
     Posture* motionData = _motion->getBonePostureAtFrame(bone->index, frame);
 
     glm::mat4 model = matrix * bone->toParent * motionData->rotation;
-    shader.setUniformMat4("model", model);
-    glDrawArrays(GL_LINES, 0, 12);
+
+    glm::vec3 direction = glm::vec3(bone->toParent[3][0], bone->toParent[3][1], bone->toParent[3][2]);
+    glm::vec3 rotAxis = glm::cross({ 0.0f, 0.0f, 1.0f }, direction);
+    float angle = acos(glm::dot(glm::normalize(direction), { 0.0f, 0.0f, 1.0f }));
+    glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
+    
+    float length = glm::length(direction);
+    glm::mat4 scaler = glm::scale(glm::mat4(1.0f), {1.0f, 1.0f, length});
+
+    shader.setUniformMat4("model", model * boneRotation * scaler);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
     for (Bone* child : bone->childList)
         drawBone(child, model, shader, frame);
