@@ -14,6 +14,10 @@
 #include "Camera3D.h"
 #include "CharacterLoader.h"
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 constexpr uint32 SCR_WIDTH = 800;
 constexpr uint32 SCR_HEIGHT = 600;
 
@@ -96,7 +100,7 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
         
-        character.update(shader, frame++);
+        //character.update(shader, frame++);
 
         if (frame == 3000)
             frame = 0;
@@ -106,6 +110,8 @@ int main()
     }
 
     glfwTerminate();
+    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+    _CrtDumpMemoryLeaks();
     return 0;
 }
 

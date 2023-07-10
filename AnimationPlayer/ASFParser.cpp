@@ -39,6 +39,7 @@ ASFData* ASFParser::readASF(std::string& filename)
 		std::getline(stream, buffer);
 	}
 
+	stream.close();
 	return &(_asfData);
 }
 

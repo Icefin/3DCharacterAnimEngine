@@ -11,6 +11,15 @@ Character::~Character()
 {
     glDeleteVertexArrays(1, &vertexArrayObject);
     glDeleteBuffers(1, &vertexBufferObject);
+
+    glDeleteVertexArrays(1, &jointArrayObject);
+    glDeleteBuffers(1, &jointBufferObject);
+
+    if (_skeleton != NULL)
+        delete _skeleton;
+
+    if (_motion != NULL)
+        delete _motion;
 }
 
 void	Character::initialize(Skeleton* skeleton, Motion* motion)
@@ -58,7 +67,6 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
 
 void    Character::update(Shader& shader, int32 frame)
 {
-    std::cout << "update!\n";
     Bone* root = _skeleton->getRoot();
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     drawBone(root, modelMatrix, shader, frame);
@@ -78,7 +86,6 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 
     glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
     
     float length = glm::length(direction);
-    std::cout << "Current Length : " << length << '\n';
     glm::mat4 scaler = glm::scale(glm::mat4(1.0f), {1.0f, 1.0f, length});
 
     glBindVertexArray(vertexArrayObject);

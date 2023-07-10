@@ -41,7 +41,6 @@ void CharacterLoader::loadCharacter(Character& character, std::string& asf, std:
 	AMCData* amcData = _amcParser.readAMC(amc, asfData);
 
 	//curve fitting logic comes here
-
 	Skeleton* skeleton = generateSkeleton(asfData);
 	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
 
