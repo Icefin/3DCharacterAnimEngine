@@ -51,8 +51,10 @@ void    Character::update(Shader& shader, int32 frame)
 void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 frame)
 {
     Posture* motionData = _motion->getBonePostureAtFrame(bone->index, frame);
+    glm::quat qrotation = dequantizeQuaternion(motionData->qrotation);
 
-    glm::mat4 model = matrix * bone->toParent * motionData->rotation;
+    //glm::mat4 model = matrix * bone->toParent * motionData->rotation;
+    glm::mat4 model = matrix * bone->toParent * glm::mat4(qrotation);
 
     glm::vec3 direction = glm::vec3(bone->toParent[3][0], bone->toParent[3][1], bone->toParent[3][2]);
     glm::vec3 rotAxis = glm::cross({ 0.0f, 0.0f, 1.0f }, direction);

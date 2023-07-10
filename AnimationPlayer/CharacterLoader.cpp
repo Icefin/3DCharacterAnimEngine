@@ -151,7 +151,8 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 			glm::mat4 translation = glm::mat4(1.0f);
 			translation = glm::translate(translation, posture[frame].frameTranslation);
 
-			motion->_keyFrameMotions[boneIndex][frame].rotation = rotation;
+			//motion->_keyFrameMotions[boneIndex][frame].rotation = rotation;
+			motion->_keyFrameMotions[boneIndex][frame].qrotation = quantizeQuaternion(glm::quat(rotation));
 			motion->_keyFrameMotions[boneIndex][frame].translation = translation * CHARACTER_SCALE;
 		}
 	}
