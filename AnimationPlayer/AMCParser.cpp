@@ -39,7 +39,7 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 			int32	boneIndex = bone.boneIndex;
 			for (int32 j = 0; j < boneDof; ++j)
 			{
-				float temp;
+				double temp;
 				stream >> temp;
 
 				switch (bone.dofo[j])
@@ -84,11 +84,11 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 						newPosture.frameTranslation.z = temp * asfData->length;
 					}
 					break;
-				case 7:
-					{
-						newPosture.frameLocation = temp;
-					}
-					break;
+				//case 7:
+				//	{
+				//		newPosture.frameLocation = temp;
+				//	}
+				//	break;
 				}
 			}
 			_amcData.boneMotions[boneIndex].push_back(newPosture);

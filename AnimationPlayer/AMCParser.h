@@ -14,7 +14,7 @@ struct AMCPosture
 {
 	glm::vec3	frameRotation = glm::vec3(0);
 	glm::vec3	frameTranslation = glm::vec3(0);
-	float		frameLocation = 0.0f;
+	//float		frameLocation = 0.0f;
 };
 
 struct AMCData

@@ -250,14 +250,17 @@ void	ASFParser::readASF_Hierarchy(std::ifstream& stream)
 			{
 				std::string name = childName.substr(0, pos);
 				_asfData.boneMap[parentName].childList.push_back(&(_asfData.boneMap[name]));
+				_asfData.boneMap[name].parentBone = &(_asfData.boneMap[parentName]);
 				childName.erase(0, pos + 1);
 				pos = childName.find(" ");
 			}
 			_asfData.boneMap[parentName].childList.push_back(&(_asfData.boneMap[childName]));
+			_asfData.boneMap[childName].parentBone = &(_asfData.boneMap[parentName]);
 		}
 		
 		if (parentName[0] == '#')
 			std::getline(stream, parentName);
 		stream >> parentName;
 	}
+	_asfData.boneMap["root"].parentBone = &(_asfData.boneMap["root"]);
 }

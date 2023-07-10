@@ -99,7 +99,7 @@ int main()
         
         character.update(shader, frame++);
 
-        if (frame == 500)
+        if (frame == 516)
             frame = 0;
         
         glfwSwapBuffers(window);

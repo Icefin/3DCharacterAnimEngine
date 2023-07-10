@@ -13,8 +13,7 @@ struct Bone
 	std::vector<Bone*>		childList;
 
 	int32					index;
-	glm::mat4				toParentRotation;
-	glm::mat4				translation;
+	glm::mat4				toParent = glm::mat4(1.0f);
 };
 
 class Skeleton

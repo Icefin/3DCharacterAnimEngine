@@ -16,11 +16,12 @@ enum class AXIS_TYPE
 
 struct ASFBone
 {
+	ASFBone*				parentBone;
 	std::vector<ASFBone*>	childList;
 
 	int32					boneIndex;
-	glm::vec3				direction;
-	glm::vec3				orientation;
+	glm::vec3				direction = glm::vec3(0.0f);
+	glm::vec3				orientation = glm::vec3(0.0f);
 	float					length = 0.0f;
 	AXIS_TYPE				axisType;
 
@@ -30,7 +31,7 @@ struct ASFBone
 	bool					dofl = false;
 	int32					dofo[8] = {0};
 
-	glm::mat4				toParent;
+	glm::mat4				toParent = glm::mat4(1.0f);
 };
 
 struct ASFData

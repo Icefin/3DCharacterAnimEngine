@@ -16,7 +16,6 @@ public:
 
 private:
 	Skeleton*	generateSkeleton(ASFData* asfData);
-	void		rotateBoneDirectionToBoneSpace(ASFData* asfData);
 	void		setupToParentMatrix(ASFData* asfData);
 	void		computeToParentMatrix(ASFBone* parent, ASFBone* child);
 	Bone*		generateBone(ASFBone* boneData);
