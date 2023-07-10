@@ -38,8 +38,8 @@ void    initCharacter()
 {
     CharacterLoader characterLoader;
 
-    std::string asfFile = "./test/07-walk.asf";
-    std::string amcFile = "./test/07_05-walk.amc";
+    std::string asfFile = "./test/131-dance.asf";
+    std::string amcFile = "./test/131_04-dance.amc";
   
     characterLoader.loadCharacter(character, asfFile, amcFile);
 }
@@ -99,7 +99,7 @@ int main()
         
         character.update(shader, frame++);
 
-        if (frame == 516)
+        if (frame == 1000)
             frame = 0;
         
         glfwSwapBuffers(window);

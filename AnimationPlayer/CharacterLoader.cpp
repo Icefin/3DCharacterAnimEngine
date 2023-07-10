@@ -7,6 +7,7 @@
 
 constexpr float CHARACTER_SCALE = 0.1f;
 
+/*
 static void		TEST_PRINT_BONE_INFO(ASFData* asfData)
 {
 	std::unordered_map<std::string, ASFBone>& boneMap = asfData->boneMap;
@@ -20,7 +21,6 @@ static void		TEST_PRINT_BONE_INFO(ASFData* asfData)
 		printf("\n");
 	}
 }
-
 static void		TEST_PRINT_POSTURE_INFO(AMCData* amcData)
 {
 	std::vector<std::vector<AMCPosture>>& boneMotions = amcData->boneMotions;
@@ -33,6 +33,7 @@ static void		TEST_PRINT_POSTURE_INFO(AMCData* amcData)
 		}
 	}
 }
+*/
 
 void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::string& amc)
 {
@@ -42,9 +43,7 @@ void CharacterLoader::loadCharacter(Character& character, std::string& asf, std:
 	//curve fitting logic comes here
 
 	Skeleton* skeleton = generateSkeleton(asfData);
-	TEST_PRINT_BONE_INFO(asfData);
 	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
-	TEST_PRINT_POSTURE_INFO(amcData);
 
  	character.initialize(skeleton, motion);
 }
@@ -82,10 +81,6 @@ void	CharacterLoader::setupToParentMatrix(ASFData* asfData)
 			computeToParentMatrix(currentBone, childBone);
 			qBone.push(childBone);
 		}
-		if (currentBone->childList.empty() == true)
-		{
-			//leaf node process (dummy generate)
-		}
 	}
 }
 
@@ -93,20 +88,20 @@ void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 {
 	glm::mat4 rotation = glm::mat4(1.0f);
 
-	rotation = glm::rotate(rotation, -parent->orientation.x, { 1, 0, 0 });
-	rotation = glm::rotate(rotation, -parent->orientation.y, { 0, 1, 0 });
-	rotation = glm::rotate(rotation, -parent->orientation.z, { 0, 0, 1 });
+	rotation = glm::rotate(rotation, -parent->orientation.x, { 1.0f, 0.0f, 0.0f });
+	rotation = glm::rotate(rotation, -parent->orientation.y, { 0.0f, 1.0f, 0.0f });
+	rotation = glm::rotate(rotation, -parent->orientation.z, { 0.0f, 0.0f, 1.0f });
 
-	rotation = glm::rotate(rotation, child->orientation.z, { 0, 0, 1 });
-	rotation = glm::rotate(rotation, child->orientation.y, { 0, 1, 0 });
-	rotation = glm::rotate(rotation, child->orientation.x, { 1, 0, 0 });
+	rotation = glm::rotate(rotation, child->orientation.z, { 0.0f, 0.0f, 1.0f });
+	rotation = glm::rotate(rotation, child->orientation.y, { 0.0f, 1.0f, 0.0f });
+	rotation = glm::rotate(rotation, child->orientation.x, { 1.0f, 0.0f, 0.0f });
 
-	glm::mat4 translation = glm::mat4(1.0);
-	glm::mat4 toChildRotation = glm::mat4(1.0);
+	glm::mat4 translation = glm::mat4(1.0f);
+	glm::mat4 toChildRotation = glm::mat4(1.0f);
 
-	toChildRotation = glm::rotate(toChildRotation, -child->orientation.x, { 1, 0, 0 });
-	toChildRotation = glm::rotate(toChildRotation, -child->orientation.y, { 0, 1, 0 });
-	toChildRotation = glm::rotate(toChildRotation, -child->orientation.z, { 0, 0, 1 });
+	toChildRotation = glm::rotate(toChildRotation, -child->orientation.x, { 1.0f, 0.0f, 0.0f });
+	toChildRotation = glm::rotate(toChildRotation, -child->orientation.y, { 0.0f, 1.0f, 0.0f });
+	toChildRotation = glm::rotate(toChildRotation, -child->orientation.z, { 0.0f, 0.0f, 1.0f });
 
 	glm::vec3 offset = glm::vec3(toChildRotation * glm::vec4(parent->direction, 0.0f)) * parent->length * CHARACTER_SCALE;
 	translation = glm::translate(translation, offset);
@@ -148,12 +143,12 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 			continue;
 		for (int32 frame = 0; frame < totalFrameNumber; ++frame)
 		{
-			glm::mat4 rotation = glm::mat4(1.0);
-			rotation = glm::rotate(rotation, posture[frame].frameRotation.z, { 0, 0, 1 });
-			rotation = glm::rotate(rotation, posture[frame].frameRotation.y, { 0, 1, 0 });
-			rotation = glm::rotate(rotation, posture[frame].frameRotation.x, { 1, 0, 0 });
+			glm::mat4 rotation = glm::mat4(1.0f);
+			rotation = glm::rotate(rotation, posture[frame].frameRotation.z, { 0.0f, 0.0f, 1.0f });
+			rotation = glm::rotate(rotation, posture[frame].frameRotation.y, { 0.0f, 1.0f, 0.0f });
+			rotation = glm::rotate(rotation, posture[frame].frameRotation.x, { 1.0f, 0.0f, 0.0f });
 
-			glm::mat4 translation = glm::mat4(1.0);
+			glm::mat4 translation = glm::mat4(1.0f);
 			translation = glm::translate(translation, posture[frame].frameTranslation);
 
 			motion->_keyFrameMotions[boneIndex][frame].rotation = rotation;
