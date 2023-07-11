@@ -33,6 +33,8 @@ float prevY = SCR_HEIGHT / 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+int32 frame = 0;
+
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -42,8 +44,8 @@ void    initCharacter()
 {
     CharacterLoader characterLoader;
 
-    std::string asfFile = "./test/135-martialArts.asf";
-    std::string amcFile = "./test/135_06-martialArts.amc";
+    std::string asfFile = "./test/131-dance.asf";
+    std::string amcFile = "./test/131_04-dance.amc";
   
     characterLoader.loadCharacter(character, asfFile, amcFile);
 }
@@ -82,7 +84,7 @@ int main()
     shader.use();
     
     initCharacter();
-    int32 frame = 0;
+
     while (glfwWindowShouldClose(window) == false)
     {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -99,11 +101,14 @@ int main()
 
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
-        
-        //character.update(shader, frame++);
 
-        if (frame == 3000)
+        if (frame == 1000)
             frame = 0;
+        else if (frame < 0)
+            frame = 0;
+
+        character.update(shader, frame);
+
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -128,6 +133,11 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(CameraDirection::Left, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(CameraDirection::Right, deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        frame++;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+        frame = 0;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)

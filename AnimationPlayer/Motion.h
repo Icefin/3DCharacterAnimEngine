@@ -21,7 +21,7 @@ public:
 	Motion(int32 totalBoneNumber, int32 totalFrameNumber);
 	~Motion();
 
-	Posture* getBonePostureAtFrame(int32 boneIndex, int32 frame) { return &(_keyFrameMotions[boneIndex][frame]); };
+	Posture* getBonePostureAtFrame(int32 boneIndex, int32 frame);
 
 	std::vector<std::vector<Posture>>	_keyFrameMotions;
 };

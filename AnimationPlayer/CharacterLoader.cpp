@@ -41,6 +41,8 @@ void CharacterLoader::loadCharacter(Character& character, std::string& asf, std:
 	AMCData* amcData = _amcParser.readAMC(amc, asfData);
 
 	//curve fitting logic comes here
+
+
 	Skeleton* skeleton = generateSkeleton(asfData);
 	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
 
@@ -95,7 +97,6 @@ void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 	rotation = glm::rotate(rotation, child->orientation.y, { 0.0f, 1.0f, 0.0f });
 	rotation = glm::rotate(rotation, child->orientation.x, { 1.0f, 0.0f, 0.0f });
 
-	glm::mat4 translation = glm::mat4(1.0f);
 	glm::mat4 toChildRotation = glm::mat4(1.0f);
 
 	toChildRotation = glm::rotate(toChildRotation, -child->orientation.x, { 1.0f, 0.0f, 0.0f });
@@ -103,8 +104,9 @@ void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 	toChildRotation = glm::rotate(toChildRotation, -child->orientation.z, { 0.0f, 0.0f, 1.0f });
 
 	glm::vec3 offset = glm::vec3(toChildRotation * glm::vec4(parent->direction, 0.0f)) * parent->length * CHARACTER_SCALE;
-	translation = glm::translate(translation, offset);
+	glm::mat4 translation = glm::translate(glm::mat4(1.0f), offset);
 
+	child->offset = offset;
 	child->toParent = rotation * translation;
 }
 
@@ -114,6 +116,7 @@ Bone* CharacterLoader::generateBone(ASFBone* boneData)
 	
 	newBone->index = boneData->boneIndex;
 	newBone->toParent = boneData->toParent;
+	newBone->direction = boneData->offset;
 
 	return newBone;
 }

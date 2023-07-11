@@ -4,13 +4,13 @@
 #include "Character.h"
 #include "Transform.h"
 
-uint32 vertexBufferObject, vertexArrayObject;
+uint32 boneBufferObject, boneArrayObject;
 uint32 jointBufferObject, jointArrayObject;
 
 Character::~Character()
 {
-    glDeleteVertexArrays(1, &vertexArrayObject);
-    glDeleteBuffers(1, &vertexBufferObject);
+    glDeleteVertexArrays(1, &boneArrayObject);
+    glDeleteBuffers(1, &boneBufferObject);
 
     glDeleteVertexArrays(1, &jointArrayObject);
     glDeleteBuffers(1, &jointBufferObject);
@@ -31,12 +31,12 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     //vao : attribute of vertex set
     //ebo : vertex index order of object
 
-    glGenBuffers(1, &vertexBufferObject);
-    glGenVertexArrays(1, &vertexArrayObject);
+    glGenBuffers(1, &boneBufferObject);
+    glGenVertexArrays(1, &boneArrayObject);
 
-    glBindVertexArray(vertexArrayObject);
+    glBindVertexArray(boneArrayObject);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, boneBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(bone), bone, GL_STATIC_DRAW); //copy user-defined data into buffer
 
     // position attribute
@@ -77,18 +77,18 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, int32 
     Posture* motionData = _motion->getBonePostureAtFrame(bone->index, frame);
     glm::quat qmotion = dequantizeQuaternion(motionData->qrotation);
 
-    //glm::mat4 model = matrix * bone->toParent * motionData->rotation;
-    glm::mat4 model = matrix * bone->toParent /* glm::mat4(qmotion) */;
+    //glm::mat4 model = matrix * bone->toParent /* motionData->rotation*/;
+    glm::mat4 model = matrix * bone->toParent * glm::mat4(qmotion);
 
-    glm::vec3 direction = glm::vec3(bone->toParent[3][0], bone->toParent[3][1], bone->toParent[3][2]);
-    glm::vec3 rotAxis = glm::cross({ 0.0f, 0.0f, 1.0f }, direction);
-    float angle = acos(glm::dot(glm::normalize(direction), { 0.0f, 0.0f, 1.0f }));
+    glm::vec3 direction = glm::vec3(-bone->direction.x, -bone->direction.y, -bone->direction.z);
+    glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
+    float angle = acos(glm::dot(glm::normalize(direction), { 1.0f, 0.0f, 0.0f }));
     glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
-    
-    float length = glm::length(direction);
-    glm::mat4 scaler = glm::scale(glm::mat4(1.0f), {1.0f, 1.0f, length});
 
-    glBindVertexArray(vertexArrayObject);
+    float scale = glm::length(direction);
+    glm::mat4 scaler = glm::scale(glm::mat4(1.0f), { scale, 1.0f, 1.0f });
+
+    glBindVertexArray(boneArrayObject);
     shader.setUniformMat4("model", model * boneRotation * scaler);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 

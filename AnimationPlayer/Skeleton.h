@@ -14,6 +14,7 @@ struct Bone
 
 	int32					index;
 	glm::mat4				toParent = glm::mat4(1.0f);
+	glm::vec3				direction = glm::vec3(0.0f);
 };
 
 class Skeleton

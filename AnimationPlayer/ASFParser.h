@@ -32,6 +32,7 @@ struct ASFBone
 	int32					dofo[8] = {0};
 
 	glm::mat4				toParent = glm::mat4(1.0f);
+	glm::vec3				offset = glm::vec3(0.0f);
 };
 
 struct ASFData
