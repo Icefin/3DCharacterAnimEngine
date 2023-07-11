@@ -33,7 +33,7 @@ float prevY = SCR_HEIGHT / 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-int32 frame = 0;
+float animTime = 0;
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -102,12 +102,12 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
 
-        if (frame == 1000)
-            frame = 0;
-        else if (frame < 0)
-            frame = 0;
+        if (animTime >= 1000)
+            animTime = 0;
+        else if (animTime < 0)
+            animTime = 0;
 
-        character.update(shader, frame);
+        character.update(shader, animTime);
 
         
         glfwSwapBuffers(window);
@@ -135,9 +135,9 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(CameraDirection::Right, deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        frame++;
+        animTime += (deltaTime * 100);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
-        frame = 0;
+        animTime = 0.0f;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)

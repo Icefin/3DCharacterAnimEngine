@@ -10,8 +10,10 @@ https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.htm
 
 Requirements:
 1. Interpolate each Quaternion elements vs {Interpolate whole together} ?
+	Interpolating whole together is much easy and compact.
+
 2. Which data structure to use ?
-vector<pair<frame, glm::quat>> ControlPoints (circular vector lol)
+vector<pair<frame, glm::quat>> ControlPoints (circular vector lol) -> Useless....
 vector<pair<frame, glm::quat>> keyFrames (List (insertion!) vs Vector (BS!))
 				List : Search : O(n), Insertion : O(1)
 				Vector : Search : O(logn), Insertion : O(n)
@@ -23,10 +25,18 @@ struct CompressedAnimation
 }
 
 3. Do we need a new Compressor Class ?
+	I think not.... yet...?
 
 Final format :
 Motion.h
-glm::quat getBonePostureAtFrame(int32 boneIndex, float time);
+public :
+Posture getBonePostureAtFrame(int32 boneIndex, float time);
+void	setBoneCompressedAnimation(int32 boneIndex, CompressedAnimation anim);
+
+private :
+Posture decompressAnimationData(CompressedAnimation anim);
+std::vector<std::vector<CompressedAnimation>> _keyFrameAnimations;
+
 
 CharacterLoader.h
 Motion* generateMotion(CompressedData* data, int32 totalBoneNumber);

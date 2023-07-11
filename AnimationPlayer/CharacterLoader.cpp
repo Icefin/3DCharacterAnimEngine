@@ -137,7 +137,6 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 {
 	int32	totalFrameNumber = amcData->totalFrameNumber;
 	std::vector<std::vector<AMCPosture>>& motionDatas = amcData->boneMotions;
-	//compress motion!
 	
 	Motion* motion = new Motion(totalBoneNumber, totalFrameNumber);
 	for (int32 boneIndex = 0; boneIndex < totalBoneNumber; ++boneIndex)
@@ -163,13 +162,72 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 	return motion;
 }
 
-void	CharacterLoader::compressMotion(AMCData* amcData)
+std::vector<CompressedAnimation>	CharacterLoader::compressMotion(std::vector<AnimationData> data)
 {
-	//Use Catmull-rom Spline Curve
-	//From given points v0 v1 v2 v3
-	//Catmull-rom Spline : f(t) = [1 t t^2 t^3] * [ 0   1   0     0] [v0]
-	//											  [-u   0   u     0] [v1]
-	//                                            [2u   u-3 3-2u -u] [v2]
-	//											  [-u   2-u u-2   u] [v3] usually u = 0.5...
 	static constexpr float kThreshold = 0.01f;
+
+	int32 dataSize = data.size();
+	std::vector<std::pair<int32, glm::quat>> keyFrameRotation(dataSize);
+
+	keyFrameRotation[0] = { 0, data[0].rotation };
+	keyFrameRotation[1] = { 0, data[0].rotation };
+	keyFrameRotation[2] = { dataSize / 2, data[dataSize / 2].rotation };
+	keyFrameRotation[3] = { dataSize, data[dataSize].rotation };
+	keyFrameRotation[4] = { dataSize, data[dataSize].rotation };
+	int32 keyFrameSize = 5;
+
+	bool isCompressed = false;
+	while (isCompressed == false)
+	{
+		float maxOffset = 0.0f;
+		int32 maxRangeIndex = 0;
+
+		//threshold check
+		for (int32 i = 0; i < keyFrameSize - 3; ++i)
+		{
+			glm::quat p0 = keyFrameRotation[i].second;
+			glm::quat p1 = keyFrameRotation[i + 1].second;
+			glm::quat p2 = keyFrameRotation[i + 2].second;
+			glm::quat p3 = keyFrameRotation[i + 3].second;
+
+			int32 startFrame = keyFrameRotation[i + 1].first;
+			int32 endFrame = keyFrameRotation[i + 2].first;
+			int32 frameRange = endFrame - startFrame;
+
+			for (int32 t = startFrame + 1; t < endFrame; ++t)
+			{
+				float timeStep = t / frameRange;
+				float CRx = interpolateCatmullRomSpline(p0.x, p1.x, p2.x, p3.x, timeStep);
+				float CRy = interpolateCatmullRomSpline(p0.y, p1.y, p2.y, p3.y, timeStep);
+				float CRz = interpolateCatmullRomSpline(p0.z, p1.z, p2.z, p3.z, timeStep);
+				float CRw = interpolateCatmullRomSpline(p0.w, p1.w, p2.w, p3.w, timeStep);
+
+				float currentOffset = abs(CRx) + abs(CRy) + abs(CRz) + abs(CRw);
+				if (currentOffset > maxOffset)
+				{
+					maxOffset = currentOffset;
+					maxRangeIndex = i;
+				}
+			}
+		}
+
+		if (maxOffset < kThreshold)
+		{
+			isCompressed = true;
+			continue;
+		}
+
+		//if is not compressed, pick new key frame
+		int32 targetFrame = (keyFrameRotation[maxRangeIndex + 1].first + keyFrameRotation[maxRangeIndex + 2].first) / 2;
+		std::pair<int32, glm::quat> newFrame = { targetFrame, data[targetFrame].rotation };
+		keyFrameRotation.insert(keyFrameRotation.begin() + maxRangeIndex, newFrame);
+	}
+
+	std::vector<CompressedAnimation> compressedAnimation(keyFrameSize);
+	for (int32 i = 0; i < keyFrameSize; ++i)
+	{
+		compressedAnimation[i].keyTime = keyFrameRotation[i].first;
+		compressedAnimation[i].rotation = quantizeQuaternion(keyFrameRotation[i].second);
+	}
+	return compressedAnimation;
 }

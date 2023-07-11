@@ -15,3 +15,11 @@ Posture* Motion::getBonePostureAtFrame(int32 boneIndex, int32 frame)
 {
 	return &(_keyFrameMotions[boneIndex][frame]);
 }
+
+glm::quat	Motion::getBoneAnimationAtTime(int32 boneIndex, float time)
+{
+	//search time animation Binary Search
+	//dequnatizeQuaternion
+	//interpolate Catmull-Rom
+	//return rotation
+}
