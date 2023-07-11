@@ -30,3 +30,8 @@ glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, c
 
 	return quaternion;
 }
+
+float	linearInterpolation(float p0, float p1, float t)
+{
+	return (t * p1 + (1 - t) * p0);
+}

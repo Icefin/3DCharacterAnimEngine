@@ -72,6 +72,7 @@ void	CharacterLoader::setupToParentMatrix(ASFData* asfData)
 	root->toParent = glm::mat4(1.0f);
 
 	std::queue<ASFBone*> qBone;
+
 	qBone.push(root);
 	while (qBone.empty() == false)
 	{
@@ -136,7 +137,8 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 {
 	int32	totalFrameNumber = amcData->totalFrameNumber;
 	std::vector<std::vector<AMCPosture>>& motionDatas = amcData->boneMotions;
-
+	//compress motion!
+	
 	Motion* motion = new Motion(totalBoneNumber, totalFrameNumber);
 	for (int32 boneIndex = 0; boneIndex < totalBoneNumber; ++boneIndex)
 	{
@@ -159,4 +161,15 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 		}
 	}
 	return motion;
+}
+
+void	CharacterLoader::compressMotion(AMCData* amcData)
+{
+	//Use Catmull-rom Spline Curve
+	//From given points v0 v1 v2 v3
+	//Catmull-rom Spline : f(t) = [1 t t^2 t^3] * [ 0   1   0     0] [v0]
+	//											  [-u   0   u     0] [v1]
+	//                                            [2u   u-3 3-2u -u] [v2]
+	//											  [-u   2-u u-2   u] [v3] usually u = 0.5...
+	static constexpr float kThreshold = 0.01f;
 }

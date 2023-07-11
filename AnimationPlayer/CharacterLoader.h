@@ -22,7 +22,7 @@ private:
 	void		setupSkeletonHierarchy(std::vector<Bone*>& boneList, ASFData* asfData);
 
 	Motion*		generateMotion(AMCData* amcData, int32 totalBoneNumber);
-	//curve fitting...
+	void		compressMotion(AMCData* amcData);
 
 	ASFParser	_asfParser;
 	AMCParser	_amcParser;
