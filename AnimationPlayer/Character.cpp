@@ -70,18 +70,13 @@ void    Character::update(Shader& shader, float deltaTime)
     Bone* root = _skeleton->getRoot();
     _motion->updateKeyFrameTime(deltaTime);
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    drawBone(root, modelMatrix, shader, deltaTime);
+    drawBone(root, modelMatrix, shader);
 }
 
-void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, float time)
+void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 {
-    Posture* motionData = _motion->getBonePostureAtFrame(bone->index, floor(time));
-    glm::quat qmotion = dequantizeQuaternion(motionData->qrotation);
-
-    //glm::quat animData = _motion->getBoneAnimation(bone->index);
-
-    //glm::mat4 model = matrix * bone->toParent /* motionData->rotation*/;
-    glm::mat4 model = matrix * bone->toParent * glm::mat4(qmotion);
+    glm::quat boneAnimationData = _motion->getBoneAnimation(bone->index);
+    glm::mat4 model = matrix * bone->toParent * glm::mat4(boneAnimationData);
 
     glm::vec3 direction = glm::vec3(-bone->direction.x, -bone->direction.y, -bone->direction.z);
     glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
@@ -100,5 +95,5 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, float 
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     for (Bone* child : bone->childList)
-        drawBone(child, model, shader, floor(time));
+        drawBone(child, model, shader);
 }

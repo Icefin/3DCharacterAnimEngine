@@ -4,8 +4,8 @@
 
 Motion::Motion(int32 totalBoneNumber, int32 totalFrameNumber)
 {
-	_keyFrameMotions = std::vector<std::vector<Posture>>(totalBoneNumber, std::vector<Posture>(totalFrameNumber));
-	_keyFrameAnimations = std::vector<std::vector<CompressedAnimation>>(totalBoneNumber);
+	_keyFrameAnimations = std::vector<std::vector<CompressedAnimationData>>(totalBoneNumber);
+	_maxFrameTime = totalFrameNumber;
 }
 
 Motion::~Motion()
@@ -18,30 +18,41 @@ void		Motion::updateKeyFrameTime(float deltaTime)
 	_keyFrameTime += deltaTime;
 	if (_keyFrameTime >= _maxFrameTime)
 		_keyFrameTime = 0;
-	_prevKeyFrameIndex = 1;
-}
 
-Posture* Motion::getBonePostureAtFrame(int32 boneIndex, int32 frame)
-{
-	return &(_keyFrameMotions[boneIndex][frame]);
+	if (_keyFrameTime <= 0)
+		_keyFrameTime = 0;
 }
 
 glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 {
-	std::vector<CompressedAnimation>& boneAnimation = _keyFrameAnimations[boneIndex];
-	
-	if (boneAnimation[_prevKeyFrameIndex + 1].keyTime <= _keyFrameTime)
-		_prevKeyFrameIndex++;
+	std::vector<CompressedAnimationData>& boneAnimation = _keyFrameAnimations[boneIndex];
+	if (boneAnimation.empty() == true)
+		return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+
+	int32 targetFrameIndex = 1;
+	int32 lowerFrameIndex = 1, upperFrameIndex = boneAnimation.size() - 3;
+	while (lowerFrameIndex <= upperFrameIndex)
+	{
+		int32 midFrameIndex = lowerFrameIndex + (upperFrameIndex - lowerFrameIndex) / 2;
+
+		if (boneAnimation[midFrameIndex].keyTime <= _keyFrameTime)
+		{
+			targetFrameIndex = midFrameIndex;
+			lowerFrameIndex = midFrameIndex + 1;
+		}
+		else
+			upperFrameIndex = midFrameIndex - 1;
+	}
 
 	//dequnatizeQuaternion
-	glm::quat p0 = dequantizeQuaternion(boneAnimation[_prevKeyFrameIndex - 1].rotation);
-	glm::quat p1 = dequantizeQuaternion(boneAnimation[_prevKeyFrameIndex].rotation);
-	glm::quat p2 = dequantizeQuaternion(boneAnimation[_prevKeyFrameIndex + 1].rotation);
-	glm::quat p3 = dequantizeQuaternion(boneAnimation[_prevKeyFrameIndex + 2].rotation);
+	glm::quat p0 = dequantizeQuaternion(boneAnimation[targetFrameIndex - 1].rotation);
+	glm::quat p1 = dequantizeQuaternion(boneAnimation[targetFrameIndex].rotation);
+	glm::quat p2 = dequantizeQuaternion(boneAnimation[targetFrameIndex + 1].rotation);
+	glm::quat p3 = dequantizeQuaternion(boneAnimation[targetFrameIndex + 2].rotation);
 	
 	//interpolate Catmull-Rom
-	int32 startKeyTime = boneAnimation[_prevKeyFrameIndex].keyTime;
-	int32 endKeyTime = boneAnimation[_prevKeyFrameIndex + 1].keyTime;
+	int32 startKeyTime = boneAnimation[targetFrameIndex].keyTime;
+	int32 endKeyTime = boneAnimation[targetFrameIndex + 1].keyTime;
 	
 	float t = (_keyFrameTime - startKeyTime) / (endKeyTime - startKeyTime);
 	float x = interpolateCatmullRomSpline(p0.x, p1.x, p2.x, p3.x, t);
@@ -50,10 +61,10 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 	float w = interpolateCatmullRomSpline(p0.w, p1.w, p2.w, p3.w, t);
 
 	//return rotation
-	return glm::quat(x, y, z, w);
+	return glm::quat(w, x, y, z);
 }
 
-void		Motion::setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimation>& boneAnim)
+void		Motion::setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimationData>& boneAnim)
 {
 	_keyFrameAnimations[boneIndex] = boneAnim;
 }

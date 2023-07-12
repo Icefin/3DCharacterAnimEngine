@@ -39,7 +39,7 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 			int32	boneIndex = bone.boneIndex;
 			for (int32 j = 0; j < boneDof; ++j)
 			{
-				double temp;
+				float temp;
 				stream >> temp;
 
 				switch (bone.dofo[j])
@@ -50,7 +50,6 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 							newPosture.frameRotation.x = glm::radians(temp);
 						else
 							newPosture.frameRotation.x = temp;
-						
 					}
 					break;
 				case 2:

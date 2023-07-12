@@ -16,10 +16,10 @@ class Character
 public:
 	~Character();
 	void	initialize(Skeleton* skeleton, Motion* motion);
-	void	update(Shader& shader, float time);
+	void	update(Shader& shader, float deltaTime);
 
 private:
-    void    drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, float deltaTime);
+    void    drawBone(Bone* bone, glm::mat4 matrix, Shader& shader);
 
 	Skeleton*   _skeleton;
 	Motion*     _motion;

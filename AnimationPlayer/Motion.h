@@ -8,7 +8,7 @@
 
 #include "CommonTypes.h"
 
-struct CompressedAnimation
+struct CompressedAnimationData
 {
 	uint32				keyTime;
 	QuantizedQuaternion	rotation;
@@ -20,13 +20,6 @@ struct AnimationData
 	glm::vec3			translation;
 };
 
-struct Posture
-{
-	//glm::mat4			rotation = glm::mat4(1.0f);
-	QuantizedQuaternion	qrotation = {0, 0, 32767};
-	glm::mat4			translation = glm::mat4(1.0f);
-};
-
 class Motion
 {
 public:
@@ -35,16 +28,12 @@ public:
 
 	void		updateKeyFrameTime(float deltaTime);
 
-	Posture*	getBonePostureAtFrame(int32 boneIndex, int32 frame);
 	glm::quat	getBoneAnimation(int32 boneIndex);
-	void		setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimation>& boneAnim);
-
-	std::vector<std::vector<Posture>>	_keyFrameMotions;
+	void		setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimationData>& boneAnim);
 
 private :
-	int32											_maxFrameTime;
-	std::vector<std::vector<CompressedAnimation>>	_keyFrameAnimations;
-	int32											_prevKeyFrameIndex;
-	int32											_keyFrameTime;
+	std::vector<std::vector<CompressedAnimationData>>	_keyFrameAnimations;
+	int32												_maxFrameTime;
+	float												_keyFrameTime;
 };
 

@@ -102,14 +102,8 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
 
-        if (animTime >= 1000)
-            animTime = 0;
-        else if (animTime < 0)
-            animTime = 0;
-
         character.update(shader, animTime);
-
-        
+        animTime = 0;
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -134,10 +128,10 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(CameraDirection::Right, deltaTime);
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        animTime += (deltaTime * 100);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
-        animTime = 0.0f;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        animTime = deltaTime * 100;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        animTime = -deltaTime * 100;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)

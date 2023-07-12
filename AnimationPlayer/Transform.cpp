@@ -8,7 +8,7 @@ QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion, const float s
 	quantizedQuaternion.qy = static_cast<int16>(quaternion.y * scale);
 	quantizedQuaternion.qz = static_cast<int16>(quaternion.z * scale);
 	quantizedQuaternion.qw = static_cast<int16>(quaternion.w * scale);
-	if (quaternion.x < 0)
+	if (quaternion.x < 0.0f)
 	{
 		quantizedQuaternion.qy *= -1.0;
 		quantizedQuaternion.qz *= -1.0;

@@ -153,22 +153,15 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.y, { 0.0f, 1.0f, 0.0f });
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.x, { 1.0f, 0.0f, 0.0f });
 
-			glm::mat4 translation = glm::mat4(1.0f);
-			translation = glm::translate(translation, posture[frame].frameTranslation);
-
-			//motion->_keyFrameMotions[boneIndex][frame].rotation = rotation;
-			motion->_keyFrameMotions[boneIndex][frame].qrotation = quantizeQuaternion(glm::quat(rotation));
-			motion->_keyFrameMotions[boneIndex][frame].translation = translation * CHARACTER_SCALE;
-
-			animData[frame] = { rotation, posture[frame].frameTranslation };
+			animData[frame].rotation = glm::quat(rotation);
 		}
-		std::vector<CompressedAnimation> compressedAnim = compressMotion(animData);
-		motion->setBoneAnimation(boneIndex, compressedAnim);
+		std::vector<CompressedAnimationData> compressedAnimation = compressAnimation(animData);
+		motion->setBoneAnimation(boneIndex, compressedAnimation);
 	}
 	return motion;
 }
 
-std::vector<CompressedAnimation>	CharacterLoader::compressMotion(std::vector<AnimationData> data)
+std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vector<AnimationData>& data)
 {
 	static constexpr float kThreshold = 0.01f;
 
@@ -224,14 +217,14 @@ std::vector<CompressedAnimation>	CharacterLoader::compressMotion(std::vector<Ani
 			continue;
 		}
 
-		//if is not compressed, pick new key frame
+		//if is not compressed, insert new key frame
 		int32 targetFrame = (keyFrameRotation[maxRangeIndex + 1].first + keyFrameRotation[maxRangeIndex + 2].first) / 2;
 		std::pair<int32, glm::quat> newFrame = { targetFrame, data[targetFrame].rotation };
 		keyFrameRotation.insert(keyFrameRotation.begin() + maxRangeIndex + 2, newFrame);
 		keyFrameSize++;
 	}
 
-	std::vector<CompressedAnimation> compressedAnimation(keyFrameSize);
+	std::vector<CompressedAnimationData> compressedAnimation(keyFrameSize);
 	for (int32 i = 0; i < keyFrameSize; ++i)
 	{
 		compressedAnimation[i].keyTime = keyFrameRotation[i].first;
