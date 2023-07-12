@@ -40,8 +40,6 @@ void CharacterLoader::loadCharacter(Character& character, std::string& asf, std:
 	ASFData* asfData = _asfParser.readASF(asf);
 	AMCData* amcData = _amcParser.readAMC(amc, asfData);
 
-	//curve fitting logic comes here
-
 	Skeleton* skeleton = generateSkeleton(asfData);
 	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
 
@@ -141,7 +139,6 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 	for (int32 boneIndex = 0; boneIndex < totalBoneNumber; ++boneIndex)
 	{
 		std::vector<AMCPosture>& posture = motionDatas[boneIndex];
-		//empty process with compression!!
 		if (posture.size() == 0)
 			continue;
 		

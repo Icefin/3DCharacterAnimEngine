@@ -53,7 +53,7 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glBindVertexArray(jointArrayObject);
 
     glBindBuffer(GL_ARRAY_BUFFER, jointBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(joint), joint, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(axis), axis, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -80,7 +80,7 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 
     glm::vec3 direction = glm::vec3(-bone->direction.x, -bone->direction.y, -bone->direction.z);
     glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
-    float angle = acos(glm::dot(glm::normalize(direction), { 1.0f, 0.0f, 0.0f }));
+    float angle = acos(glm::dot({ 1.0f, 0.0f, 0.0f }, glm::normalize(direction)));
     glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
 
     float scale = glm::length(direction);
@@ -92,7 +92,7 @@ void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 
     glBindVertexArray(jointArrayObject);
     shader.setUniformMat4("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(GL_LINES, 0, 12);
 
     for (Bone* child : bone->childList)
         drawBone(child, model, shader);

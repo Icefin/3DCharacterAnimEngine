@@ -19,5 +19,6 @@ typedef wchar_t				utf16;
 
 struct QuantizedQuaternion
 {
+	bool isPositive;
 	int16 qy, qz, qw;
 };
