@@ -185,6 +185,14 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 	return glm::normalize(glm::quat(w, x, y, z));
 }
 ```
+#### Results:
+1. Threshold = 0.01f / Average 1086 -> 457
+![Animation-Player-2023-07-12-23-04-36](https://github.com/Icefin/AnimationPlayer/assets/76864202/4c3d9d69-38cb-4ba1-94f5-6236793b4b67)
+
+2. Threshold = 0.1f  / Average 1086 -> 105
+![Animation-Player-2023-07-12-23-12-56](https://github.com/Icefin/AnimationPlayer/assets/76864202/716ee92f-183e-47c4-9aeb-eeff8374eb25)
+
+
 
 
 ### Motion Blending
