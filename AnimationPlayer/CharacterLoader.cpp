@@ -42,7 +42,6 @@ void CharacterLoader::loadCharacter(Character& character, std::string& asf, std:
 
 	//curve fitting logic comes here
 
-
 	Skeleton* skeleton = generateSkeleton(asfData);
 	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
 
@@ -142,8 +141,11 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 	for (int32 boneIndex = 0; boneIndex < totalBoneNumber; ++boneIndex)
 	{
 		std::vector<AMCPosture>& posture = motionDatas[boneIndex];
+		//empty process with compression!!
 		if (posture.size() == 0)
 			continue;
+		
+		std::vector<AnimationData> animData(totalFrameNumber);
 		for (int32 frame = 0; frame < totalFrameNumber; ++frame)
 		{
 			glm::mat4 rotation = glm::mat4(1.0f);
@@ -157,7 +159,11 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 			//motion->_keyFrameMotions[boneIndex][frame].rotation = rotation;
 			motion->_keyFrameMotions[boneIndex][frame].qrotation = quantizeQuaternion(glm::quat(rotation));
 			motion->_keyFrameMotions[boneIndex][frame].translation = translation * CHARACTER_SCALE;
+
+			animData[frame] = { rotation, posture[frame].frameTranslation };
 		}
+		std::vector<CompressedAnimation> compressedAnim = compressMotion(animData);
+		motion->setBoneAnimation(boneIndex, compressedAnim);
 	}
 	return motion;
 }
@@ -172,8 +178,8 @@ std::vector<CompressedAnimation>	CharacterLoader::compressMotion(std::vector<Ani
 	keyFrameRotation[0] = { 0, data[0].rotation };
 	keyFrameRotation[1] = { 0, data[0].rotation };
 	keyFrameRotation[2] = { dataSize / 2, data[dataSize / 2].rotation };
-	keyFrameRotation[3] = { dataSize, data[dataSize].rotation };
-	keyFrameRotation[4] = { dataSize, data[dataSize].rotation };
+	keyFrameRotation[3] = { dataSize - 1, data[dataSize - 1].rotation };
+	keyFrameRotation[4] = { dataSize - 1, data[dataSize - 1].rotation };
 	int32 keyFrameSize = 5;
 
 	bool isCompressed = false;
@@ -196,13 +202,14 @@ std::vector<CompressedAnimation>	CharacterLoader::compressMotion(std::vector<Ani
 
 			for (int32 t = startFrame + 1; t < endFrame; ++t)
 			{
-				float timeStep = t / frameRange;
+				glm::quat frameQuat = data[t].rotation;
+				float timeStep = (t - startFrame) / frameRange;
 				float CRx = interpolateCatmullRomSpline(p0.x, p1.x, p2.x, p3.x, timeStep);
 				float CRy = interpolateCatmullRomSpline(p0.y, p1.y, p2.y, p3.y, timeStep);
 				float CRz = interpolateCatmullRomSpline(p0.z, p1.z, p2.z, p3.z, timeStep);
 				float CRw = interpolateCatmullRomSpline(p0.w, p1.w, p2.w, p3.w, timeStep);
 
-				float currentOffset = abs(CRx) + abs(CRy) + abs(CRz) + abs(CRw);
+				float currentOffset = abs(CRx - frameQuat.x) + abs(CRy - frameQuat.y) + abs(CRz - frameQuat.z) + abs(CRw - frameQuat.w);
 				if (currentOffset > maxOffset)
 				{
 					maxOffset = currentOffset;
@@ -220,7 +227,8 @@ std::vector<CompressedAnimation>	CharacterLoader::compressMotion(std::vector<Ani
 		//if is not compressed, pick new key frame
 		int32 targetFrame = (keyFrameRotation[maxRangeIndex + 1].first + keyFrameRotation[maxRangeIndex + 2].first) / 2;
 		std::pair<int32, glm::quat> newFrame = { targetFrame, data[targetFrame].rotation };
-		keyFrameRotation.insert(keyFrameRotation.begin() + maxRangeIndex, newFrame);
+		keyFrameRotation.insert(keyFrameRotation.begin() + maxRangeIndex + 2, newFrame);
+		keyFrameSize++;
 	}
 
 	std::vector<CompressedAnimation> compressedAnimation(keyFrameSize);

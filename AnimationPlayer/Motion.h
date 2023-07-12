@@ -33,12 +33,18 @@ public:
 	Motion(int32 totalBoneNumber, int32 totalFrameNumber);
 	~Motion();
 
-	Posture* getBonePostureAtFrame(int32 boneIndex, int32 frame);
-	glm::quat	getBoneAnimationAtTime(int32 boneIndex, float time);
+	void		updateKeyFrameTime(float deltaTime);
+
+	Posture*	getBonePostureAtFrame(int32 boneIndex, int32 frame);
+	glm::quat	getBoneAnimation(int32 boneIndex);
+	void		setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimation>& boneAnim);
 
 	std::vector<std::vector<Posture>>	_keyFrameMotions;
 
 private :
-	std::vector<std::vector<CompressedAnimation>> _keyFrameAnimations;
+	int32											_maxFrameTime;
+	std::vector<std::vector<CompressedAnimation>>	_keyFrameAnimations;
+	int32											_prevKeyFrameIndex;
+	int32											_keyFrameTime;
 };
 

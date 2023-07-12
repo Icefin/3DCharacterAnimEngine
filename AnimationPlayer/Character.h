@@ -19,7 +19,7 @@ public:
 	void	update(Shader& shader, float time);
 
 private:
-    void    drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, float time);
+    void    drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, float deltaTime);
 
 	Skeleton*   _skeleton;
 	Motion*     _motion;

@@ -65,17 +65,20 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glLineWidth(2.0f);
 }
 
-void    Character::update(Shader& shader, float time)
+void    Character::update(Shader& shader, float deltaTime)
 {
     Bone* root = _skeleton->getRoot();
+    _motion->updateKeyFrameTime(deltaTime);
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    drawBone(root, modelMatrix, shader, time);
+    drawBone(root, modelMatrix, shader, deltaTime);
 }
 
 void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader, float time)
 {
     Posture* motionData = _motion->getBonePostureAtFrame(bone->index, floor(time));
     glm::quat qmotion = dequantizeQuaternion(motionData->qrotation);
+
+    //glm::quat animData = _motion->getBoneAnimation(bone->index);
 
     //glm::mat4 model = matrix * bone->toParent /* motionData->rotation*/;
     glm::mat4 model = matrix * bone->toParent * glm::mat4(qmotion);
