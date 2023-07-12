@@ -43,7 +43,7 @@ ASFData* ASFParser::readASF(std::string& filename)
 	return &(_asfData);
 }
 
-void	ASFParser::readASF_Units(std::ifstream& stream, std::string& buffer)
+void ASFParser::readASF_Units(std::ifstream& stream, std::string& buffer)
 {
 	while (true)
 	{
@@ -66,7 +66,7 @@ void	ASFParser::readASF_Units(std::ifstream& stream, std::string& buffer)
 	}
 }
 
-void	ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
+void ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
 {
 	ASFBone root;
 	while (buffer != ":bonedata")
@@ -137,7 +137,7 @@ void	ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
 	_asfData.totalBoneNumber++;
 }
 
-void	ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
+void ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
 {
 	while (buffer != ":hierarchy")
 	{
@@ -229,7 +229,7 @@ void	ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
 	}
 }
 
-void	ASFParser::readASF_Hierarchy(std::ifstream& stream)
+void ASFParser::readASF_Hierarchy(std::ifstream& stream)
 {
 	std::string parentName;
 	std::string childName;

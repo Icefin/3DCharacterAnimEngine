@@ -13,7 +13,7 @@ Motion::~Motion()
 	__noop;
 }
 
-void		Motion::updateKeyFrameTime(float deltaTime)
+void Motion::updateKeyFrameTime(float deltaTime)
 {
 	_keyFrameTime += deltaTime;
 	if (_keyFrameTime >= _maxFrameTime)
@@ -23,7 +23,7 @@ void		Motion::updateKeyFrameTime(float deltaTime)
 		_keyFrameTime = 0;
 }
 
-glm::quat	Motion::getBoneAnimation(int32 boneIndex)
+glm::quat Motion::getBoneAnimation(int32 boneIndex)
 {
 	std::vector<CompressedAnimationData>& boneAnimation = _keyFrameAnimations[boneIndex];
 	if (boneAnimation.empty() == true)
@@ -61,10 +61,10 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 	float w = interpolateCatmullRomSpline(p0.w, p1.w, p2.w, p3.w, t);
 
 	//return rotation
-	return glm::quat(w, x, y, z);
+	return glm::normalize(glm::quat(w, x, y, z));
 }
 
-void		Motion::setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimationData>& boneAnim)
+void Motion::setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimationData>& boneAnim)
 {
 	_keyFrameAnimations[boneIndex] = boneAnim;
 }

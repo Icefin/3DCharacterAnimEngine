@@ -22,7 +22,7 @@ Character::~Character()
         delete _motion;
 }
 
-void	Character::initialize(Skeleton* skeleton, Motion* motion)
+void Character::initialize(Skeleton* skeleton, Motion* motion)
 {
 	_skeleton = skeleton;
 	_motion = motion;
@@ -65,7 +65,7 @@ void	Character::initialize(Skeleton* skeleton, Motion* motion)
     glLineWidth(2.0f);
 }
 
-void    Character::update(Shader& shader, float deltaTime)
+void Character::update(Shader& shader, float deltaTime)
 {
     Bone* root = _skeleton->getRoot();
     _motion->updateKeyFrameTime(deltaTime);
@@ -73,7 +73,7 @@ void    Character::update(Shader& shader, float deltaTime)
     drawBone(root, modelMatrix, shader);
 }
 
-void    Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
+void Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 {
     glm::quat boneAnimationData = _motion->getBoneAnimation(bone->index);
     glm::mat4 model = matrix * bone->toParent * glm::mat4(boneAnimationData);

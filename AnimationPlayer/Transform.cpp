@@ -31,19 +31,15 @@ glm::quat dequantizeQuaternion(const QuantizedQuaternion& quantizedQuaternion, c
 	quaternion.w = static_cast<float>(quantizedQuaternion.qw) / scale;
 
 	quaternion.x = sqrtf(1.0f - ((quaternion.y * quaternion.y) + (quaternion.z * quaternion.z) + (quaternion.w * quaternion.w)));
+
 	if (quantizedQuaternion.isPositive == false)
 		quaternion.x = -quaternion.x;
 
-	return quaternion;
+	return glm::normalize(quaternion);
 }
 
 float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float t)
 {
-	//From given points v0 v1 v2 v3
-	//Catmull-rom Spline : f(t) = [1 t t^2 t^3] * [ 0   1   0     0] [v0]
-	//											  [-u   0   u     0] [v1]
-	//                                            [2u   u-3 3-2u -u] [v2]
-	//											  [-u   2-u u-2   u] [v3] usually u = 0.5...
 	float c0 = 0.5f * 2 * p1;
 	float c1 = 0.5f * t * (-p0 + p2);
 	float c2 = 0.5f * t * t * (2 * p0 - 5 * p1 + 4 * p2 - p3);

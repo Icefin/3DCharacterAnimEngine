@@ -160,7 +160,7 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 
 std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vector<AnimationData>& data)
 {
-	static constexpr float kThreshold = 0.01f;
+	static constexpr float kThreshold = 0.1f;
 
 	int32 dataSize = data.size();
 	std::vector<std::pair<int32, glm::quat>> keyFrameRotation(dataSize);

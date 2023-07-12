@@ -35,8 +35,8 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 
 			AMCPosture newPosture;
 			ASFBone& bone = asfData->boneMap[name];
-			int32	boneDof = bone.dof;
-			int32	boneIndex = bone.boneIndex;
+			int32 boneDof = bone.dof;
+			int32 boneIndex = bone.boneIndex;
 			for (int32 j = 0; j < boneDof; ++j)
 			{
 				float temp;
