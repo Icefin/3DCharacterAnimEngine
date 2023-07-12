@@ -1,7 +1,7 @@
 # AnimationPlayer
  Simple Character Animator
 
-Catmull-rom Spline
+### Catmull-rom Spline
 
 Barry-Goldman Algorithm...?
 Reference :
@@ -40,3 +40,20 @@ std::vector<std::vector<CompressedAnimation>> _keyFrameAnimations;
 
 CharacterLoader.h
 Motion* generateMotion(CompressedData* data, int32 totalBoneNumber);
+
+
+### Motion Blending
+https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf
+
+A transition involves two motions and a weight function that
+starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according
+to a constant weight function.
+
+Linear blending produces reasonable results when the input motions are sufficiently similar. Our strategy is thus
+to still combine frames via averaging, but to automatically
+extract information from the input motions to help decide
+which frames to combine, how to position and orient them
+prior to averaging, and what constraints should exist on the
+result. This information is used to create a timewarp curve, a
+coordinate alignment curve, and a set of constraint matches,
+which together form a registration curve.
