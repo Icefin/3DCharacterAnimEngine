@@ -44,10 +44,13 @@ void initCharacter()
 {
     CharacterLoader characterLoader;
 
-    std::string asfFile = "./test/131-dance.asf";
-    std::string amcFile = "./test/131_04-dance.amc";
+    std::string asfFile = "./test/skeleton.asf";
+    std::vector<std::string> amcFileList = { "./test/idle.amc",
+                                             "./test/walk.amc",
+                                             "./test/run.amc"
+                                            };
   
-    characterLoader.loadCharacter(character, asfFile, amcFile);
+    characterLoader.loadCharacter(character, asfFile, amcFileList);
 }
 
 int main()
@@ -129,9 +132,9 @@ void processInput(GLFWwindow* window)
         camera.processKeyboard(CameraDirection::Right, deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        animTime = deltaTime * 100;
+        animTime = deltaTime * 120;
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        animTime = -deltaTime * 100;
+        animTime = -deltaTime * 120;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)

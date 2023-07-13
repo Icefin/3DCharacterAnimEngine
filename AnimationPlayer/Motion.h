@@ -23,10 +23,11 @@ struct AnimationData
 class Motion
 {
 public:
-	Motion(int32 totalBoneNumber, int32 totalFrameNumber);
-	~Motion();
+				Motion(int32 totalBoneNumber, int32 totalFrameNumber);
+				~Motion();
 
 	void		updateKeyFrameTime(float deltaTime);
+	void		resetKeyFrameTime(void) { _keyFrameTime = 0.0f; };
 
 	glm::quat	getBoneAnimation(int32 boneIndex);
 	void		setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimationData>& boneAnim);

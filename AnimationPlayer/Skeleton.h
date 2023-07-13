@@ -20,10 +20,10 @@ struct Bone
 class Skeleton
 {
 public:
-	Skeleton(Bone* root) : _root(root) {};
-	~Skeleton();
+			Skeleton(Bone* root) : _root(root) {};
+			~Skeleton();
 
-	Bone* getRoot(void) { return _root; };
+	Bone*	getRoot(void) { return _root; };
 
 private :
 	Bone* _root;

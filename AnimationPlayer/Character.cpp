@@ -18,14 +18,21 @@ Character::~Character()
     if (_skeleton != NULL)
         delete _skeleton;
 
-    if (_motion != NULL)
-        delete _motion;
+    if (_motionList.empty() == false)
+    {
+        int32 motionSize = _motionList.size();
+        for (int32 i = 0; i < motionSize; ++i)
+            delete _motionList[i];
+    }
 }
 
-void Character::initialize(Skeleton* skeleton, Motion* motion)
+void Character::initialize(Skeleton* skeleton, std::vector<Motion*>& motion)
 {
 	_skeleton = skeleton;
-	_motion = motion;
+    int32 motionSize = motion.size();
+    _motionList.resize(motionSize);
+    for (int32 idx = 0; idx < motionSize; ++idx)
+        _motionList[idx] = motion[idx];
 
     //vbo : object vertex set
     //vao : attribute of vertex set
@@ -67,15 +74,18 @@ void Character::initialize(Skeleton* skeleton, Motion* motion)
 
 void Character::update(Shader& shader, float deltaTime)
 {
-    Bone* root = _skeleton->getRoot();
-    _motion->updateKeyFrameTime(deltaTime);
+    //deltaTime calculation
+    //Character state change
+    
     glm::mat4 modelMatrix = glm::mat4(1.0f);
+    Bone* root = _skeleton->getRoot();
+    _motionList[0]->updateKeyFrameTime(deltaTime);
     drawBone(root, modelMatrix, shader);
 }
 
 void Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 {
-    glm::quat boneAnimationData = _motion->getBoneAnimation(bone->index);
+    glm::quat boneAnimationData = _motionList[0]->getBoneAnimation(bone->index);
     glm::mat4 model = matrix * bone->toParent * glm::mat4(boneAnimationData);
 
     glm::vec3 direction = glm::vec3(-bone->direction.x, -bone->direction.y, -bone->direction.z);

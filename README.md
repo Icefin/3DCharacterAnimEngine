@@ -13,27 +13,27 @@ http://graphics.cs.cmu.edu/nsp/course/cs229/info/Acclaim_Skeleton_Format.html
 https://technology.riotgames.com/news/compressing-skeletal-animation-data  
 https://www.cs.cmu.edu/~fp/courses/graphics/asst5/catmullRom.pdf  
 https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.html  
-
-#### Requirements:
-1. Interpolate each Quaternion elements vs {Interpolate whole together} ?
-	Interpolating whole together is much easy and compact.
-
-2. Which data structure to use ?
-vector<pair<frame, glm::quat>> ControlPoints (circular vector lol) -> Useless....
-vector<pair<frame, glm::quat>> keyFrames (List (insertion!) vs Vector (search!))
-				List : Search : O(n), Insertion : O(1)
-				Vector : Search : O(logn), Insertion : O(n)
+  
+#### Requirements:  
+1. Interpolate each Quaternion elements vs {Interpolate whole together} ?  
+	Interpolating whole together is much easy and compact.  
+  
+2. Which data structure to use ?  
+vector<pair<frame, glm::quat>> ControlPoints (circular vector lol) -> Useless....  
+vector<pair<frame, glm::quat>> keyFrames (List (insertion!) vs Vector (search!))  
+				List : Search : O(n), Insertion : O(1)  
+				Vector : Search : O(logn), Insertion : O(n)  
    
-3. Final foramt of Compressed Animation
-struct CompressedAnimation
-{
-	uint16 keyFrame;
-	QuantizedQuaternion rotation;
-}
-
-4. Do we need a new Compressor Class ?
-	I think not.... yet...?
-
+3. Final foramt of Compressed Animation  
+struct CompressedAnimation  
+{  
+	uint16 keyFrame;  
+	QuantizedQuaternion rotation;  
+}  
+  
+4. Do we need a new Compressor Class ?  
+	I think not.... yet...?  
+  
 #### Final format :  
 Transform.h  
 float	interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float t);  
@@ -196,7 +196,13 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 
 
 ### Motion Blending
-https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf
+https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
+https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games  
+https://github.com/LaivY  
+http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/  
+
+
+
 
 A transition involves two motions and a weight function that
 starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according

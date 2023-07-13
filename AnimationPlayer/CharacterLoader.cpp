@@ -35,15 +35,24 @@ static void		TEST_PRINT_POSTURE_INFO(AMCData* amcData)
 }
 */
 
-void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::string& amc)
+void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::vector<std::string>& amcList)
 {
 	ASFData* asfData = _asfParser.readASF(asf);
-	AMCData* amcData = _amcParser.readAMC(amc, asfData);
-
 	Skeleton* skeleton = generateSkeleton(asfData);
-	Motion* motion = generateMotion(amcData, asfData->totalBoneNumber);
 
- 	character.initialize(skeleton, motion);
+	int32 amcSize = amcList.size();
+	std::vector<AMCData*> amcDataList(amcSize);
+	for (int32 idx = 0; idx < amcSize; ++idx)
+		amcDataList[idx] = _amcParser.readAMC(amcList[idx], asfData);
+
+	std::vector<Motion*> motionList(amcSize);
+	for (int32 idx = 0; idx < amcSize; ++idx)
+		motionList[idx] = generateMotion(amcDataList[idx], asfData->totalBoneNumber);
+
+ 	character.initialize(skeleton, motionList);
+
+	for (int32 idx = 0; idx < amcSize; ++idx)
+		delete amcDataList[idx];
 }
 
 Skeleton* CharacterLoader::generateSkeleton(ASFData* asfData)

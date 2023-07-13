@@ -50,14 +50,14 @@ struct ASFData
 class ASFParser
 {
 public:
-	~ASFParser();
-	ASFData* readASF(std::string& filename);
+				~ASFParser();
+	ASFData*	readASF(std::string& filename);
 
 private:
-	void	readASF_Units(std::ifstream& stream, std::string& buffer);
-	void	readASF_Root(std::ifstream& stream, std::string& buffer);
-	void	readASF_Bonedata(std::ifstream& stream, std::string& buffer);
-	void	readASF_Hierarchy(std::ifstream& stream);
+	void		readASF_Units(std::ifstream& stream, std::string& buffer);
+	void		readASF_Root(std::ifstream& stream, std::string& buffer);
+	void		readASF_Bonedata(std::ifstream& stream, std::string& buffer);
+	void		readASF_Hierarchy(std::ifstream& stream);
 	//void	readASF_Skin(std::ifstream& stream, std::string& buffer);
 
 	ASFData	 _asfData;

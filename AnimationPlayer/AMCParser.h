@@ -27,10 +27,6 @@ struct AMCData
 class AMCParser
 {
 public:
-	~AMCParser();
-	AMCData* readAMC(std::string& filename, ASFData* asfData);
-
-private:
-	AMCData _amcData;
+	AMCData*	readAMC(std::string& filename, ASFData* asfData);
 };
 

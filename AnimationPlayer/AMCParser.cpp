@@ -3,11 +3,6 @@
 #include <string>
 #include "AMCParser.h"
 
-AMCParser::~AMCParser()
-{
-	__noop;
-}
-
 AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 {
 	std::ifstream stream(filename, std::ios::in);
@@ -22,7 +17,9 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 		stream >> buffer;
 	}
 
-	_amcData.boneMotions = std::vector<std::vector<AMCPosture>>(asfData->totalBoneNumber);
+	AMCData* amcData = new AMCData();
+
+	amcData->boneMotions = std::vector<std::vector<AMCPosture>>(asfData->totalBoneNumber);
 	int32 totalBoneNumber = asfData->totalBoneNumber;
 	int32 movingBoneNumber = asfData->movingBoneNumber;
 
@@ -90,14 +87,14 @@ AMCData* AMCParser::readAMC(std::string& filename, ASFData* asfData)
 				//	break;
 				}
 			}
-			_amcData.boneMotions[boneIndex].push_back(newPosture);
+			amcData->boneMotions[boneIndex].push_back(newPosture);
 		}
 		stream >> buffer;
 		std::getline(stream, buffer);
-		_amcData.totalFrameNumber++;
+		amcData->totalFrameNumber++;
 	}
 
 	stream.close();
 
-	return (&_amcData);
+	return (amcData);
 }

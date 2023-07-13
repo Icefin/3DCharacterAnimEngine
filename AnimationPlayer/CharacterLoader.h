@@ -12,7 +12,7 @@
 class CharacterLoader
 {
 public:
-	void		loadCharacter(Character& character, std::string& asf, std::string& amc);
+	void		loadCharacter(Character& character, std::string& asf, std::vector<std::string>& amcList);
 
 private:
 	Skeleton*	generateSkeleton(ASFData* asfData);
