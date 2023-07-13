@@ -13,11 +13,24 @@
 
 enum class CharacterState : uint8
 {
-    IDLE = 1 << 0,
-    WALK = 1 << 1,
-    RUN = 1 << 2,
-//    JUMP = 1 << 3,
-//    ATTACK = 1 << 4 
+    IDLE = 1 << 1,
+    WALK = 1 << 2,
+    RUN = 1 << 3,
+//    JUMP = 1 << 4,
+//    ATTACK = 1 << 5 
+};
+
+enum class CharacterBodyLayer : uint8
+{
+    LOWER_LEFT_LEG = 1 << 1,
+    LOWER_RIGHT_LEG = 1 << 2,
+    UPPER_BACK = 1 << 3,
+    UPPER_LEFT_ARM = 1 << 4,
+    UPPER_RIGHT_ARM = 1 << 5,
+
+    LOWER_BODY = LOWER_LEFT_LEG | LOWER_RIGHT_LEG,
+    UPPER_BODY = UPPER_LEFT_ARM | UPPER_BACK | UPPER_RIGHT_ARM,
+    WHOLE_BODY = LOWER_BODY | UPPER_BODY
 };
 
 class Character
@@ -32,6 +45,9 @@ private:
 
 	Skeleton*                       _skeleton;
 	std::vector<Motion*>            _motionList;
+
+    glm::vec3                       _position = glm::vec3(0);
+    glm::quat                       _rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
     CharacterState                  _prevState = CharacterState::IDLE;
     CharacterState                  _currentState = CharacterState::IDLE;
