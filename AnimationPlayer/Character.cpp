@@ -74,19 +74,27 @@ void Character::initialize(Skeleton* skeleton, std::vector<Motion*>& motion)
 
 void Character::update(Shader& shader, float deltaTime)
 {
-    //deltaTime calculation
-    //Character state change
-    
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     Bone* root = _skeleton->getRoot();
-    _motionList[2]->updateKeyFrameTime(deltaTime);
+    if (_blendWeight < BLEND_TIME)
+    {
+        _motionList[static_cast<int32>(_prevState)]->updateKeyFrameTime(deltaTime);
+        _blendWeight += deltaTime;
+    }
+    _motionList[static_cast<int32>(_currentState)]->updateKeyFrameTime(deltaTime);
     drawBone(root, modelMatrix, shader);
 }
 
 void Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 {
-    glm::quat boneAnimationData = _motionList[2]->getBoneAnimation(bone->index);
-    glm::mat4 model = matrix * bone->toParent * glm::mat4(boneAnimationData);
+    glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getBoneAnimation(bone->index);
+    if (_blendWeight < BLEND_TIME)
+    {
+        glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getBoneAnimation(bone->index);
+        blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
+    }
+
+    glm::mat4 model = matrix * bone->toParent * glm::mat4(blendBoneAnimationData);
 
     glm::vec3 direction = glm::vec3(-bone->direction.x, -bone->direction.y, -bone->direction.z);
     glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
@@ -106,4 +114,14 @@ void Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 
     for (Bone* child : bone->childList)
         drawBone(child, model, shader);
+}
+
+void    Character::setCharacterState(CharacterState state)
+{
+    _motionList[static_cast<int32>(_prevState)]->resetKeyFrameTime();
+
+    _prevState = _currentState;
+    _currentState = state;
+
+    _blendWeight = 0.0f;
 }

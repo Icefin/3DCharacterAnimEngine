@@ -13,7 +13,6 @@
 #include "Shader.h"
 #include "Camera3D.h"
 #include "CharacterLoader.h"
-#include "CharacterController.h"
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -21,14 +20,12 @@
 
 constexpr uint32 SCR_WIDTH = 800;
 constexpr uint32 SCR_HEIGHT = 600;
-
-
-CharacterController characterController;
+constexpr uint32 FRAME_RATE = 120;
 // character
 Character character;
 
 // camera
-Camera3D camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera3D camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float prevX = SCR_WIDTH / 2.0f;
 float prevY = SCR_HEIGHT / 2.0f;
 
@@ -125,20 +122,38 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
- 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.processKeyboard(CameraDirection::Forward, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.processKeyboard(CameraDirection::Backward, deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_FALSE)
+    {
+        if (character.getCharacterState() != CharacterState::FORWARD)
+            character.setCharacterState(CharacterState::FORWARD);
+        animTime += deltaTime * FRAME_RATE;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
+        if (character.getCharacterState() != CharacterState::RUN)
+            character.setCharacterState(CharacterState::RUN);
+        animTime += deltaTime * FRAME_RATE;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        if (character.getCharacterState() != CharacterState::BACKWARD)
+            character.setCharacterState(CharacterState::BACKWARD);
+        animTime = deltaTime * FRAME_RATE;
+    }
+
+    else
+    {
+        if (character.getCharacterState() != CharacterState::IDLE)
+            character.setCharacterState(CharacterState::IDLE);
+        animTime = deltaTime * FRAME_RATE;
+    }
+/*
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         camera.processKeyboard(CameraDirection::Left, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(CameraDirection::Right, deltaTime);
-
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        animTime = deltaTime * 120;
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        animTime = -deltaTime * 120;
+*/
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)

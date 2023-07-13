@@ -11,12 +11,15 @@
 #include "Skeleton.h"
 #include "Motion.h"
 
+constexpr float BLEND_TIME = 30.0f;
+
 enum class CharacterState : uint8
 {
-    IDLE = 1 << 1,
-    WALK = 1 << 2,
-    RUN = 1 << 3,
-//    JUMP = 1 << 4,
+    IDLE = 0,
+    FORWARD = 1,
+    BACKWARD = 2,
+    RUN = 3
+// JUMP
 //    ATTACK = 1 << 5 
 };
 
@@ -36,12 +39,15 @@ enum class CharacterBodyLayer : uint8
 class Character
 {
 public:
-	        ~Character();
-	void	initialize(Skeleton* skeleton, std::vector<Motion*>& motionList);
-	void	update(Shader& shader, float deltaTime);
+	                    ~Character();
+	void	            initialize(Skeleton* skeleton, std::vector<Motion*>& motionList);
+	void	            update(Shader& shader, float deltaTime);
+
+    void                setCharacterState(CharacterState state);
+    CharacterState      getCharacterState(void) { return _currentState; };
 
 private:
-    void    drawBone(Bone* bone, glm::mat4 matrix, Shader& shader);
+    void                drawBone(Bone* bone, glm::mat4 matrix, Shader& shader);
 
 	Skeleton*                       _skeleton;
 	std::vector<Motion*>            _motionList;
