@@ -186,10 +186,10 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 }
 ```
 #### Results:
-1. Threshold = 0.01f / Average 1086 -> 457
+#### Threshold = 0.01f / Average 1086 frames -> 457 frames
 ![Animation-Player-2023-07-12-23-04-36](https://github.com/Icefin/AnimationPlayer/assets/76864202/4c3d9d69-38cb-4ba1-94f5-6236793b4b67)
 
-2. Threshold = 0.1f  / Average 1086 -> 105
+#### Threshold = 0.1f  / Average 1086 frames -> 105 frames
 ![Animation-Player-2023-07-12-23-12-56](https://github.com/Icefin/AnimationPlayer/assets/76864202/716ee92f-183e-47c4-9aeb-eeff8374eb25)
 
 
@@ -197,10 +197,13 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 
 ### Motion Blending
 https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
-https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games  
-https://github.com/LaivY  
+https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games   
 http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/  
 
+#### Before Motion Blending
+![Animation-Player-2023-07-13-22-50-38](https://github.com/Icefin/AnimationPlayer/assets/76864202/572a67e5-f720-4135-90ea-effe198f6ee3)
+
+#### After Motion Blending
 ![Animation-Player-2023-07-13-22-34-50-_online-video-cutter com_](https://github.com/Icefin/AnimationPlayer/assets/76864202/3b1e8f33-2762-486e-91e3-9bcc932f6603)
 
 
