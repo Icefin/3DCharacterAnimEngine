@@ -201,7 +201,7 @@ https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-recor
 https://github.com/LaivY  
 http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/  
 
-
+![Animation-Player-2023-07-13-22-34-50-_online-video-cutter com_](https://github.com/Icefin/AnimationPlayer/assets/76864202/3b1e8f33-2762-486e-91e3-9bcc932f6603)
 
 
 A transition involves two motions and a weight function that
