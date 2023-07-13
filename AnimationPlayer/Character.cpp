@@ -72,7 +72,7 @@ void Character::initialize(Skeleton* skeleton, std::vector<Motion*>& motion)
     glLineWidth(2.0f);
 }
 
-void Character::update(Shader& shader, float deltaTime)
+void Character::render(Shader& shader, float deltaTime)
 {
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     Bone* root = _skeleton->getRoot();
@@ -116,7 +116,7 @@ void Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
         drawBone(child, model, shader);
 }
 
-void    Character::setCharacterState(CharacterState state)
+void Character::setCharacterState(CharacterState state)
 {
     _motionList[static_cast<int32>(_prevState)]->resetKeyFrameTime();
 
@@ -124,4 +124,14 @@ void    Character::setCharacterState(CharacterState state)
     _currentState = state;
 
     _blendWeight = 0.0f;
+}
+
+void Character::move()
+{
+
+}
+
+void Character::rotate()
+{
+
 }

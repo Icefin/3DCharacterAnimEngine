@@ -106,7 +106,7 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
 
-        character.update(shader, animTime);
+        character.render(shader, animTime);
         animTime = 0;
         glfwSwapBuffers(window);
         glfwPollEvents();

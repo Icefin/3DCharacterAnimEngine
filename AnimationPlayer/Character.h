@@ -41,7 +41,10 @@ class Character
 public:
 	                    ~Character();
 	void	            initialize(Skeleton* skeleton, std::vector<Motion*>& motionList);
-	void	            update(Shader& shader, float deltaTime);
+	void	            render(Shader& shader, float deltaTime);
+
+    void                move();
+    void                rotate();
 
     void                setCharacterState(CharacterState state);
     CharacterState      getCharacterState(void) { return _currentState; };
@@ -52,12 +55,12 @@ private:
 	Skeleton*                       _skeleton;
 	std::vector<Motion*>            _motionList;
 
-    glm::vec3                       _position = glm::vec3(0);
-    glm::quat                       _rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    glm::vec3                       _position = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3                       _forwardDirection = glm::vec3(1.0f, 0.0f, 0.0f);
 
     CharacterState                  _prevState = CharacterState::IDLE;
     CharacterState                  _currentState = CharacterState::IDLE;
-    float                           _blendWeight = 1.0f;
+    float                           _blendWeight = BLEND_TIME;
 
     float       joint[216] = {
     -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
