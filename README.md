@@ -1,13 +1,83 @@
 # AnimationPlayer
  Simple Character Animator
 
+
+---
 ### Parsing ASF / AMC Data
 #### Reference :
 https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/ASF-AMC.html  
 http://www.cs.cmu.edu/~kiranb/animation/StartupCodeDescription.htm  
 http://graphics.cs.cmu.edu/nsp/course/cs229/info/Acclaim_Skeleton_Format.html  
 
+#### Acclaim Skeleton File (a.k.a ASF)
+Important properties : units, root, bonedata, hierarchy  
+```
+:units     # multiplier (optional.)
+mass 1.0   # float unit system
+length 1.0 # float
+angle deg  # token (rad or deg)
+```
+The units are interpreted by multiplying the relevant data directly on reading. Ex)if the length unit s 2.54, then all incoming translation or length values should be multiplied by 2.54. This is also the case for the .amc file. Any translations or length values must be multiplied by 2.54. This allows direct scaling of the skeleton and it’s motion.  
 
+```
+:root
+axis xyz                # token (rot. order for orientation offset)
+order tx ty tz rz ry rx # tokens (order of transformation for root)
+position 0.0 0.0 0.0.   # float (translation offset for root node)
+orientation 0.0 0.0 0.0 # float (rotation offset)
+```
+This defines the base location and orientation of the entire skeleton. All motion is relative to this point. Typically the root is located at the origin and oriented along the z-axis.  
+
+```
+:bonedata # definition data for all the bones
+begin
+id 1                    # int (optional. unique numeric id)
+name h_waist            # string (uses the body naming convention)
+direction 0.0 1.0 0.0   # float (direction vector of bone in global space)
+length 3.0              # float (length of bone)
+axis 0.0 90.0 0.0 zyx   # float (global orientation of the axis specifies order of rotation)
+dof tx ty tz rx ry rz l # tokens (only include tokens required)
+limits (-inf inf)       # float/token 
+bodymass 10.0           # float (optional. mass of skinbody assoc. with bone)
+cofmass 1.0             # (optional. position of center of mass along bone)
+end
+begin
+id 2
+name l_waist
+direction
+…
+```
+This section holds all the data for each bone in global space. The data for a bone is delimited by begin/end tokens. Each tokens needs to appear in the following order. Dof specification allows for xyz translation and rotation as well as movement along the bone (”l”). This movement is translation, not scaling data and corresponds to stretching the skin. The limit information should not be used to clip data from the .amc file. The data in the .amc file has been precliped. Limits are there to aid the animator and help to define the range of motion of individual bones
+
+```
+:hierarchy
+begin
+root h_waist h_R_hip h_L_hip
+…
+```
+This section defines the hierarchical relationships between the bones. The motion in the .amc file is defined in terms of this hierarchy. The data is delimited by begin/end tokens. The first entry in a line is the parent. Subsequent bones are the direct inferiors of that parent.
+
+#### Acclaim Motion Captured Data (a.k.a AMC)
+```
+#Comments
+...
+:fully-specified
+1
+root 12.0 33.0 45.0 0.0 90.0 45.0
+h_torso_l 0.0 0.0 0.0
+h_torso_2 0.0 0.0 0.0
+...
+...
+2
+root ...
+h_torso_l ...
+h_torso_2 ...
+...
+...
+```
+This motion data is tied to a particular skeleton or .asf file. The format is very simple. Comments at the top followed by the format identifier. Then the data is grouped by frame. First the frame number and then each bone name followed by the values associated with each dof token in the corresponding dof line in the .asf file. The bones are in the same order for every frame.
+
+---
 ### Animation Compression
 #### Reference :  
 https://technology.riotgames.com/news/compressing-skeletal-animation-data  
@@ -192,9 +262,7 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 #### Threshold = 0.1f  / Average 1086 frames -> 105 frames
 ![Animation-Player-2023-07-12-23-12-56](https://github.com/Icefin/AnimationPlayer/assets/76864202/716ee92f-183e-47c4-9aeb-eeff8374eb25)
 
-
-
-
+---
 ### Motion Blending
 https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
 https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games   
