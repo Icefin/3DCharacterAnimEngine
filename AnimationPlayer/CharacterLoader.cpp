@@ -7,6 +7,7 @@
 
 constexpr float CHARACTER_SCALE = 0.1f;
 
+#ifdef DEBUG_INFO
 /*
 static void		TEST_PRINT_BONE_INFO(ASFData* asfData)
 {
@@ -34,6 +35,7 @@ static void		TEST_PRINT_POSTURE_INFO(AMCData* amcData)
 	}
 }
 */
+#endif
 
 void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::vector<std::string>& amcList)
 {

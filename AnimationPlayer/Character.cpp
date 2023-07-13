@@ -79,13 +79,13 @@ void Character::update(Shader& shader, float deltaTime)
     
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     Bone* root = _skeleton->getRoot();
-    _motionList[0]->updateKeyFrameTime(deltaTime);
+    _motionList[2]->updateKeyFrameTime(deltaTime);
     drawBone(root, modelMatrix, shader);
 }
 
 void Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
 {
-    glm::quat boneAnimationData = _motionList[0]->getBoneAnimation(bone->index);
+    glm::quat boneAnimationData = _motionList[2]->getBoneAnimation(bone->index);
     glm::mat4 model = matrix * bone->toParent * glm::mat4(boneAnimationData);
 
     glm::vec3 direction = glm::vec3(-bone->direction.x, -bone->direction.y, -bone->direction.z);

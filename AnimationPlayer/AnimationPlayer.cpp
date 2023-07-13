@@ -13,6 +13,7 @@
 #include "Shader.h"
 #include "Camera3D.h"
 #include "CharacterLoader.h"
+#include "CharacterController.h"
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -21,6 +22,8 @@
 constexpr uint32 SCR_WIDTH = 800;
 constexpr uint32 SCR_HEIGHT = 600;
 
+
+CharacterController characterController;
 // character
 Character character;
 
@@ -46,7 +49,8 @@ void initCharacter()
 
     std::string asfFile = "./test/skeleton.asf";
     std::vector<std::string> amcFileList = { "./test/idle.amc",
-                                             "./test/walk.amc",
+                                             "./test/forward.amc",
+                                             "./test/backward.amc",
                                              "./test/run.amc"
                                             };
   
