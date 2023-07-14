@@ -23,7 +23,7 @@ enum class CharacterState : uint8
 //  ATTACK = 5 
 };
 
-enum class CharacterBodyLayer : uint32
+enum class CharacterBodyMask : uint32
 {
     ROOT = 1 << 0,
 

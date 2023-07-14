@@ -266,7 +266,9 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 ### Motion Blending
 https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
 https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games   
-http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/  
+http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/   
+
+#### Full Body Animation
 
 #### Before Motion Blending
 ![Animation-Player-2023-07-13-22-50-38](https://github.com/Icefin/AnimationPlayer/assets/76864202/572a67e5-f720-4135-90ea-effe198f6ee3)
@@ -274,16 +276,66 @@ http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
 #### After Motion Blending
 ![Animation-Player-2023-07-13-22-34-50-_online-video-cutter com_](https://github.com/Icefin/AnimationPlayer/assets/76864202/3b1e8f33-2762-486e-91e3-9bcc932f6603)
 
-
 A transition involves two motions and a weight function that
 starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according
 to a constant weight function.
 
-Linear blending produces reasonable results when the input motions are sufficiently similar. Our strategy is thus
-to still combine frames via averaging, but to automatically
-extract information from the input motions to help decide
-which frames to combine, how to position and orient them
-prior to averaging, and what constraints should exist on the
-result. This information is used to create a timewarp curve, a
-coordinate alignment curve, and a set of constraint matches,
-which together form a registration curve.
+#### Partial Body Animation
+
+####Requirements :  
+1. Masking all the bones
+```
+enum class CharacterBodyMask : uint32
+{
+    ROOT = 1 << 0,
+
+    LEFT_HIP_JOINT = 1 << 1,
+    LEFT_FEMUR = 1 << 2,
+    LEFT_TIBIA = 1 << 3,
+    LEFT_FOOT = 1 << 4,
+    LEFT_TOES = 1 << 5,
+
+    RIGHT_HIT_JOINT = 1 << 6,
+    RIGHT_FEMUR = 1 << 7,
+    RIGHT_TIBIA = 1 << 8,
+    RIGHT_FOOT = 1 << 9,
+    RIGHT_TOES = 1 << 10,
+
+    LOWER_BACK = 1 << 11,
+    UPPER_BACK = 1 << 12,
+    THROAX = 1 << 13,
+    LOWER_NECK = 1 << 14,
+    UPPER_NECK = 1 << 15,
+    HEAD = 1 << 16,
+
+    LEFT_CLAVICLE = 1 << 17,
+    LEFT_HUMERUS = 1 << 18,
+    LEFT_RADIUS = 1 << 19,
+    LEFT_WRIST = 1 << 20,
+    LEFT_HAND = 1 << 21,
+    LEFT_FINGERS = 1 << 22,
+    LEFT_THUMB = 1 << 23,
+
+    RIGHT_CLAVICLE = 1 << 24,
+    RIGHT_HUMERUS = 1 << 25,
+    RIGHT_RADIUS = 1 << 26,
+    RIGHT_WRIST = 1 << 27,
+    RIGHT_HAND = 1 << 28,
+    RIGHT_FINGERS = 1 << 29,
+    RIGHT_THUMB = 1 << 30,
+
+    LEFT_LEG = LEFT_HIP_JOINT | LEFT_FEMUR | LEFT_TIBIA | LEFT_FOOT | LEFT_TOES,
+    RIGHT_LEG = RIGHT_HIT_JOINT | RIGHT_FEMUR | RIGHT_TIBIA | RIGHT_FOOT | RIGHT_TOES,
+    SPINE = LOWER_BACK | UPPER_BACK | THROAX | LOWER_NECK | UPPER_NECK | HEAD,
+    LEFT_ARM = LEFT_CLAVICLE | LEFT_HUMERUS | LEFT_RADIUS | LEFT_WRIST | LEFT_HAND | LEFT_FINGERS | LEFT_THUMB,
+    RIGHT_ARM = RIGHT_CLAVICLE | RIGHT_HUMERUS | RIGHT_RADIUS | RIGHT_WRIST | RIGHT_HAND | RIGHT_FINGERS | RIGHT_THUMB,
+
+    LOWER_BODY = LEFT_LEG | RIGHT_LEG,
+    UPPER_BODY = SPINE | LEFT_ARM | RIGHT_ARM,
+
+    WHOLE_BODY = LOWER_BODY | UPPER_BODY
+};
+```
+2. Give blending weight & state to all the bones
+3. setCharacterState(STATE, targetBoneMask)
+4. Is it better using dynamic programming to build modelMatrix....?
