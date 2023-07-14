@@ -27,7 +27,7 @@ public:
 				~Motion();
 
 	void		updateKeyFrameTime(float deltaTime);
-	void		resetKeyFrameTime(void) { _keyFrameTime = 0.0f; };
+	void		resetKeyFrameTime(void) { _frameTime = 0.0f; };
 
 	glm::quat	getBoneAnimation(int32 boneIndex);
 	void		setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimationData>& boneAnim);
@@ -35,6 +35,6 @@ public:
 private :
 	std::vector<std::vector<CompressedAnimationData>>	_keyFrameAnimations;
 	int32												_maxFrameTime;
-	float												_keyFrameTime;
+	float												_frameTime;
 };
 

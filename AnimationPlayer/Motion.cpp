@@ -15,12 +15,9 @@ Motion::~Motion()
 
 void Motion::updateKeyFrameTime(float deltaTime)
 {
-	_keyFrameTime += deltaTime;
-	if (_keyFrameTime >= _maxFrameTime)
-		_keyFrameTime = 0;
-
-	if (_keyFrameTime <= 0)
-		_keyFrameTime = 0;
+	_frameTime += deltaTime;
+	if (_frameTime >= _maxFrameTime)
+		_frameTime = 0;
 }
 
 glm::quat Motion::getBoneAnimation(int32 boneIndex)
@@ -35,7 +32,7 @@ glm::quat Motion::getBoneAnimation(int32 boneIndex)
 	{
 		int32 midFrameIndex = lowerFrameIndex + (upperFrameIndex - lowerFrameIndex) / 2;
 
-		if (boneAnimation[midFrameIndex].keyTime <= _keyFrameTime)
+		if (boneAnimation[midFrameIndex].keyTime <= _frameTime)
 		{
 			targetFrameIndex = midFrameIndex;
 			lowerFrameIndex = midFrameIndex + 1;
@@ -54,7 +51,7 @@ glm::quat Motion::getBoneAnimation(int32 boneIndex)
 	int32 startKeyTime = boneAnimation[targetFrameIndex].keyTime;
 	int32 endKeyTime = boneAnimation[targetFrameIndex + 1].keyTime;
 	
-	float t = (_keyFrameTime - startKeyTime) / (endKeyTime - startKeyTime);
+	float t = (_frameTime - startKeyTime) / (endKeyTime - startKeyTime);
 	float x = interpolateCatmullRomSpline(p0.x, p1.x, p2.x, p3.x, t);
 	float y = interpolateCatmullRomSpline(p0.y, p1.y, p2.y, p3.y, t);
 	float z = interpolateCatmullRomSpline(p0.z, p1.z, p2.z, p3.z, t);
