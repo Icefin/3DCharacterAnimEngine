@@ -1,6 +1,9 @@
 # AnimationPlayer
  Simple Character Animator
 
+---
+### Project Architecture
+
 
 ---
 ### Parsing ASF / AMC Data
