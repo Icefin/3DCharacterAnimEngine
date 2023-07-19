@@ -100,7 +100,7 @@ void Character::drawBone(Bone* bone, glm::mat4 matrix, Shader& shader)
     glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
     float angle = acos(glm::dot({ 1.0f, 0.0f, 0.0f }, glm::normalize(direction)));
     glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
-
+   
     float scale = glm::length(direction);
     glm::mat4 scaler = glm::scale(glm::mat4(1.0f), { scale, 1.0f, 1.0f });
 
@@ -123,7 +123,7 @@ void Character::setCharacterState(CharacterState state)
     _prevState = _currentState;
     _currentState = state;
 
-    _blendWeight = 0.0f;
+    _blendWeight = 1.0f - _blendWeight;
 }
 
 void Character::move()
