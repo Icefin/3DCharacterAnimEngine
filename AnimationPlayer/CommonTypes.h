@@ -19,6 +19,12 @@ typedef wchar_t				utf16;
 
 struct QuantizedQuaternion
 {
-	bool isPositive = true;
-	int16 qy, qz, qw;
+    uint16 largest    : 2;  // The largest component of the quaternion.
+    uint16 a          : 14;
+    uint16 sign_a     : 1;
+    uint16 sign_b     : 1;
+    uint16 b          : 14;
+    uint16 sign_c     : 1;
+    uint16 sign       : 1;  // The sign of the largest component. 1 for negative.
+    uint16 c          : 14;
 };
