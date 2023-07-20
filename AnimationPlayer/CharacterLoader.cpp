@@ -5,8 +5,6 @@
 #include "CharacterLoader.h"
 #include "Transform.h"
 
-constexpr float CHARACTER_SCALE = 0.1f;
-
 #ifdef DEBUG_INFO
 /*
 static void		TEST_PRINT_BONE_INFO(ASFData* asfData)
@@ -112,7 +110,7 @@ void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 	toChildRotation = glm::rotate(toChildRotation, -child->orientation.y, { 0.0f, 1.0f, 0.0f });
 	toChildRotation = glm::rotate(toChildRotation, -child->orientation.z, { 0.0f, 0.0f, 1.0f });
 
-	glm::vec3 offset = glm::vec3(toChildRotation * glm::vec4(parent->direction, 0.0f)) * parent->length * CHARACTER_SCALE;
+	glm::vec3 offset = glm::vec3(toChildRotation * glm::vec4(parent->direction, 0.0f)) * parent->length;
 	glm::mat4 translation = glm::translate(glm::mat4(1.0f), offset);
 
 	child->offset = offset;

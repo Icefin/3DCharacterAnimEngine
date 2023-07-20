@@ -25,7 +25,7 @@ constexpr uint32 FRAME_RATE = 120;
 Character character;
 
 // camera
-Camera3D camera(glm::vec3(0.0f, 0.0f, 5.0f));
+Camera3D camera(glm::vec3(0.0f, 0.0f, 50.0f));
 float prevX = SCR_WIDTH / 2.0f;
 float prevY = SCR_HEIGHT / 2.0f;
 

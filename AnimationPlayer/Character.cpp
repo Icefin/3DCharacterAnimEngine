@@ -123,7 +123,7 @@ void Character::setCharacterState(CharacterState state)
     _prevState = _currentState;
     _currentState = state;
 
-    _blendWeight = 0.0f;
+    _blendWeight = BLEND_TIME - _blendWeight;
 }
 
 void Character::move()
