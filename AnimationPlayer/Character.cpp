@@ -77,10 +77,7 @@ void Character::render(Shader& shader, float deltaTime)
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     Bone* root = _skeleton->getRoot();
     if (_blendWeight < BLEND_TIME)
-    {
-        _motionList[static_cast<int32>(_prevState)]->updateKeyFrameTime(deltaTime);
         _blendWeight += deltaTime;
-    }
     _motionList[static_cast<int32>(_currentState)]->updateKeyFrameTime(deltaTime);
     drawBone(root, modelMatrix, shader);
 }

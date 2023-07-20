@@ -127,13 +127,13 @@ void processInput(GLFWwindow* window)
     {
         if (character.getCharacterState() != CharacterState::FORWARD)
             character.setCharacterState(CharacterState::FORWARD);
-        animTime += deltaTime * FRAME_RATE;
+        animTime = deltaTime * FRAME_RATE;
     }
     else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         if (character.getCharacterState() != CharacterState::RUN)
             character.setCharacterState(CharacterState::RUN);
-        animTime += deltaTime * FRAME_RATE;
+        animTime = deltaTime * FRAME_RATE;
     }
     else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
