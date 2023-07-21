@@ -4,7 +4,7 @@
 
 Motion::Motion(int32 totalBoneNumber, int32 totalFrameNumber)
 {
-	_keyFrameAnimations = std::vector<std::vector<CompressedAnimationData>>(totalBoneNumber);
+	_keyFramePoseList = std::vector<std::vector<CompressedPose>>(totalBoneNumber);
 	_maxFrameTime = totalFrameNumber;
 }
 
@@ -13,16 +13,16 @@ Motion::~Motion()
 	__noop;
 }
 
-void Motion::updateKeyFrameTime(float deltaTime)
+void Motion::updateFrameTime(float deltaTime)
 {
 	_frameTime += deltaTime;
 	if (_frameTime >= _maxFrameTime)
 		_frameTime = 0;
 }
 
-glm::quat Motion::getBoneAnimation(int32 boneIndex)
+glm::quat Motion::getJointPose(int32 boneIndex)
 {
-	std::vector<CompressedAnimationData>& boneAnimation = _keyFrameAnimations[boneIndex];
+	std::vector<CompressedPose>& boneAnimation = _keyFramePoseList[boneIndex];
 	if (boneAnimation.empty() == true)
 		return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
@@ -61,7 +61,7 @@ glm::quat Motion::getBoneAnimation(int32 boneIndex)
 	return glm::normalize(glm::quat(w, x, y, z));
 }
 
-void Motion::setBoneAnimation(int32 boneIndex, std::vector<CompressedAnimationData>& boneAnim)
+void Motion::setJointPose(int32 boneIndex, std::vector<CompressedPose>& boneAnim)
 {
-	_keyFrameAnimations[boneIndex] = boneAnim;
+	_keyFramePoseList[boneIndex] = boneAnim;
 }

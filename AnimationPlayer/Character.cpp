@@ -75,28 +75,15 @@ void Character::render(Shader& shader, float deltaTime)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(2.0f);
 
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
-    Joint* root = _skeleton->getRoot();
     if (_blendWeight < BLEND_TIME)
         _blendWeight += deltaTime;
-    _motionList[static_cast<int32>(_currentState)]->updateKeyFrameTime(deltaTime);
+    _motionList[static_cast<int32>(_currentState)]->updateFrameTime(deltaTime);
 
-    int jointNumber = _skeleton->getJointNumber();
-    std::vector<glm::mat4> matrixPalette(jointNumber);
-    matrixPalette[0] = glm::mat4(1.0f);
-    for (int index = 1; index < jointNumber; ++index)
+    updateMatrixPalette();
+
+    int32 jointNumber = _skeleton->getJointNumber();
+    for (int index = 0; index < jointNumber; ++index)
     {
-        Joint* currentJoint = _skeleton->getJoint(index);
-        glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getBoneAnimation(index);
-        if (_blendWeight < BLEND_TIME)
-        {
-            glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getBoneAnimation(index);
-            blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
-        }
-
-        glm::mat4 model = matrixPalette[currentJoint->parentIndex] * currentJoint->jointToParentMatrix * glm::mat4(blendBoneAnimationData);
-        matrixPalette[index] = model;
-
         glm::vec3 direction = glm::vec3(10.0, 0.0, 0.0);
         glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
         float angle = acos(glm::dot({ 1.0f, 0.0f, 0.0f }, glm::normalize(direction)));
@@ -106,18 +93,44 @@ void Character::render(Shader& shader, float deltaTime)
         glm::mat4 scaler = glm::scale(glm::mat4(1.0f), { scale, 1.0f, 1.0f });
 
         glBindVertexArray(boneArrayObject);
-        shader.setUniformMat4("model", model * boneRotation * scaler);
+        shader.setUniformMat4("model", _matrixPalette[index] * boneRotation * scaler);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(jointArrayObject);
-        shader.setUniformMat4("model", model);
+        shader.setUniformMat4("model", _matrixPalette[index]);
         glDrawArrays(GL_LINES, 0, 12);
+    }
+}
+
+void Character::updateMatrixPalette()
+{
+    glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(0);
+    if (_blendWeight < BLEND_TIME)
+    {
+        glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(0);
+        blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
+    }
+    _matrixPalette[0] = glm::mat4(blendBoneAnimationData);
+
+    int32 jointNumber = _skeleton->getJointNumber();
+    for (int index = 1; index < jointNumber; ++index)
+    {
+        Joint* currentJoint = _skeleton->getJoint(index);
+        glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(index);
+        if (_blendWeight < BLEND_TIME)
+        {
+            glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(index);
+            blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
+        }
+
+        glm::mat4 matrix = _matrixPalette[currentJoint->parentIndex] * currentJoint->jointToParentMatrix * glm::mat4(blendBoneAnimationData);
+        _matrixPalette[index] = matrix;
     }
 }
 
 void Character::setCharacterState(CharacterState state)
 {
-    _motionList[static_cast<int32>(_prevState)]->resetKeyFrameTime();
+    _motionList[static_cast<int32>(_prevState)]->resetFrameTime();
 
     _prevState = _currentState;
     _currentState = state;

@@ -21,7 +21,7 @@ private:
 	Joint*		generateJoint(ASFBone* boneData);
 
 	Motion*		generateMotion(AMCData* amcData, int32 totalBoneNumber);
-	std::vector<CompressedAnimationData>	compressAnimation(std::vector<AnimationData>& data);
+	std::vector<CompressedPose>	compressAnimation(std::vector<Pose>& data);
 
 	ASFParser	_asfParser;
 	AMCParser	_amcParser;

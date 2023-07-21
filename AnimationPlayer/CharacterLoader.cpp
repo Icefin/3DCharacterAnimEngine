@@ -134,13 +134,13 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 	std::vector<std::vector<AMCPosture>>& motionDatas = amcData->boneMotions;
 	
 	Motion* motion = new Motion(totalBoneNumber, totalFrameNumber);
-	for (int32 boneIndex = 0; boneIndex < totalBoneNumber; ++boneIndex)
+	for (int32 jointIndex = 0; jointIndex < totalBoneNumber; ++jointIndex)
 	{
-		std::vector<AMCPosture>& posture = motionDatas[boneIndex];
+		std::vector<AMCPosture>& posture = motionDatas[jointIndex];
 		if (posture.size() == 0)
 			continue;
 		
-		std::vector<AnimationData> animData(totalFrameNumber);
+		std::vector<Pose> animData(totalFrameNumber);
 		for (int32 frame = 0; frame < totalFrameNumber; ++frame)
 		{
 			glm::mat4 rotation = glm::mat4(1.0f);
@@ -150,13 +150,13 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 
 			animData[frame].rotation = glm::quat(rotation);
 		}
-		std::vector<CompressedAnimationData> compressedAnimation = compressAnimation(animData);
-		motion->setBoneAnimation(boneIndex, compressedAnimation);
+		std::vector<CompressedPose> compressedPoseList = compressAnimation(animData);
+		motion->setJointPose(jointIndex, compressedPoseList);
 	}
 	return motion;
 }
 
-std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vector<AnimationData>& data)
+std::vector<CompressedPose>	CharacterLoader::compressAnimation(std::vector<Pose>& data)
 {
 	static constexpr float kThreshold = 0.1f;
 
@@ -219,7 +219,7 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 		keyFrameSize++;
 	}
 
-	std::vector<CompressedAnimationData> compressedAnimation(keyFrameSize);
+	std::vector<CompressedPose> compressedAnimation(keyFrameSize);
 	for (int32 i = 0; i < keyFrameSize; ++i)
 	{
 		compressedAnimation[i].keyTime = keyFrameRotation[i].first;

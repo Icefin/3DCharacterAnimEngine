@@ -88,9 +88,10 @@ void initializeGLContext(void)
 int main()
 {
     initializeGLContext();
+
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
     shader.use();
-    
+
     loadCharacter();
 
     while (glfwWindowShouldClose(window) == false)

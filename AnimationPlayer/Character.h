@@ -29,6 +29,7 @@ public:
                         Character(Skeleton* skeleton, std::vector<Motion*>& motionList);
 	                    ~Character();
 	void	            render(Shader& shader, float deltaTime);
+    void                updateMatrixPalette(void);
 
     void                move();
     void                rotate();
