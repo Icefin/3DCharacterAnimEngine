@@ -27,7 +27,7 @@ class Character
 {
 public:
                         Character(Skeleton* skeleton, std::vector<Motion*>& motionList);
-	                    ~Character();
+	                    ~Character(void);
 	void	            render(Shader& shader, float deltaTime);
     void                updateMatrixPalette(void);
 
@@ -36,16 +36,19 @@ public:
 
     void                setCharacterState(CharacterState state);
     CharacterState      getCharacterState(void) { return _currentState; };
+    bool                isGrounded(void) { return _isGrounded; };
 
 private:
+    void                renderSkeleton(Shader& shader);
 	Skeleton*                       _skeleton;
 	std::vector<Motion*>            _motionList;
     //skinmesh
 
-    std::vector<glm::mat4>          _matrixPalette;
     glm::vec3                       _position = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3                       _forwardDirection = glm::vec3(1.0f, 0.0f, 0.0f);
+    bool                            _isGrounded = true;
 
+    std::vector<glm::mat4>          _matrixPalette;
     CharacterState                  _prevState = CharacterState::IDLE;
     float                           _prevMotionTime = 0.0f;
     CharacterState                  _currentState = CharacterState::IDLE;
@@ -53,49 +56,6 @@ private:
     float                           _blendWeight = BLEND_TIME;
     int32                           _maxFrameTime = 0;
 
-    float       joint[216] = {
-    -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-
-    -0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-
-    -0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-
-     0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-
-    -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f, -0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-
-    -0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-     0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f,  0.03f,  0.03f, 1.0f, 0.0f, 0.0f,
-    -0.03f,  0.03f, -0.03f, 1.0f, 0.0f, 0.0f
-    };
     float       bone[216] = {
      1.0f, -0.2f, -0.2f, 0.0f, 0.0f, 0.0f,
      1.0f, -0.2f, -0.2f, 0.0f, 0.0f, 0.0f,

@@ -5,7 +5,7 @@
 #include "CustomMath.h"
 
 uint32 boneBufferObject, boneArrayObject;
-uint32 jointBufferObject, jointArrayObject;
+uint32 axisBufferObject, axisArrayObject;
 
 Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 {
@@ -36,12 +36,12 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glGenBuffers(1, &jointBufferObject);
-    glGenVertexArrays(1, &jointArrayObject);
+    glGenBuffers(1, &axisBufferObject);
+    glGenVertexArrays(1, &axisArrayObject);
 
-    glBindVertexArray(jointArrayObject);
+    glBindVertexArray(axisArrayObject);
 
-    glBindBuffer(GL_ARRAY_BUFFER, jointBufferObject);
+    glBindBuffer(GL_ARRAY_BUFFER, axisBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(axis), axis, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -56,8 +56,8 @@ Character::~Character()
     glDeleteVertexArrays(1, &boneArrayObject);
     glDeleteBuffers(1, &boneBufferObject);
 
-    glDeleteVertexArrays(1, &jointArrayObject);
-    glDeleteBuffers(1, &jointBufferObject);
+    glDeleteVertexArrays(1, &axisArrayObject);
+    glDeleteBuffers(1, &axisBufferObject);
 
     if (_skeleton != NULL)
         delete _skeleton;
@@ -80,29 +80,17 @@ void Character::render(Shader& shader, float deltaTime)
 
     _currentMotionTime += deltaTime;
     if (_currentMotionTime >= _maxFrameTime)
+    {
         _currentMotionTime = 0.0f;
+        if (_currentState == CharacterState::JUMP)
+        {
+            setCharacterState(CharacterState::IDLE);
+            _isGrounded = true;
+        }
+    }
 
     updateMatrixPalette();
-
-    int32 jointNumber = _skeleton->getJointNumber();
-    for (int index = 0; index < jointNumber; ++index)
-    {
-        glm::vec3 direction = glm::vec3(10.0, 0.0, 0.0);
-        glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
-        float angle = acos(glm::dot({ 1.0f, 0.0f, 0.0f }, glm::normalize(direction)));
-        glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
-
-        float scale = glm::length(direction);
-        glm::mat4 scaler = glm::scale(glm::mat4(1.0f), { scale, 1.0f, 1.0f });
-
-        glBindVertexArray(boneArrayObject);
-        shader.setUniformMat4("model", _matrixPalette[index] * boneRotation * scaler);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        glBindVertexArray(jointArrayObject);
-        shader.setUniformMat4("model", _matrixPalette[index]);
-        glDrawArrays(GL_LINES, 0, 12);
-    }
+    renderSkeleton(shader);
 }
 
 void Character::updateMatrixPalette()
@@ -131,6 +119,29 @@ void Character::updateMatrixPalette()
     }
 }
 
+void Character::renderSkeleton(Shader& shader)
+{
+    int32 jointNumber = _skeleton->getJointNumber();
+    for (int index = 0; index < jointNumber; ++index)
+    {
+        glm::vec3 direction = glm::vec3(10.0, 0.0, 0.0);
+        glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
+        float angle = acos(glm::dot({ 1.0f, 0.0f, 0.0f }, glm::normalize(direction)));
+        glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
+
+        float scale = glm::length(direction);
+        glm::mat4 scaler = glm::scale(glm::mat4(1.0f), { scale, 1.0f, 1.0f });
+
+        glBindVertexArray(boneArrayObject);
+        shader.setUniformMat4("model", _matrixPalette[index] * boneRotation * scaler);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        glBindVertexArray(axisArrayObject);
+        shader.setUniformMat4("model", _matrixPalette[index]);
+        glDrawArrays(GL_LINES, 0, 12);
+    }
+}
+
 void Character::setCharacterState(CharacterState state)
 {
     _prevState = _currentState;
@@ -140,6 +151,8 @@ void Character::setCharacterState(CharacterState state)
     _blendWeight = BLEND_TIME - _blendWeight;
     _prevMotionTime = _currentMotionTime;
     _currentMotionTime = 0.0f;
+    if (state == CharacterState::JUMP)
+        _isGrounded = false;
 }
 
 void Character::move()
