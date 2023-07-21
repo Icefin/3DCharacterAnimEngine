@@ -104,7 +104,7 @@ void Character::updateMatrixPalette()
     _matrixPalette[0] = glm::mat4(blendBoneAnimationData);
 
     int32 jointNumber = _skeleton->getJointNumber();
-    for (int index = 1; index < jointNumber; ++index)
+    for (int32 index = 1; index < jointNumber; ++index)
     {
         Joint* currentJoint = _skeleton->getJoint(index);
         glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(index, _currentMotionTime);
@@ -122,7 +122,7 @@ void Character::updateMatrixPalette()
 void Character::renderSkeleton(Shader& shader)
 {
     int32 jointNumber = _skeleton->getJointNumber();
-    for (int index = 0; index < jointNumber; ++index)
+    for (int32 index = 0; index < jointNumber; ++index)
     {
         glm::vec3 direction = glm::vec3(10.0, 0.0, 0.0);
         glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);

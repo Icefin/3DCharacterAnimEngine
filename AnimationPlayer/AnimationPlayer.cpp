@@ -46,11 +46,11 @@ void loadCharacter()
 {
     std::string skeleton = "./test/skeleton.asf";
     std::vector<std::string> motions = { "./test/idle.amc",
-                                             "./test/forward.amc",
-                                             "./test/backward.amc",
-                                             "./test/run.amc",
-                                             "./test/jump.amc"
-                                            };
+                                            "./test/forward.amc",
+                                            "./test/backward.amc",
+                                            "./test/run.amc",
+                                            "./test/jump.amc"
+                                        };
     //skin
   
     character = characterLoader.loadCharacter(skeleton, motions);
