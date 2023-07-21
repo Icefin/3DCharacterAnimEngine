@@ -26,15 +26,12 @@ public:
 				Motion(int32 totalBoneNumber, int32 totalFrameNumber);
 				~Motion();
 
-	void		updateFrameTime(float deltaTime);
-	void		resetFrameTime(void) { _frameTime = 0.0f; };
-
-	glm::quat	getJointPose(int32 boneIndex);
+	glm::quat	getJointPose(int32 boneIndex, float frameTime);
+	int32		getMaxFrameTime(void) { return _maxFrameTime; };
 	void		setJointPose(int32 boneIndex, std::vector<CompressedPose>& boneAnim);
 
 private :
 	std::vector<std::vector<CompressedPose>>	_keyFramePoseList;
 	int32										_maxFrameTime;
-	float										_frameTime;
 };
 

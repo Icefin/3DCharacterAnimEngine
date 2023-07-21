@@ -77,7 +77,10 @@ void Character::render(Shader& shader, float deltaTime)
 
     if (_blendWeight < BLEND_TIME)
         _blendWeight += deltaTime;
-    _motionList[static_cast<int32>(_currentState)]->updateFrameTime(deltaTime);
+
+    _currentMotionTime += deltaTime;
+    if (_currentMotionTime >= _maxFrameTime)
+        _currentMotionTime = 0.0f;
 
     updateMatrixPalette();
 
@@ -104,10 +107,10 @@ void Character::render(Shader& shader, float deltaTime)
 
 void Character::updateMatrixPalette()
 {
-    glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(0);
+    glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(0, _currentMotionTime);
     if (_blendWeight < BLEND_TIME)
     {
-        glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(0);
+        glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(0, _prevMotionTime);
         blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
     }
     _matrixPalette[0] = glm::mat4(blendBoneAnimationData);
@@ -116,10 +119,10 @@ void Character::updateMatrixPalette()
     for (int index = 1; index < jointNumber; ++index)
     {
         Joint* currentJoint = _skeleton->getJoint(index);
-        glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(index);
+        glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(index, _currentMotionTime);
         if (_blendWeight < BLEND_TIME)
         {
-            glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(index);
+            glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(index, _prevMotionTime);
             blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
         }
 
@@ -130,12 +133,13 @@ void Character::updateMatrixPalette()
 
 void Character::setCharacterState(CharacterState state)
 {
-    _motionList[static_cast<int32>(_prevState)]->resetFrameTime();
-
     _prevState = _currentState;
     _currentState = state;
+    _maxFrameTime = _motionList[static_cast<int32>(_currentState)]->getMaxFrameTime();
 
     _blendWeight = BLEND_TIME - _blendWeight;
+    _prevMotionTime = _currentMotionTime;
+    _currentMotionTime = 0.0f;
 }
 
 void Character::move()

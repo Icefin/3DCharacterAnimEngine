@@ -47,8 +47,11 @@ private:
     glm::vec3                       _forwardDirection = glm::vec3(1.0f, 0.0f, 0.0f);
 
     CharacterState                  _prevState = CharacterState::IDLE;
+    float                           _prevMotionTime = 0.0f;
     CharacterState                  _currentState = CharacterState::IDLE;
+    float                           _currentMotionTime = 0.0f;
     float                           _blendWeight = BLEND_TIME;
+    int32                           _maxFrameTime = 0;
 
     float       joint[216] = {
     -0.03f, -0.03f, -0.03f, 1.0f, 0.0f, 0.0f,

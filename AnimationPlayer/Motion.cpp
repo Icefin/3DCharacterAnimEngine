@@ -13,14 +13,7 @@ Motion::~Motion()
 	__noop;
 }
 
-void Motion::updateFrameTime(float deltaTime)
-{
-	_frameTime += deltaTime;
-	if (_frameTime >= _maxFrameTime)
-		_frameTime = 0;
-}
-
-glm::quat Motion::getJointPose(int32 boneIndex)
+glm::quat Motion::getJointPose(int32 boneIndex, float frameTime)
 {
 	std::vector<CompressedPose>& boneAnimation = _keyFramePoseList[boneIndex];
 	if (boneAnimation.empty() == true)
@@ -32,7 +25,7 @@ glm::quat Motion::getJointPose(int32 boneIndex)
 	{
 		int32 midFrameIndex = lowerFrameIndex + (upperFrameIndex - lowerFrameIndex) / 2;
 
-		if (boneAnimation[midFrameIndex].keyTime <= _frameTime)
+		if (boneAnimation[midFrameIndex].keyTime <= frameTime)
 		{
 			targetFrameIndex = midFrameIndex;
 			lowerFrameIndex = midFrameIndex + 1;
@@ -51,7 +44,7 @@ glm::quat Motion::getJointPose(int32 boneIndex)
 	int32 startKeyTime = boneAnimation[targetFrameIndex].keyTime;
 	int32 endKeyTime = boneAnimation[targetFrameIndex + 1].keyTime;
 	
-	float t = (_frameTime - startKeyTime) / (endKeyTime - startKeyTime);
+	float t = (frameTime - startKeyTime) / (endKeyTime - startKeyTime);
 	float x = interpolateCatmullRomSpline(p0.x, p1.x, p2.x, p3.x, t);
 	float y = interpolateCatmullRomSpline(p0.y, p1.y, p2.y, p3.y, t);
 	float z = interpolateCatmullRomSpline(p0.z, p1.z, p2.z, p3.z, t);
