@@ -18,8 +18,8 @@ enum class CharacterState : uint8
     IDLE = 0,
     FORWARD = 1,
     BACKWARD = 2,
-    RUN = 3
-//  JUMP = 4,
+    RUN = 3,
+    JUMP = 4,
 //  ATTACK = 5 
 };
 

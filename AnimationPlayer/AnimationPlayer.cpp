@@ -48,7 +48,8 @@ void loadCharacter()
     std::vector<std::string> motions = { "./test/idle.amc",
                                              "./test/forward.amc",
                                              "./test/backward.amc",
-                                             "./test/run.amc"
+                                             "./test/run.amc",
+                                             "./test/jump.amc"
                                             };
     //skin
   
@@ -141,6 +142,11 @@ void processInput(GLFWwindow* window)
     {
         if (character->getCharacterState() != CharacterState::BACKWARD)
             character->setCharacterState(CharacterState::BACKWARD);
+    }
+    else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        if (character->getCharacterState() != CharacterState::JUMP)
+            character->setCharacterState(CharacterState::JUMP);
     }
     else
     {
