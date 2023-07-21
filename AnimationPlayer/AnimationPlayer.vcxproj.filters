@@ -33,13 +33,13 @@
     <ClCompile Include="Motion.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Character.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="glad.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomMath.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,9 +59,6 @@
     <ClInclude Include="Motion.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="CommonTypes.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -72,6 +69,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Camera3D.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomMath.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

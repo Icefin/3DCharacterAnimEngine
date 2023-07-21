@@ -16,7 +16,7 @@ enum class AXIS_TYPE
 
 struct ASFBone
 {
-	ASFBone*				parentBone;
+	int32					parentIndex;
 	std::vector<ASFBone*>	childList;
 
 	int32					boneIndex;
@@ -54,13 +54,11 @@ public:
 	ASFData*	readASF(std::string& filename);
 
 private:
-	void		readASF_Units(std::ifstream& stream, std::string& buffer);
-	void		readASF_Root(std::ifstream& stream, std::string& buffer);
-	void		readASF_Bonedata(std::ifstream& stream, std::string& buffer);
-	void		readASF_Hierarchy(std::ifstream& stream);
+	void		readASF_Units(std::ifstream& stream, std::string& buffer, ASFData* asfData);
+	void		readASF_Root(std::ifstream& stream, std::string& buffer, ASFData* asfData);
+	void		readASF_Bonedata(std::ifstream& stream, std::string& buffer, ASFData* asfData);
+	void		readASF_Hierarchy(std::ifstream& stream, ASFData* asfData);
 	//void	readASF_Skin(std::ifstream& stream, std::string& buffer);
-
-	ASFData	 _asfData;
 };
 
 //주석 예시.(20230706:신건호)

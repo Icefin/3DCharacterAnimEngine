@@ -1,5 +1,5 @@
 // author: Geonho Shin (icefin@pearlabyss.com)
-#include "Transform.h"
+#include "CustomMath.h"
 
 QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion)
 {

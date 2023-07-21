@@ -151,7 +151,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="Motion.cpp" />
     <ClCompile Include="Skeleton.cpp" />
-    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="CustomMath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AMCParser.h" />
@@ -163,7 +163,7 @@
     <ClInclude Include="Motion.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skeleton.h" />
-    <ClInclude Include="Transform.h" />
+    <ClInclude Include="CustomMath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -26,8 +26,8 @@ enum class CharacterState : uint8
 class Character
 {
 public:
+                        Character(Skeleton* skeleton, std::vector<Motion*>& motionList);
 	                    ~Character();
-	void	            initialize(Skeleton* skeleton, std::vector<Motion*>& motionList);
 	void	            render(Shader& shader, float deltaTime);
 
     void                move();
@@ -37,11 +37,11 @@ public:
     CharacterState      getCharacterState(void) { return _currentState; };
 
 private:
-    void                drawBone(Bone* bone, glm::mat4 matrix, Shader& shader);
-
 	Skeleton*                       _skeleton;
 	std::vector<Motion*>            _motionList;
+    //skinmesh
 
+    std::vector<glm::mat4>          _matrixPalette;
     glm::vec3                       _position = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3                       _forwardDirection = glm::vec3(1.0f, 0.0f, 0.0f);
 

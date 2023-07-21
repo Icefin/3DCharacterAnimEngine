@@ -12,14 +12,13 @@
 class CharacterLoader
 {
 public:
-	void		loadCharacter(Character& character, std::string& asf, std::vector<std::string>& amcList);
+	Character*	loadCharacter(std::string& skeleton, std::vector<std::string>& motions);
 
 private:
 	Skeleton*	generateSkeleton(ASFData* asfData);
 	void		setupToParentMatrix(ASFData* asfData);
 	void		computeToParentMatrix(ASFBone* parent, ASFBone* child);
-	Bone*		generateBone(ASFBone* boneData);
-	void		setupSkeletonHierarchy(std::vector<Bone*>& boneList, ASFData* asfData);
+	Joint*		generateJoint(ASFBone* boneData);
 
 	Motion*		generateMotion(AMCData* amcData, int32 totalBoneNumber);
 	std::vector<CompressedAnimationData>	compressAnimation(std::vector<AnimationData>& data);

@@ -1,6 +1,6 @@
 // author: Geonho Shin (icefin@pearlabyss.com)
 #include "Motion.h"
-#include "Transform.h"
+#include "CustomMath.h"
 
 Motion::Motion(int32 totalBoneNumber, int32 totalFrameNumber)
 {

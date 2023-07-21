@@ -22,7 +22,8 @@ constexpr uint32 SCR_WIDTH = 800;
 constexpr uint32 SCR_HEIGHT = 600;
 constexpr uint32 FRAME_RATE = 120;
 // character
-Character character;
+CharacterLoader characterLoader;
+Character* character;
 
 // camera
 Camera3D camera(glm::vec3(0.0f, 0.0f, 50.0f));
@@ -33,40 +34,40 @@ float prevY = SCR_HEIGHT / 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-float animTime = 0;
+GLFWwindow* window;
+
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
-void initCharacter()
+void loadCharacter()
 {
-    CharacterLoader characterLoader;
-
-    std::string asfFile = "./test/skeleton.asf";
-    std::vector<std::string> amcFileList = { "./test/idle.amc",
+    std::string skeleton = "./test/skeleton.asf";
+    std::vector<std::string> motions = { "./test/idle.amc",
                                              "./test/forward.amc",
                                              "./test/backward.amc",
                                              "./test/run.amc"
                                             };
+    //skin
   
-    characterLoader.loadCharacter(character, asfFile, amcFileList);
+    character = characterLoader.loadCharacter(skeleton, motions);
 }
 
-int main()
+void initializeGLContext(void)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Animation Player", NULL, NULL);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Animation Player", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << '\n';
         glfwTerminate();
-        return -1;
+        return;
     }
 
     glfwMakeContextCurrent(window);
@@ -75,19 +76,22 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
+
     if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == false)
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
+        return;
     }
-
     glEnable(GL_DEPTH_TEST);
+}
 
+int main()
+{
+    initializeGLContext();
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
     shader.use();
     
-    initCharacter();
+    loadCharacter();
 
     while (glfwWindowShouldClose(window) == false)
     {
@@ -106,8 +110,7 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
 
-        character.render(shader, animTime);
-        animTime = 0;
+        character->render(shader, deltaTime * FRAME_RATE);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -125,28 +128,23 @@ void processInput(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_FALSE)
     {
-        if (character.getCharacterState() != CharacterState::FORWARD)
-            character.setCharacterState(CharacterState::FORWARD);
-        animTime = deltaTime * FRAME_RATE;
+        if (character->getCharacterState() != CharacterState::FORWARD)
+            character->setCharacterState(CharacterState::FORWARD);
     }
     else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
-        if (character.getCharacterState() != CharacterState::RUN)
-            character.setCharacterState(CharacterState::RUN);
-        animTime = deltaTime * FRAME_RATE;
+        if (character->getCharacterState() != CharacterState::RUN)
+            character->setCharacterState(CharacterState::RUN);
     }
     else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        if (character.getCharacterState() != CharacterState::BACKWARD)
-            character.setCharacterState(CharacterState::BACKWARD);
-        animTime = deltaTime * FRAME_RATE;
+        if (character->getCharacterState() != CharacterState::BACKWARD)
+            character->setCharacterState(CharacterState::BACKWARD);
     }
-
     else
     {
-        if (character.getCharacterState() != CharacterState::IDLE)
-            character.setCharacterState(CharacterState::IDLE);
-        animTime = deltaTime * FRAME_RATE;
+        if (character->getCharacterState() != CharacterState::IDLE)
+            character->setCharacterState(CharacterState::IDLE);
     }
 /*
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)

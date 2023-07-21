@@ -3,7 +3,7 @@
 #include <queue>
 
 #include "CharacterLoader.h"
-#include "Transform.h"
+#include "CustomMath.h"
 
 #ifdef DEBUG_INFO
 /*
@@ -35,7 +35,7 @@ static void		TEST_PRINT_POSTURE_INFO(AMCData* amcData)
 */
 #endif
 
-void CharacterLoader::loadCharacter(Character& character, std::string& asf, std::vector<std::string>& amcList)
+Character* CharacterLoader::loadCharacter(std::string& asf, std::vector<std::string>& amcList)
 {
 	ASFData* asfData = _asfParser.readASF(asf);
 	Skeleton* skeleton = generateSkeleton(asfData);
@@ -49,26 +49,27 @@ void CharacterLoader::loadCharacter(Character& character, std::string& asf, std:
 	for (int32 idx = 0; idx < amcSize; ++idx)
 		motionList[idx] = generateMotion(amcDataList[idx], asfData->totalBoneNumber);
 
- 	character.initialize(skeleton, motionList);
-
 	for (int32 idx = 0; idx < amcSize; ++idx)
 		delete amcDataList[idx];
+	delete asfData;
+
+	Character* character = new Character(skeleton, motionList);
+	return character;
+
 }
 
 Skeleton* CharacterLoader::generateSkeleton(ASFData* asfData)
 {
 	setupToParentMatrix(asfData);
 
-	std::vector<Bone*> boneList(asfData->totalBoneNumber);
+	std::vector<Joint*> boneList(asfData->totalBoneNumber);
 	for (auto& elem : asfData->boneMap)
 	{
 		int32 index = elem.second.boneIndex;
-		boneList[index] = generateBone(&elem.second);
+		boneList[index] = generateJoint(&elem.second);
 	}
-
-	setupSkeletonHierarchy(boneList, asfData);
 	
-	Skeleton* skeleton = new Skeleton(boneList[0]);
+	Skeleton* skeleton = new Skeleton(boneList);
 	return skeleton;
 }
 
@@ -117,26 +118,14 @@ void	CharacterLoader::computeToParentMatrix(ASFBone* parent, ASFBone* child)
 	child->toParent = rotation * translation;
 }
 
-Bone* CharacterLoader::generateBone(ASFBone* boneData)
+Joint* CharacterLoader::generateJoint(ASFBone* boneData)
 {
-	Bone* newBone = new Bone();
+	Joint* newJoint = new Joint();
 	
-	newBone->index = boneData->boneIndex;
-	newBone->toParent = boneData->toParent;
-	newBone->direction = boneData->offset;
+	newJoint->parentIndex = boneData->parentIndex;
+	newJoint->jointToParentMatrix = boneData->toParent;
 
-	return newBone;
-}
-
-void	CharacterLoader::setupSkeletonHierarchy(std::vector<Bone*>& boneList, ASFData* asfData)
-{
-	for (auto& elem : asfData->boneMap)
-	{
-		ASFBone& asfBone = elem.second;
-		int32 index = asfBone.boneIndex;
-		for (int32 i = 0; i < asfBone.childList.size(); ++i)
-			boneList[index]->childList.push_back(boneList[asfBone.childList[i]->boneIndex]);
-	}
+	return newJoint;
 }
 
 Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)

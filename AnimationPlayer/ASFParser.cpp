@@ -7,7 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "ASFParser.h"
-#include "Transform.h"
+#include "CustomMath.h"
 
 ASFParser::~ASFParser()
 {
@@ -16,6 +16,7 @@ ASFParser::~ASFParser()
 
 ASFData* ASFParser::readASF(std::string& filename)
 {
+	ASFData* asfData = new ASFData;
 	std::ifstream stream;
 	stream.open(filename, std::ios_base::in);
 	if (stream.fail() == true)
@@ -28,22 +29,23 @@ ASFData* ASFParser::readASF(std::string& filename)
 		stream >> buffer;
 
 		if (buffer == ":units")
-			readASF_Units(stream, buffer);
+			readASF_Units(stream, buffer, asfData);
 		if (buffer == ":root")
-			readASF_Root(stream, buffer);
+			readASF_Root(stream, buffer, asfData);
 		if (buffer == ":bonedata")
-			readASF_Bonedata(stream, buffer);
+			readASF_Bonedata(stream, buffer, asfData);
 		if (buffer == ":hierarchy")
-			readASF_Hierarchy(stream);
+			readASF_Hierarchy(stream, asfData);
 		//else if (buffer.find(":skin") != std::string::npos)
 		std::getline(stream, buffer);
 	}
 
 	stream.close();
-	return &(_asfData);
+
+	return asfData;
 }
 
-void ASFParser::readASF_Units(std::ifstream& stream, std::string& buffer)
+void ASFParser::readASF_Units(std::ifstream& stream, std::string& buffer, ASFData* asfData)
 {
 	while (true)
 	{
@@ -52,21 +54,21 @@ void ASFParser::readASF_Units(std::ifstream& stream, std::string& buffer)
 			return;
 		
 		if (buffer == "mass")
-			stream >> _asfData.mass;
+			stream >> asfData->mass;
 		else if (buffer == "length")
-			stream >> _asfData.length;
+			stream >> asfData->length;
 		else if (buffer == "angle")
 		{
 			stream >> buffer;
 			if (buffer == "deg")
-				_asfData.isRadian = false;
+				asfData->isRadian = false;
 		}
 
 		std::getline(stream, buffer);
 	}
 }
 
-void ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
+void ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer, ASFData* asfData)
 {
 	ASFBone root;
 	while (buffer != ":bonedata")
@@ -111,7 +113,7 @@ void ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
 			}
 			root.dof = idof;
 			if (idof > 0)
-				_asfData.movingBoneNumber++;
+				asfData->movingBoneNumber++;
 		}
 		else if (buffer == "position")
 		{
@@ -124,7 +126,7 @@ void ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
 			stream >> root.orientation.x;
 			stream >> root.orientation.y;
 			stream >> root.orientation.z;
-			if (_asfData.isRadian == false)
+			if (asfData->isRadian == false)
 			{
 				root.orientation.x = glm::radians(root.orientation.x);
 				root.orientation.y = glm::radians(root.orientation.y);
@@ -132,12 +134,12 @@ void ASFParser::readASF_Root(std::ifstream& stream, std::string& buffer)
 			}
 		}
 	}
-	root.boneIndex = _asfData.totalBoneNumber;
-	_asfData.boneMap["root"] = root;
-	_asfData.totalBoneNumber++;
+	root.boneIndex = 0;
+	asfData->boneMap["root"] = root;
+	asfData->totalBoneNumber++;
 }
 
-void ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
+void ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer, ASFData* asfData)
 {
 	while (buffer != ":hierarchy")
 	{
@@ -171,7 +173,7 @@ void ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
 					stream >> bone.orientation.x;
 					stream >> bone.orientation.y;
 					stream >> bone.orientation.z;
-					if (_asfData.isRadian == false)
+					if (asfData->isRadian == false)
 					{
 						bone.orientation.x = glm::radians(bone.orientation.x);
 						bone.orientation.y = glm::radians(bone.orientation.y);
@@ -207,7 +209,7 @@ void ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
 					}
 					bone.dof = idof;
 					if (idof > 0)
-						_asfData.movingBoneNumber++;
+						asfData->movingBoneNumber++;
 				}
 				else if (buffer == "limits")
 				{
@@ -222,14 +224,14 @@ void ASFParser::readASF_Bonedata(std::ifstream& stream, std::string& buffer)
 					__noop;
 				}
 			}
-			bone.boneIndex = _asfData.totalBoneNumber;
-			_asfData.boneMap[name] = bone;
-			_asfData.totalBoneNumber++;
+			bone.boneIndex = asfData->totalBoneNumber;
+			asfData->boneMap[name] = bone;
+			asfData->totalBoneNumber++;
 		}
 	}
 }
 
-void ASFParser::readASF_Hierarchy(std::ifstream& stream)
+void ASFParser::readASF_Hierarchy(std::ifstream& stream, ASFData* asfData)
 {
 	std::string parentName;
 	std::string childName;
@@ -250,18 +252,18 @@ void ASFParser::readASF_Hierarchy(std::ifstream& stream)
 			while (pos != std::string::npos)
 			{
 				std::string name = childName.substr(0, pos);
-				_asfData.boneMap[parentName].childList.push_back(&(_asfData.boneMap[name]));
-				_asfData.boneMap[name].parentBone = &(_asfData.boneMap[parentName]);
+				asfData->boneMap[parentName].childList.push_back(&(asfData->boneMap[name]));
+				asfData->boneMap[name].parentIndex = asfData->boneMap[parentName].boneIndex;
 				childName.erase(0, pos + 1);
 				pos = childName.find(" ");
 			}
-			_asfData.boneMap[parentName].childList.push_back(&(_asfData.boneMap[childName]));
-			_asfData.boneMap[childName].parentBone = &(_asfData.boneMap[parentName]);
+			asfData->boneMap[parentName].childList.push_back(&(asfData->boneMap[childName]));
+			asfData->boneMap[childName].parentIndex = asfData->boneMap[parentName].boneIndex;
 		}
 		
 		if (parentName[0] == '#')
 			std::getline(stream, parentName);
 		stream >> parentName;
 	}
-	_asfData.boneMap["root"].parentBone = &(_asfData.boneMap["root"]);
+	asfData->boneMap["root"].parentIndex = -1;
 }

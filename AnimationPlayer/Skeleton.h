@@ -8,24 +8,25 @@
 
 #include "CommonTypes.h"
 
-struct Bone
+struct Joint
 {
-	std::vector<Bone*>		childList;
+	int32		parentIndex;
 
-	int32					index;
-	glm::mat4				toParent = glm::mat4(1.0f);
-	glm::vec3				direction = glm::vec3(0.0f);
+	glm::mat4	jointToParentMatrix = glm::mat4(1.0f);
+	glm::mat4	modelToJointMatrix = glm::mat4(1.0f);
 };
 
 class Skeleton
 {
 public:
-			Skeleton(Bone* root) : _root(root) {};
+			Skeleton(std::vector<Joint*>& joints);
 			~Skeleton();
 
-	Bone*	getRoot(void) { return _root; };
+	Joint*	getRoot(void) { return _jointList[0]; };
+	Joint*	getJoint(int32 index) { return _jointList[index]; };
+	int32	getJointNumber(void) { return _jointList.size(); };
 
 private :
-	Bone* _root;
+	std::vector<Joint*> _jointList;
 };
 
