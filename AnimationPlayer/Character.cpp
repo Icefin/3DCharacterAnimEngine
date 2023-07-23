@@ -20,22 +20,6 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
     //vao : attribute of vertex set
     //ebo : vertex index order of object
 
-    glGenBuffers(1, &boneBufferObject);
-    glGenVertexArrays(1, &boneArrayObject);
-
-    glBindVertexArray(boneArrayObject);
-
-    glBindBuffer(GL_ARRAY_BUFFER, boneBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(bone), bone, GL_STATIC_DRAW); //copy user-defined data into buffer
-
-    // position attribute
-    //lcoation = 0, sizeof attrib(vec3), type, want to be normalized?, stride(space btw vertattb.), offset
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    //color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
     glGenBuffers(1, &axisBufferObject);
     glGenVertexArrays(1, &axisArrayObject);
 
@@ -43,10 +27,11 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 
     glBindBuffer(GL_ARRAY_BUFFER, axisBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(axis), axis, GL_STATIC_DRAW);
-
+    // position attribute
+    //lcoation = 0, sizeof attrib(vec3), type, want to be normalized?, stride(space btw vertattb.), offset
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
+    //color attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 }
@@ -127,22 +112,45 @@ void Character::updateMatrixPalette()
 void Character::renderSkeleton(Shader& shader)
 {
     int32 jointNumber = _skeleton->getJointNumber();
-    for (int32 index = 0; index < jointNumber; ++index)
+    for (int32 index = 1; index < jointNumber; ++index)
     {
-        glm::vec3 direction = glm::vec3(10.0, 0.0, 0.0);
-        glm::vec3 rotAxis = glm::cross({ 1.0f, 0.0f, 0.0f }, direction);
-        float angle = acos(glm::dot({ 1.0f, 0.0f, 0.0f }, glm::normalize(direction)));
-        glm::mat4 boneRotation = glm::rotate(glm::mat4(1.0f), angle, rotAxis);
+        Joint* currentJoint = _skeleton->getJoint(index);
+        glm::vec3 currentPosition = glm::vec3(_matrixPalette[index] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        glm::vec3 parentPosition = glm::vec3(_matrixPalette[currentJoint->parentIndex] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-        float scale = glm::length(direction);
-        glm::mat4 scaler = glm::scale(glm::mat4(1.0f), { scale, 1.0f, 1.0f });
+        float vertices[12] = {
+            currentPosition.x, currentPosition.y, currentPosition.z, 0.0f, 0.0f, 0.0f,
+            parentPosition.x, parentPosition.y, parentPosition.z, 0.0f, 0.0f, 0.0f
+        };
 
-        glBindVertexArray(boneArrayObject);
-        shader.setUniformMat4("model", _matrixPalette[index] * boneRotation * scaler);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        GLuint testBufferObject;
+        GLuint testArrayObject;
+
+        glGenBuffers(1, &testBufferObject);
+        glGenVertexArrays(1, &testArrayObject);
+
+        glBindVertexArray(testArrayObject);
+
+        glBindBuffer(GL_ARRAY_BUFFER, testBufferObject);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glBindVertexArray(testArrayObject);
+        shader.setUniformMat4("model", glm::mat4(1.0f));
+        glLineWidth(8.0f);
+        glDrawArrays(GL_LINES, 0, 6);
+        
+        glDeleteVertexArrays(1, &testArrayObject);
+        glDeleteBuffers(1, &testBufferObject);
 
         glBindVertexArray(axisArrayObject);
         shader.setUniformMat4("model", _matrixPalette[index]);
+        glLineWidth(2.0f);
         glDrawArrays(GL_LINES, 0, 12);
     }
 }

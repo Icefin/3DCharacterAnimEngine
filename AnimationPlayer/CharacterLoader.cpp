@@ -148,7 +148,7 @@ Motion* CharacterLoader::generateMotion(AMCData* amcData, int32 totalBoneNumber)
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.y, { 0.0f, 1.0f, 0.0f });
 			rotation = glm::rotate(rotation, posture[frame].frameRotation.x, { 1.0f, 0.0f, 0.0f });
 
-			animData[frame].rotation = glm::quat(rotation);
+			animData[frame].rotation = glm::quat_cast(rotation);
 		}
 		std::vector<CompressedPose> compressedPoseList = compressAnimation(animData);
 		motion->setJointPose(jointIndex, compressedPoseList);
