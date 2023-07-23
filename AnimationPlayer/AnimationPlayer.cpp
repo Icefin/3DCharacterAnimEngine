@@ -13,6 +13,7 @@
 #include "Shader.h"
 #include "Camera3D.h"
 #include "CharacterLoader.h"
+#include "Plane.h"
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -35,7 +36,6 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 GLFWwindow* window;
-
 
 void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -93,6 +93,7 @@ int main()
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
     shader.use();
 
+    Plane* ground = new Plane(glm::vec3(0.0f, -18.0f, 0.0f));
     loadCharacter();
 
     while (glfwWindowShouldClose(window) == false)
@@ -112,6 +113,7 @@ int main()
         glm::mat4 view = camera.getViewMatrix();
         shader.setUniformMat4("view", view);
 
+        ground->render(shader);
         character->render(shader, deltaTime * FRAME_RATE);
         glfwSwapBuffers(window);
         glfwPollEvents();

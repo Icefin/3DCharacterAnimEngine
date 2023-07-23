@@ -4,7 +4,6 @@
 #include "Character.h"
 #include "CustomMath.h"
 
-uint32 boneBufferObject, boneArrayObject;
 uint32 axisBufferObject, axisArrayObject;
 
 Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
@@ -38,9 +37,6 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 
 Character::~Character()
 {
-    glDeleteVertexArrays(1, &boneArrayObject);
-    glDeleteBuffers(1, &boneBufferObject);
-
     glDeleteVertexArrays(1, &axisArrayObject);
     glDeleteBuffers(1, &axisBufferObject);
 
@@ -123,15 +119,15 @@ void Character::renderSkeleton(Shader& shader)
             parentPosition.x, parentPosition.y, parentPosition.z, 0.0f, 0.0f, 0.0f
         };
 
-        GLuint testBufferObject;
-        GLuint testArrayObject;
+        GLuint boneBufferObject;
+        GLuint boneArrayObject;
 
-        glGenBuffers(1, &testBufferObject);
-        glGenVertexArrays(1, &testArrayObject);
+        glGenBuffers(1, &boneBufferObject);
+        glGenVertexArrays(1, &boneArrayObject);
 
-        glBindVertexArray(testArrayObject);
+        glBindVertexArray(boneArrayObject);
 
-        glBindBuffer(GL_ARRAY_BUFFER, testBufferObject);
+        glBindBuffer(GL_ARRAY_BUFFER, boneBufferObject);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -140,13 +136,13 @@ void Character::renderSkeleton(Shader& shader)
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        glBindVertexArray(testArrayObject);
+        glBindVertexArray(boneArrayObject);
         shader.setUniformMat4("model", glm::mat4(1.0f));
         glLineWidth(8.0f);
         glDrawArrays(GL_LINES, 0, 6);
         
-        glDeleteVertexArrays(1, &testArrayObject);
-        glDeleteBuffers(1, &testBufferObject);
+        glDeleteVertexArrays(1, &boneArrayObject);
+        glDeleteBuffers(1, &boneBufferObject);
 
         glBindVertexArray(axisArrayObject);
         shader.setUniformMat4("model", _matrixPalette[index]);

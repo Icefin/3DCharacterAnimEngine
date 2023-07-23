@@ -46,8 +46,6 @@ private:
 	std::vector<Motion*>            _motionList;
     //skinmesh
 
-    glm::vec3                       _position = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3                       _forwardDirection = glm::vec3(1.0f, 0.0f, 0.0f);
     bool                            _isGrounded = true;
 
     std::vector<glm::mat4>          _matrixPalette;
