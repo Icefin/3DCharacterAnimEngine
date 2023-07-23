@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "GameObject.h"
 #include "Shader.h"
 #include "Skeleton.h"
 #include "Motion.h"
@@ -23,12 +24,13 @@ enum class CharacterState : uint8
 //  ATTACK = 5 
 };
 
-class Character
+class Character : public GameObject
 {
 public:
                         Character(Skeleton* skeleton, std::vector<Motion*>& motionList);
 	                    ~Character(void);
 	void	            render(Shader& shader, float deltaTime);
+    void                render(Shader& shader) override;
     void                updateMatrixPalette(void);
 
     void                move();

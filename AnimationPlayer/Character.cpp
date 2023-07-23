@@ -93,6 +93,11 @@ void Character::render(Shader& shader, float deltaTime)
     renderSkeleton(shader);
 }
 
+void Character::render(Shader& shader)
+{
+    __noop;
+}
+
 void Character::updateMatrixPalette()
 {
     glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(0, _currentMotionTime);
