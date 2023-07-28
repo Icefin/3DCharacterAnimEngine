@@ -11,6 +11,7 @@
 #include "Shader.h"
 #include "Skeleton.h"
 #include "Motion.h"
+#include "Animator.h"
 
 constexpr float BLEND_TIME = 30.0f;
 
@@ -47,7 +48,8 @@ private:
     //skinmesh
 
     bool                            _isGrounded = true;
-
+    Animator*                       _animator = nullptr;
+    
     std::vector<glm::mat4>          _matrixPalette;
     CharacterState                  _prevState = CharacterState::IDLE;
     float                           _prevMotionTime = 0.0f;

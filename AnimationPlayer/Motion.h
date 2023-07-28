@@ -33,5 +33,6 @@ public:
 private :
 	std::vector<std::vector<CompressedPose>>	_keyFramePoseList;
 	int32										_maxFrameTime;
+	bool										_isLooping;
 };
 
