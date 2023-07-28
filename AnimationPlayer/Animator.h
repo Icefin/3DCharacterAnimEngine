@@ -29,7 +29,7 @@ struct LayerInfo
 	float			currentMotionTime = 0.0f;
 
 	float			blendWeight = kBlendTime;
-	int32			maxFrameTime = 0;
+	int32			maxFrameTime = 1000;
 	bool			isLooping = true;
 };
 
@@ -44,7 +44,7 @@ public :
 	glm::quat	getJointAnimation(int32 jointIndex);
 
 private :
-	void	updateAnimationLayerListState(AnimationState state, float deltaTime);
+	void		updateAnimationLayerListState(AnimationState state, float deltaTime);
 	std::vector<Motion*>	_motionList;
 	std::vector<LayerInfo>	_animationLayerList;
 };

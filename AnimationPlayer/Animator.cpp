@@ -14,6 +14,10 @@ Animator::Animator(std::vector<Motion*>& motionList)
 
 	_animationLayerList[1].parentLayerIndex = 0;
 	_animationLayerList[1].animationRootBoneIndex = 11;
+
+	//Replace anywhere...
+	_motionList[4]->_isLooping = false;
+	_motionList[5]->_isLooping = false;
 }
 
 Animator::~Animator()
@@ -39,6 +43,7 @@ static void convertLayerState(LayerInfo& layer, AnimationState state, Motion* mo
 	layer.currentMotionTime = 0.0f;
 
 	layer.maxFrameTime = motion->getMaxFrameTime();
+	layer.isLooping = motion->_isLooping;
 }
 
 static void updateLayerState(LayerInfo& layer, float deltaTime, Motion* motion)
@@ -49,22 +54,23 @@ static void updateLayerState(LayerInfo& layer, float deltaTime, Motion* motion)
 	layer.currentMotionTime += deltaTime;
 	if (layer.currentMotionTime >= layer.maxFrameTime)
 	{
-		layer.currentMotionTime = 0.0f;
 		if (layer.isLooping == false)
 			convertLayerState(layer, AnimationState::IDLE, motion);
+		layer.currentMotionTime = 0.0f;
 	}
 }
 
 void	Animator::updateAnimationLayerListState(AnimationState state, float deltaTime)
 {
-	int32 layerNumber = _animationLayerList.size();
-	for (int32 idx = 0; idx < layerNumber; ++idx)
-	{
-		if (_animationLayerList[idx].currentState == state)
-			updateLayerState(_animationLayerList[idx], deltaTime, _motionList[static_cast<int32>(state)]);
-		else
-			convertLayerState(_animationLayerList[idx], state, _motionList[static_cast<int32>(state)]);
-	}
+	//Whole Body Layer Update
+	updateLayerState(_animationLayerList[0], deltaTime, _motionList[static_cast<int32>(state)]);
+	if (_animationLayerList[1].currentState == AnimationState::IDLE && _animationLayerList[0].currentState != state)
+		convertLayerState(_animationLayerList[0], state, _motionList[static_cast<int32>(state)]);
+
+	//Upper Body Layer Update
+	updateLayerState(_animationLayerList[1], deltaTime, _motionList[static_cast<int32>(state)]);
+	if (_animationLayerList[0].currentState != AnimationState::IDLE && _animationLayerList[1].currentState != state)
+		convertLayerState(_animationLayerList[1], state, _motionList[static_cast<int32>(state)]);
 }
 
 #define LOWER_BACK 10
@@ -73,7 +79,7 @@ glm::quat Animator::getJointAnimation(int32 jointIndex)
 {
 	glm::quat jointAnimation;
 
-	if (jointIndex > LOWER_BACK && _animationLayerList[1].currentState != AnimationState::IDLE)
+	if (jointIndex >= LOWER_BACK && _animationLayerList[1].currentState != AnimationState::IDLE)
 	{
 		int32 motionIndex = static_cast<int32>(_animationLayerList[1].currentState);
 		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[1].currentMotionTime);

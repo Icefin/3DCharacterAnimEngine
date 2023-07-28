@@ -49,7 +49,8 @@ void loadCharacter()
                                             "./test/forward.amc",
                                             "./test/backward.amc",
                                             "./test/run.amc",
-                                            "./test/jump.amc"
+                                            "./test/jump.amc",
+                                            "./test/attack.amc"
                                         };
     //skin
   
@@ -149,6 +150,11 @@ void processInput(GLFWwindow* window)
     {
         if (character->getCharacterState() != AnimationState::JUMP)
             character->setCharacterState(AnimationState::JUMP);
+    }
+    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        if (character->getCharacterState() != AnimationState::ATTACK)
+            character->setCharacterState(AnimationState::ATTACK);
     }
     else
     {

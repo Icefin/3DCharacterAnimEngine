@@ -28,11 +28,14 @@ public:
 
 	glm::quat	getJointPose(int32 boneIndex, float frameTime);
 	int32		getMaxFrameTime(void) { return _maxFrameTime; };
+
 	void		setJointPose(int32 boneIndex, std::vector<CompressedPose>& boneAnim);
+
+public :
+	bool		_isLooping = true;
 
 private :
 	std::vector<std::vector<CompressedPose>>	_keyFramePoseList;
 	int32										_maxFrameTime;
-	bool										_isLooping;
 };
 
