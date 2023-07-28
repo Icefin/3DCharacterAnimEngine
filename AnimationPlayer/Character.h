@@ -13,18 +13,6 @@
 #include "Motion.h"
 #include "Animator.h"
 
-constexpr float BLEND_TIME = 30.0f;
-
-enum class CharacterState : uint8
-{
-    IDLE = 0,
-    FORWARD = 1,
-    BACKWARD = 2,
-    RUN = 3,
-    JUMP = 4,
-//  ATTACK = 5 
-};
-
 class Character : public GameObject
 {
 public:
@@ -37,26 +25,17 @@ public:
     void                move();
     void                rotate();
 
-    void                setCharacterState(CharacterState state);
-    CharacterState      getCharacterState(void) { return _currentState; };
-    bool                isGrounded(void) { return _isGrounded; };
+    void                setCharacterState(AnimationState state);
+    AnimationState      getCharacterState(void) { return _currentState; };
 
 private:
     void                renderSkeleton(Shader& shader);
 	Skeleton*                       _skeleton;
-	std::vector<Motion*>            _motionList;
-    //skinmesh
-
-    bool                            _isGrounded = true;
     Animator*                       _animator = nullptr;
+    //skinmesh
     
     std::vector<glm::mat4>          _matrixPalette;
-    CharacterState                  _prevState = CharacterState::IDLE;
-    float                           _prevMotionTime = 0.0f;
-    CharacterState                  _currentState = CharacterState::IDLE;
-    float                           _currentMotionTime = 0.0f;
-    float                           _blendWeight = BLEND_TIME;
-    int32                           _maxFrameTime = 0;
+    AnimationState                  _currentState = AnimationState::IDLE;
 
     float       axis[36] = {
         1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,

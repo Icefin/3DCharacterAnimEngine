@@ -36,12 +36,12 @@ struct LayerInfo
 class Animator
 {
 public :
-				Animator();
+				Animator(std::vector<Motion*>& motionList);
 				~Animator();
 
 	void		update(AnimationState state, float deltaTime);
 
-	glm::quat	getBoneAnimation(int32 boneIndex);
+	glm::quat	getJointAnimation(int32 jointIndex);
 
 private :
 	void	updateAnimationLayerListState(AnimationState state, float deltaTime);

@@ -130,33 +130,30 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (character->isGrounded() == true)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_FALSE)
     {
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_FALSE)
-        {
-            if (character->getCharacterState() != CharacterState::FORWARD)
-                character->setCharacterState(CharacterState::FORWARD);
-        }
-        else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        {
-            if (character->getCharacterState() != CharacterState::RUN)
-                character->setCharacterState(CharacterState::RUN);
-        }
-        else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        {
-            if (character->getCharacterState() != CharacterState::BACKWARD)
-                character->setCharacterState(CharacterState::BACKWARD);
-        }
-        else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        {
-            if (character->getCharacterState() != CharacterState::JUMP)
-                character->setCharacterState(CharacterState::JUMP);
-        }
-        else
-        {
-            if (character->getCharacterState() != CharacterState::IDLE)
-                character->setCharacterState(CharacterState::IDLE);
-        }
+        if (character->getCharacterState() != AnimationState::FORWARD)
+            character->setCharacterState(AnimationState::FORWARD);
+    }
+    else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
+        if (character->getCharacterState() != AnimationState::RUN)
+            character->setCharacterState(AnimationState::RUN);
+    }
+    else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        if (character->getCharacterState() != AnimationState::BACKWARD)
+            character->setCharacterState(AnimationState::BACKWARD);
+    }
+    else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        if (character->getCharacterState() != AnimationState::JUMP)
+            character->setCharacterState(AnimationState::JUMP);
+    }
+    else
+    {
+        if (character->getCharacterState() != AnimationState::IDLE)
+            character->setCharacterState(AnimationState::IDLE);
     }
 /*
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)

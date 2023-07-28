@@ -9,10 +9,7 @@ uint32 axisBufferObject, axisArrayObject;
 Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 {
     _skeleton = skeleton;
-    int32 motionSize = motionList.size();
-    _motionList.resize(motionSize);
-    for (int32 idx = 0; idx < motionSize; ++idx)
-        _motionList[idx] = motionList[idx];
+    _animator = new Animator(motionList);
     _matrixPalette.resize(_skeleton->getJointNumber());
 
     //vbo : object vertex set
@@ -43,12 +40,8 @@ Character::~Character()
     if (_skeleton != NULL)
         delete _skeleton;
 
-    if (_motionList.empty() == false)
-    {
-        int32 motionSize = _motionList.size();
-        for (int32 i = 0; i < motionSize; ++i)
-            delete _motionList[i];
-    }
+    if (_animator != NULL)
+        delete _animator;
 }
 
 void Character::render(Shader& shader, float deltaTime)
@@ -56,20 +49,7 @@ void Character::render(Shader& shader, float deltaTime)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(2.0f);
 
-    if (_blendWeight < BLEND_TIME)
-        _blendWeight += deltaTime;
-
-    _currentMotionTime += deltaTime;
-    if (_currentMotionTime >= _maxFrameTime)
-    {
-        _currentMotionTime = 0.0f;
-        if (_currentState == CharacterState::JUMP)
-        {
-            setCharacterState(CharacterState::IDLE);
-            _isGrounded = true;
-        }
-    }
-
+    _animator->update(_currentState, deltaTime);
     updateMatrixPalette();
     renderSkeleton(shader);
 }
@@ -81,25 +61,14 @@ void Character::render(Shader& shader)
 
 void Character::updateMatrixPalette()
 {
-    glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(0, _currentMotionTime);
-    if (_blendWeight < BLEND_TIME)
-    {
-        glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(0, _prevMotionTime);
-        blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
-    }
-    _matrixPalette[0] = glm::mat4(blendBoneAnimationData);
+    _matrixPalette[0] = glm::mat4(_animator->getJointAnimation(0));
 
     int32 jointNumber = _skeleton->getJointNumber();
     for (int32 index = 1; index < jointNumber; ++index)
     {
-        Joint* currentJoint = _skeleton->getJoint(index);
-        glm::quat blendBoneAnimationData = _motionList[static_cast<int32>(_currentState)]->getJointPose(index, _currentMotionTime);
-        if (_blendWeight < BLEND_TIME)
-        {
-            glm::quat prevBoneAnimationData = _motionList[static_cast<int32>(_prevState)]->getJointPose(index, _prevMotionTime);
-            blendBoneAnimationData = glm::slerp(prevBoneAnimationData, blendBoneAnimationData, _blendWeight / BLEND_TIME);
-        }
+        glm::quat blendBoneAnimationData = _animator->getJointAnimation(index);
 
+        Joint* currentJoint = _skeleton->getJoint(index);
         glm::mat4 matrix = _matrixPalette[currentJoint->parentIndex] * currentJoint->jointToParentMatrix * glm::mat4(blendBoneAnimationData);
         _matrixPalette[index] = matrix;
     }
@@ -151,17 +120,9 @@ void Character::renderSkeleton(Shader& shader)
     }
 }
 
-void Character::setCharacterState(CharacterState state)
+void Character::setCharacterState(AnimationState state)
 {
-    _prevState = _currentState;
     _currentState = state;
-    _maxFrameTime = _motionList[static_cast<int32>(_currentState)]->getMaxFrameTime();
-
-    _blendWeight = BLEND_TIME - _blendWeight;
-    _prevMotionTime = _currentMotionTime;
-    _currentMotionTime = 0.0f;
-    if (state == CharacterState::JUMP)
-        _isGrounded = false;
 }
 
 void Character::move()

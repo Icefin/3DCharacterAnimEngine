@@ -1,7 +1,12 @@
 #include "Animator.h"
 
-Animator::Animator()
+Animator::Animator(std::vector<Motion*>& motionList)
 {
+	int32 motionNumber = motionList.size();
+	_motionList.resize(motionNumber);
+	for (int32 idx = 0; idx < motionNumber; ++idx)
+		_motionList[idx] = motionList[idx];
+
 	_animationLayerList.resize(2);
 
 	_animationLayerList[0].parentLayerIndex = -1;
@@ -62,10 +67,34 @@ void	Animator::updateAnimationLayerListState(AnimationState state, float deltaTi
 	}
 }
 
-glm::quat Animator::getBoneAnimation(int32 boneIndex)
-{
-	//find bone's animation layer
+#define LOWER_BACK 10
 
-	//return animation with layerinfo + boneindex
-	return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+glm::quat Animator::getJointAnimation(int32 jointIndex)
+{
+	glm::quat jointAnimation;
+
+	if (jointIndex > LOWER_BACK && _animationLayerList[1].currentState != AnimationState::IDLE)
+	{
+		int32 motionIndex = static_cast<int32>(_animationLayerList[1].currentState);
+		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[1].currentMotionTime);
+		if (_animationLayerList[1].blendWeight < kBlendTime)
+		{
+			int32 prevMotionIndex = static_cast<int32>(_animationLayerList[1].prevState);
+			glm::quat prevJointAnimation = _motionList[prevMotionIndex]->getJointPose(jointIndex, _animationLayerList[1].prevMotionTime);
+			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[1].blendWeight / kBlendTime);
+		}
+	}
+	else
+	{
+		int32 motionIndex = static_cast<int32>(_animationLayerList[0].currentState);
+		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[0].currentMotionTime);
+		if (_animationLayerList[0].blendWeight < kBlendTime)
+		{
+			int32 prevMotionIndex = static_cast<int32>(_animationLayerList[0].prevState);
+			glm::quat prevJointAnimation = _motionList[prevMotionIndex]->getJointPose(jointIndex, _animationLayerList[0].prevMotionTime);
+			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[0].blendWeight / kBlendTime);
+		}
+	}
+
+	return jointAnimation;
 }
