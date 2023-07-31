@@ -60,17 +60,19 @@ static void updateLayerState(LayerInfo& layer, float deltaTime, Motion* motion)
 	}
 }
 
+#include <iostream>
 void	Animator::updateAnimationLayerListState(AnimationState state, float deltaTime)
 {
-	//Whole Body Layer Update
-	updateLayerState(_animationLayerList[0], deltaTime, _motionList[static_cast<int32>(state)]);
-	if (_animationLayerList[1].currentState == AnimationState::IDLE && _animationLayerList[0].currentState != state)
-		convertLayerState(_animationLayerList[0], state, _motionList[static_cast<int32>(state)]);
-
 	//Upper Body Layer Update
 	updateLayerState(_animationLayerList[1], deltaTime, _motionList[static_cast<int32>(state)]);
-	if (_animationLayerList[0].currentState != AnimationState::IDLE && _animationLayerList[1].currentState != state)
+	if ((_animationLayerList[0].currentState == AnimationState::FORWARD || _animationLayerList[0].currentState == AnimationState::BACKWARD || _animationLayerList[0].currentState == AnimationState::RUN) && (state == AnimationState::ATTACK))
 		convertLayerState(_animationLayerList[1], state, _motionList[static_cast<int32>(state)]);
+
+	//Whole Body Layer Update
+	updateLayerState(_animationLayerList[0], deltaTime, _motionList[static_cast<int32>(state)]);
+	if (_animationLayerList[0].currentState != state && _animationLayerList[1].currentState != AnimationState::ATTACK)
+		convertLayerState(_animationLayerList[0], state, _motionList[static_cast<int32>(state)]);
+
 }
 
 #define LOWER_BACK 10
@@ -79,7 +81,7 @@ glm::quat Animator::getJointAnimation(int32 jointIndex)
 {
 	glm::quat jointAnimation;
 
-	if (jointIndex >= LOWER_BACK && _animationLayerList[1].currentState != AnimationState::IDLE)
+	if (jointIndex >= LOWER_BACK && _animationLayerList[1].currentState == AnimationState::ATTACK)
 	{
 		int32 motionIndex = static_cast<int32>(_animationLayerList[1].currentState);
 		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[1].currentMotionTime);

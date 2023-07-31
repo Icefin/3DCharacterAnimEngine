@@ -51,7 +51,7 @@ glm::quat Motion::getJointPose(int32 boneIndex, float frameTime)
 	float w = interpolateCatmullRomSpline(p0.w, p1.w, p2.w, p3.w, t);
 
 	//return rotation
-	return glm::quat(w, x, y, z);
+	return glm::normalize(glm::quat(w, x, y, z));
 }
 
 void Motion::setJointPose(int32 boneIndex, std::vector<CompressedPose>& boneAnim)

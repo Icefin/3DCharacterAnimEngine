@@ -4,6 +4,8 @@
 
 #include "Motion.h"
 
+constexpr float kBlendTime = 30.0f;
+
 enum class AnimationState : uint8
 {
 	IDLE = 0,
@@ -13,8 +15,6 @@ enum class AnimationState : uint8
 	JUMP,
 	ATTACK
 };
-
-constexpr float kBlendTime = 30.0f;
 
 struct LayerInfo
 {
@@ -29,7 +29,7 @@ struct LayerInfo
 	float			currentMotionTime = 0.0f;
 
 	float			blendWeight = kBlendTime;
-	int32			maxFrameTime = 1000;
+	int32			maxFrameTime = 1'000;
 	bool			isLooping = true;
 };
 
