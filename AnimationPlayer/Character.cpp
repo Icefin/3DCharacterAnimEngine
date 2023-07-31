@@ -4,7 +4,10 @@
 #include "Character.h"
 #include "CustomMath.h"
 
-uint32 axisBufferObject, axisArrayObject;
+#ifdef DEBUG
+    uint32 axisBufferObject, axisArrayObject;
+#endif // DEBUG
+
 
 Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 {
@@ -16,6 +19,7 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
     //vao : attribute of vertex set
     //ebo : vertex index order of object
 
+#ifdef DEBUG
     glGenBuffers(1, &axisBufferObject);
     glGenVertexArrays(1, &axisArrayObject);
 
@@ -30,12 +34,16 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
     //color attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+#endif // DEBUG
+
 }
 
 Character::~Character()
 {
+#ifdef DEBUG
     glDeleteVertexArrays(1, &axisArrayObject);
     glDeleteBuffers(1, &axisBufferObject);
+#endif // DEBUG
 
     if (_skeleton != NULL)
         delete _skeleton;
@@ -113,10 +121,12 @@ void Character::renderSkeleton(Shader& shader)
         glDeleteVertexArrays(1, &boneArrayObject);
         glDeleteBuffers(1, &boneBufferObject);
 
+#ifdef DEBUG
         glBindVertexArray(axisArrayObject);
         shader.setUniformMat4("model", _matrixPalette[index]);
         glLineWidth(2.0f);
         glDrawArrays(GL_LINES, 0, 12);
+#endif // DEBUG
     }
 }
 
