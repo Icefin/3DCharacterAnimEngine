@@ -21,7 +21,7 @@
 
 constexpr uint32 SCR_WIDTH = 800;
 constexpr uint32 SCR_HEIGHT = 600;
-constexpr uint32 FRAME_RATE = 120;
+uint32 frameRate = 120;
 
 // character
 CharacterLoader characterLoader;
@@ -100,15 +100,15 @@ int main()
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        glfwPollEvents();
         processInput(window);
 
-        camera->update(shader, deltaTime * FRAME_RATE);
+        camera->update(shader, deltaTime * frameRate);
 
         ground->render(shader);
-        character->render(shader, deltaTime * FRAME_RATE);
+        character->render(shader, deltaTime * frameRate);
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
     glfwTerminate();
@@ -151,6 +151,15 @@ void processInput(GLFWwindow* window)
     {
         if (character->getCharacterState() != AnimationState::IDLE)
             character->setCharacterState(AnimationState::IDLE);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
+    {
+        frameRate = frameRate == 300 ? frameRate : frameRate + 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
+    {
+        frameRate = frameRate == 10 ? frameRate : frameRate - 5;
     }
 }
 
