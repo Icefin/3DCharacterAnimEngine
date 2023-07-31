@@ -22,23 +22,17 @@
 constexpr uint32 SCR_WIDTH = 800;
 constexpr uint32 SCR_HEIGHT = 600;
 constexpr uint32 FRAME_RATE = 120;
+
 // character
 CharacterLoader characterLoader;
 Character* character;
 
-// camera
-Camera3D camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, 0.0f, 0.0f));
-float prevX = SCR_WIDTH / 2.0f;
-float prevY = SCR_HEIGHT / 2.0f;
-
-// timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-
+Camera3D* camera;
 GLFWwindow* window;
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 void processInput(GLFWwindow* window);
 
 void loadCharacter()
@@ -72,7 +66,6 @@ void initializeGLContext(void)
     }
 
     glfwMakeContextCurrent(window);
-
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -89,24 +82,27 @@ int main()
 {
     initializeGLContext();
 
+    camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, 0.0f, 0.0f));
+
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
     shader.use();
 
     Plane* ground = new Plane(glm::vec3(0.0f, -18.0f, 0.0f));
     loadCharacter();
 
+    float lastFrame = 0.0f;
     while (glfwWindowShouldClose(window) == false)
     {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
+        float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         processInput(window);
 
-        camera.update(shader, deltaTime * FRAME_RATE);
+        camera->update(shader, deltaTime * FRAME_RATE);
 
         ground->render(shader);
         character->render(shader, deltaTime * FRAME_RATE);
@@ -156,12 +152,6 @@ void processInput(GLFWwindow* window)
         if (character->getCharacterState() != AnimationState::IDLE)
             character->setCharacterState(AnimationState::IDLE);
     }
-/*
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.processKeyboard(CameraDirection::Left, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.processKeyboard(CameraDirection::Right, deltaTime);
-*/
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
@@ -169,17 +159,17 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
-    float xoffset = xpos - prevX;
+    float xoffset = xpos - camera->prevCursorX;
     // reversed since y-coordinates go from bottom to top
-    float yoffset = prevY - ypos;
+    float yoffset = camera->prevCursorY - ypos;
 
-    prevX = xpos;
-    prevY = ypos;
+    camera->prevCursorX = xpos;
+    camera->prevCursorY = ypos;
 
-    camera.processMouseMovement(xoffset, yoffset);
+    camera->processMouseMovement(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    camera.processMouseScroll(static_cast<float>(yoffset));
+    camera->processMouseScroll(static_cast<float>(yoffset));
 }
