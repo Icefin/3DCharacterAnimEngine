@@ -30,7 +30,7 @@ public:
 
 private:
     void                renderSkeleton(Shader& shader);
-	Skeleton*                       _skeleton;
+	Skeleton*                       _skeleton = nullptr;
     Animator*                       _animator = nullptr;
     //skinmesh
     

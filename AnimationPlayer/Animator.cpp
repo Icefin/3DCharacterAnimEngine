@@ -11,9 +11,11 @@ Animator::Animator(std::vector<Motion*>& motionList)
 
 	_animationLayerList[0].parentLayerIndex = -1;
 	_animationLayerList[0].animationRootBoneIndex = 0;
+	_animationLayerList[0].maxFrameTime = _motionList[0]->getMaxFrameTime();
 
 	_animationLayerList[1].parentLayerIndex = 0;
 	_animationLayerList[1].animationRootBoneIndex = 11;
+	_animationLayerList[1].maxFrameTime = _motionList[0]->getMaxFrameTime();
 
 	//Replace anywhere...
 	_motionList[4]->_isLooping = false;
@@ -38,7 +40,7 @@ static void convertLayerState(LayerInfo& layer, AnimationState state, Motion* mo
 	layer.prevState = layer.currentState;
 	layer.currentState = state;
 
-	layer.blendWeight = kBlendTime - layer.blendWeight;
+	layer.crossFadeBlendWeight = kBlendTime - layer.crossFadeBlendWeight;
 	layer.prevMotionTime = layer.currentMotionTime;
 	layer.currentMotionTime = 0.0f;
 
@@ -48,8 +50,8 @@ static void convertLayerState(LayerInfo& layer, AnimationState state, Motion* mo
 
 static void updateLayerState(LayerInfo& layer, float deltaTime, Motion* motion)
 {
-	if (layer.blendWeight < kBlendTime)
-		layer.blendWeight += deltaTime;
+	if (layer.crossFadeBlendWeight < kBlendTime)
+		layer.crossFadeBlendWeight += deltaTime;
 
 	layer.currentMotionTime += deltaTime;
 	if (layer.currentMotionTime >= layer.maxFrameTime)
@@ -60,7 +62,6 @@ static void updateLayerState(LayerInfo& layer, float deltaTime, Motion* motion)
 	}
 }
 
-#include <iostream>
 void	Animator::updateAnimationLayerListState(AnimationState state, float deltaTime)
 {
 	//Upper Body Layer Update
@@ -72,7 +73,6 @@ void	Animator::updateAnimationLayerListState(AnimationState state, float deltaTi
 	updateLayerState(_animationLayerList[0], deltaTime, _motionList[static_cast<int32>(state)]);
 	if (_animationLayerList[0].currentState != state && _animationLayerList[1].currentState != AnimationState::ATTACK)
 		convertLayerState(_animationLayerList[0], state, _motionList[static_cast<int32>(state)]);
-
 }
 
 #define LOWER_BACK 10
@@ -85,22 +85,22 @@ glm::quat Animator::getJointAnimation(int32 jointIndex)
 	{
 		int32 motionIndex = static_cast<int32>(_animationLayerList[1].currentState);
 		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[1].currentMotionTime);
-		if (_animationLayerList[1].blendWeight < kBlendTime)
+		if (_animationLayerList[1].crossFadeBlendWeight < kBlendTime)
 		{
 			int32 prevMotionIndex = static_cast<int32>(_animationLayerList[1].prevState);
 			glm::quat prevJointAnimation = _motionList[prevMotionIndex]->getJointPose(jointIndex, _animationLayerList[1].prevMotionTime);
-			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[1].blendWeight / kBlendTime);
+			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[1].crossFadeBlendWeight / kBlendTime);
 		}
 	}
 	else
 	{
 		int32 motionIndex = static_cast<int32>(_animationLayerList[0].currentState);
 		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[0].currentMotionTime);
-		if (_animationLayerList[0].blendWeight < kBlendTime)
+		if (_animationLayerList[0].crossFadeBlendWeight < kBlendTime)
 		{
 			int32 prevMotionIndex = static_cast<int32>(_animationLayerList[0].prevState);
 			glm::quat prevJointAnimation = _motionList[prevMotionIndex]->getJointPose(jointIndex, _animationLayerList[0].prevMotionTime);
-			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[0].blendWeight / kBlendTime);
+			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[0].crossFadeBlendWeight / kBlendTime);
 		}
 	}
 

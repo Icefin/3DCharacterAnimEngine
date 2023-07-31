@@ -18,9 +18,9 @@ enum class AnimationState : uint8
 
 struct LayerInfo
 {
-	int32			parentLayerIndex;
+	int32			parentLayerIndex = -1;
 
-	int32			animationRootBoneIndex;
+	int32			animationRootBoneIndex = 0;
 
 	AnimationState	prevState = AnimationState::IDLE;
 	float			prevMotionTime = 0.0f;
@@ -28,8 +28,9 @@ struct LayerInfo
 	AnimationState	currentState = AnimationState::IDLE;
 	float			currentMotionTime = 0.0f;
 
-	float			blendWeight = kBlendTime;
-	int32			maxFrameTime = 1'000;
+	float			crossFadeBlendWeight = kBlendTime;
+	float			layerBlendWeight = kBlendTime;
+	int32			maxFrameTime = 0;
 	bool			isLooping = true;
 };
 
