@@ -48,7 +48,7 @@ static void convertLayerState(LayerInfo& layer, AnimationState state, Motion* mo
 	layer.isLooping = motion->_isLooping;
 }
 
-static void updateLayerState(LayerInfo& layer, float deltaTime, Motion* motion)
+static void updateLayerState(LayerInfo& layer, AnimationState state, float deltaTime, Motion* motion)
 {
 	if (layer.crossFadeBlendWeight < kBlendTime)
 		layer.crossFadeBlendWeight += deltaTime;
@@ -57,20 +57,33 @@ static void updateLayerState(LayerInfo& layer, float deltaTime, Motion* motion)
 	if (layer.currentMotionTime >= layer.maxFrameTime)
 	{
 		if (layer.isLooping == false)
-			convertLayerState(layer, AnimationState::IDLE, motion);
+			convertLayerState(layer, state, motion);
 		layer.currentMotionTime = 0.0f;
 	}
 }
 
 void	Animator::updateAnimationLayerListState(AnimationState state, float deltaTime)
 {
-	//Upper Body Layer Update
-	updateLayerState(_animationLayerList[1], deltaTime, _motionList[static_cast<int32>(state)]);
-	if ((_animationLayerList[0].currentState == AnimationState::FORWARD || _animationLayerList[0].currentState == AnimationState::BACKWARD || _animationLayerList[0].currentState == AnimationState::RUN) && (state == AnimationState::ATTACK))
-		convertLayerState(_animationLayerList[1], state, _motionList[static_cast<int32>(state)]);
+	int32 layerNumber = _animationLayerList.size();
+	for (int idx = 0; idx < layerNumber; ++idx)
+		updateLayerState(_animationLayerList[idx], state, deltaTime, _motionList[static_cast<int32>(state)]);
 
-	//Whole Body Layer Update
-	updateLayerState(_animationLayerList[0], deltaTime, _motionList[static_cast<int32>(state)]);
+	if ((_animationLayerList[0].currentState == AnimationState::FORWARD || _animationLayerList[0].currentState == AnimationState::BACKWARD || _animationLayerList[0].currentState == AnimationState::RUN))
+	{
+		if (_animationLayerList[1].currentState == AnimationState::IDLE && state == AnimationState::ATTACK)
+		{
+			_animationLayerList[1].prevState = _animationLayerList[0].currentState;
+			_animationLayerList[1].currentState = AnimationState::ATTACK;
+
+			_animationLayerList[1].crossFadeBlendWeight = kBlendTime - _animationLayerList[0].crossFadeBlendWeight;
+			_animationLayerList[1].prevMotionTime = _animationLayerList[0].currentMotionTime;
+			_animationLayerList[1].currentMotionTime = 0.0f;
+
+			_animationLayerList[1].maxFrameTime = _motionList[5]->getMaxFrameTime();
+			_animationLayerList[1].isLooping = _motionList[5]->_isLooping;
+		}
+	}
+
 	if (_animationLayerList[0].currentState != state && _animationLayerList[1].currentState != AnimationState::ATTACK)
 		convertLayerState(_animationLayerList[0], state, _motionList[static_cast<int32>(state)]);
 }
@@ -104,5 +117,5 @@ glm::quat Animator::getJointAnimation(int32 jointIndex)
 		}
 	}
 
-	return jointAnimation;
+	return glm::normalize(jointAnimation);
 }

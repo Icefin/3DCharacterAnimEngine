@@ -29,7 +29,6 @@ struct LayerInfo
 	float			currentMotionTime = 0.0f;
 
 	float			crossFadeBlendWeight = kBlendTime;
-	float			layerBlendWeight = kBlendTime;
 	int32			maxFrameTime = 0;
 	bool			isLooping = true;
 };
