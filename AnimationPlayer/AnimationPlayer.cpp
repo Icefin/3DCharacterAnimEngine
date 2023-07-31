@@ -27,7 +27,7 @@ CharacterLoader characterLoader;
 Character* character;
 
 // camera
-Camera3D camera(glm::vec3(0.0f, 0.0f, 50.0f));
+Camera3D camera(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, 0.0f, 0.0f));
 float prevX = SCR_WIDTH / 2.0f;
 float prevY = SCR_HEIGHT / 2.0f;
 
@@ -37,7 +37,6 @@ float lastFrame = 0.0f;
 
 GLFWwindow* window;
 
-void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
@@ -74,7 +73,6 @@ void initializeGLContext(void)
 
     glfwMakeContextCurrent(window);
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -99,23 +97,20 @@ int main()
 
     while (glfwWindowShouldClose(window) == false)
     {
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         processInput(window);
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        shader.setUniformMat4("projection", projection);
-
-        glm::mat4 view = camera.getViewMatrix();
-        shader.setUniformMat4("view", view);
+        camera.update(shader, deltaTime * FRAME_RATE);
 
         ground->render(shader);
         character->render(shader, deltaTime * FRAME_RATE);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -167,12 +162,6 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(CameraDirection::Right, deltaTime);
 */
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int32 width, int32 height)
-{
-    // make sure the viewport matches the new window dimensions
-    glViewport(0, 0, width, height);
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
