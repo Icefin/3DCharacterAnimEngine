@@ -28,6 +28,7 @@ struct LayerInfo
 	AnimationState	currentState = AnimationState::IDLE;
 	float			currentMotionTime = 0.0f;
 
+	float			layerBlendWeight = kBlendTime;
 	float			crossFadeBlendWeight = kBlendTime;
 	int32			maxFrameTime = 0;
 	bool			isLooping = true;
