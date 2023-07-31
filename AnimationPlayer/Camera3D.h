@@ -11,7 +11,6 @@
 
 #include <iostream>
 
-// An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera3D
 {
 public:
@@ -46,7 +45,6 @@ public :
     float       prevCursorX;
     float       prevCursorY;
 
-    // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {
         xoffset *= _mouseSensitivity;
@@ -55,7 +53,6 @@ public :
         _azimuth += xoffset;
         _elevation += yoffset;
 
-        // make sure that when pitch is out of bounds, screen doesn't get flipped
         if (constrainPitch)
         {
             if (_elevation > 89.0f)
@@ -70,7 +67,6 @@ public :
         }
     }
 
-    // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void processMouseScroll(float yoffset)
     {
         _zoom -= static_cast<float>(yoffset);
