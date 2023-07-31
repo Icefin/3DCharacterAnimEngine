@@ -9,17 +9,19 @@
 
 #include <vector>
 
+#include <iostream>
+
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera3D
 {
 public:
-    Camera3D(uint32 screenWidth, uint32 screenHeight, glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f)) : _mouseSensitivity(0.01f), _zoom(45.0f)
+    Camera3D(uint32 screenWidth, uint32 screenHeight, glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f)) : _mouseSensitivity(0.2f), _zoom(45.0f)
     {
         _screenWidth = screenWidth;
         _screenHeight = screenHeight;
 
         _targetPosition = targetPosition;
-        _cameraPosition = glm::vec3(-_radius, 0.0f, 0.0f);
+        _cameraPosition = glm::vec3(_radius, 0.0f, 0.0f);
         _radius = 60.0f;
         _azimuth = 0.0f;
         _elevation = 0.0f;
@@ -61,10 +63,10 @@ public :
             if (_elevation < -89.0f)
                 _elevation = -89.0f;
 
-            if (_azimuth > 359.0f)
+            if (_azimuth > 360.0f)
                 _azimuth = 0.0f;
             if (_azimuth < 0.0f)
-                _azimuth = 359.0f;
+                _azimuth = 360.0f;
         }
     }
 
@@ -93,9 +95,9 @@ private:
 
     void        calculateCameraPosition(void) 
     {
-        float unitX = glm::cos(_elevation) * glm::cos(_azimuth);
-        float unitY = glm::sin(_elevation);
-        float unitZ = glm::cos(_elevation) * glm::sin(_azimuth);
+        float unitX = glm::cos(glm::radians(_elevation)) * glm::cos(glm::radians(_azimuth));
+        float unitY = glm::sin(glm::radians(_elevation));
+        float unitZ = glm::cos(glm::radians(_elevation)) * glm::sin(glm::radians(_azimuth));
         
         _cameraPosition = _radius * glm::vec3(unitX, unitY, unitZ);
     }
