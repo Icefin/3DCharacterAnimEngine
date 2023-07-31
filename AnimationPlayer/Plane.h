@@ -13,6 +13,7 @@ public :
     ~Plane(void);
 
 	void render(Shader& shader) override;
+
 private :
 	GLuint _vbo;
 	GLuint _vao;
@@ -60,4 +61,3 @@ private :
         -100.0f,  0.5f, -100.0f,  0.5f, 0.5f, 0.5f
     };
 };
-

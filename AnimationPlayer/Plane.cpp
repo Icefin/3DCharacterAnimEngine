@@ -22,7 +22,8 @@ Plane::Plane(glm::vec3 position)
 
 Plane::~Plane(void)
 {
-
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers(1, &_vbo);
 }
 
 void Plane::render(Shader& shader)
