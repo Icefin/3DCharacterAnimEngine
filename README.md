@@ -259,10 +259,10 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 }
 ```
 #### Results:
-#### Threshold = 0.01f / Average 1086 frames -> 457 frames
+#### Threshold = 0.01f / Average 1086 frames per joint-> 457 frames per joint
 ![Animation-Player-2023-07-12-23-04-36](https://github.com/Icefin/AnimationPlayer/assets/76864202/4c3d9d69-38cb-4ba1-94f5-6236793b4b67)
 
-#### Threshold = 0.1f  / Average 1086 frames -> 105 frames
+#### Threshold = 0.1f  / Average 1086 frames per joint -> 105 frames per joint
 ![Animation-Player-2023-07-12-23-12-56](https://github.com/Icefin/AnimationPlayer/assets/76864202/716ee92f-183e-47c4-9aeb-eeff8374eb25)
 
 ---
@@ -285,7 +285,7 @@ to a constant weight function.
 
 #### Partial Body Animation
 
-####Requirements :  
+#### Requirements :  
 1. Masking all the bones
 ```
 enum class CharacterBodyMask : uint32
@@ -342,3 +342,18 @@ enum class CharacterBodyMask : uint32
 2. Give blending weight & state to all the bones
 3. setCharacterState(STATE, targetBoneMask)
 4. Is it better using dynamic programming to build modelMatrix....?
+5. 
+
+---
+### Character Controller
+#### Requirements : 
+1. Realistic 3D In-Game Character Controller
+2. Independent Character Transform from Motions... -> But some kind of data is related to motion... ex) Y-position in Jumping Motion
+3. No more Hard-Coding...!!!
+4. Rotate Motion forward to Actual forward!!
+5. 
+
+Doodle :
+1. Position = {Transform, Transform + Motion, Transform} ?
+2. Rotation = {Transform + Motion, Transform, Transform + Motion} ?
+3. Rigid body relation
