@@ -359,6 +359,16 @@ Doodle :
 3. Rigid body relation
 
 ---
-### Collision Detection System
+### Collision Detection System & Point Based Dynamics Cloth Simulation
 #### Requirements :
+1. Simple Cloth Simulation with Hard-Coded Cube && Sphere
+2. Simple Cloth Simulation with Collider Cube && Sphere -> 8.4 somewhere lighting...
+3. Make Character Mesh
+4. Apply Collider to Character
+5. Simple Cloth Simulation with Character
+6. Complex Cloth Simulation with Character -> 8.11
 
+---
+### Particle System
+#### Requirements :
+1. Spatial Partitioning... Blah Blah...
