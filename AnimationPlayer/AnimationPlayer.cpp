@@ -83,15 +83,21 @@ int main()
 {
     initializeGLContext();
 
-    camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, glm::vec3(0.0f, 0.0f, 0.0f));
-
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
     shader.use();
 
     Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-    Cube* cube = new Cube(glm::vec3(15.0f, -10.0f, 15.0f), glm::vec3(5.0f, 5.0f, 5.0f));
-    Sphere* sphere = new Sphere(glm::vec3(-15.0f, -10.0f, 15.0f), 5.0f);
+    Cube* cube = new Cube(glm::vec3(15.0f, -13.0f, 15.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+    Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f);
     loadCharacter();
+
+    camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT);
+
+    std::vector<GameObject*> gameObjectList;
+    gameObjectList.push_back(ground);
+    gameObjectList.push_back(cube);
+    gameObjectList.push_back(sphere);
+    gameObjectList.push_back(character);
 
     float lastFrame = 0.0f;
     while (glfwWindowShouldClose(window) == false)
@@ -108,10 +114,8 @@ int main()
 
         camera->update(shader, deltaTime * frameRate);
 
-        ground->update(shader, deltaTime * frameRate);
-        cube->update(shader, deltaTime * frameRate);
-        sphere->update(shader, deltaTime * frameRate);
-        character->update(shader, deltaTime * frameRate);
+        for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
+            gameObjectList[idx]->update(shader, deltaTime * frameRate);
 
         glfwSwapBuffers(window);
     }

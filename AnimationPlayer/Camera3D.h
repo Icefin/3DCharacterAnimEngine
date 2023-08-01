@@ -14,7 +14,7 @@
 class Camera3D
 {
 public:
-    Camera3D(uint32 screenWidth, uint32 screenHeight, glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f)) : _mouseSensitivity(0.2f), _zoom(45.0f)
+    Camera3D(uint32 screenWidth, uint32 screenHeight, glm::vec3* targetPosition) : _mouseSensitivity(0.2f), _zoom(45.0f)
     {
         _screenWidth = screenWidth;
         _screenHeight = screenHeight;
@@ -37,7 +37,7 @@ public:
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(_zoom), (float)_screenWidth / (float)_screenHeight, 0.1f, 100.0f);
         shader.setUniformMat4("projection", projectionMatrix);
 
-        glm::mat4 viewMatrix = glm::lookAt(_cameraPosition, _targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 viewMatrix = glm::lookAt(_cameraPosition, *_targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
         shader.setUniformMat4("view", viewMatrix);
     }
 
@@ -80,7 +80,7 @@ private:
     uint32      _screenWidth;
     uint32      _screenHeight;
 
-    glm::vec3   _targetPosition;
+    glm::vec3*   _targetPosition;
     glm::vec3   _cameraPosition;
     float       _radius;
     float       _azimuth;
