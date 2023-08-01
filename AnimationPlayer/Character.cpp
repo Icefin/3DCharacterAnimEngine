@@ -59,11 +59,16 @@ void Character::update(Shader& shader, float deltaTime)
     _animator->update(_currentState, deltaTime);
     updateMatrixPalette();
     renderSkeleton(shader);
+
+    glBindVertexArray(axisArrayObject);
+    shader.setUniformMat4("model", _matrixPalette[0]);
+    glLineWidth(5.0f);
+    glDrawArrays(GL_LINES, 0, 12);
 }
 
 void Character::updateMatrixPalette()
 {
-    glm::mat4 rootMatrix = glm::translate(glm::mat4(1.0f), -_position);
+    glm::mat4 rootMatrix = glm::translate(glm::mat4(1.0f), _position);
     rootMatrix = glm::rotate(rootMatrix, glm::radians(-_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
     _matrixPalette[0] = rootMatrix /* glm::mat4(_animator->getJointAnimation(0)) */;
 
@@ -117,7 +122,7 @@ void Character::renderSkeleton(Shader& shader)
         glDeleteVertexArrays(1, &boneArrayObject);
         glDeleteBuffers(1, &boneBufferObject);
 
-#ifdef DEBUG
+#ifdef DEBUG_JOINT
         glBindVertexArray(axisArrayObject);
         shader.setUniformMat4("model", _matrixPalette[index]);
         glLineWidth(2.0f);
@@ -133,9 +138,23 @@ void Character::setCharacterState(AnimationState state)
 
 void Character::move(bool isForward, float deltaTime)
 {
-    const static float kCharacterSpeed = 0.1f;
+    const static float kForwardSpeed= 0.2f;
+    const static float kRunSpeed = 0.4f;
+    const static float kBackwardSpeed = 0.1f;
 
-    glm::vec3 offset = glm::vec3(glm::sin(glm::radians(_rotation.y)), 0.0f, glm::cos(glm::radians(_rotation.y)));
+    glm::vec3 offset = glm::vec3(-glm::sin(glm::radians(_rotation.y)), 0.0f, glm::cos(glm::radians(_rotation.y)));
+    switch (_currentState)
+    {
+    case AnimationState::FORWARD :
+        offset *= kForwardSpeed;
+        break;
+    case AnimationState::RUN :
+        offset *= kRunSpeed;
+        break;
+    case AnimationState::BACKWARD :
+        offset *= kBackwardSpeed;
+        break;
+    }
     _position += isForward ? offset : -offset;
 }
 
@@ -143,8 +162,7 @@ void Character::rotate(bool isClockwise, float deltaTime)
 {
     const static float kCharacterAngularSpeed = 5.0f;
 
-    int32 clockwise = isClockwise ? 1 : -1;
-    _rotation.y += clockwise * kCharacterAngularSpeed;
+    _rotation.y += isClockwise ? kCharacterAngularSpeed : -kCharacterAngularSpeed;
     if (_rotation.y > 360.0f || _rotation.y < -360.0f)
         _rotation.y = 0.0f;
 }

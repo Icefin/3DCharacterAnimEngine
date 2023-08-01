@@ -13,6 +13,8 @@
 #include "Motion.h"
 #include "Animator.h"
 
+#define DEBUG
+
 constexpr int32 kCharacterVelocity = 5;
 
 class Character : public GameObject
@@ -40,15 +42,9 @@ private:
     AnimationState              _currentState = AnimationState::IDLE;
 
 #ifdef DEBUG
-    float       axis[36] = {
-        1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-
-        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
-};
+    float       axis[12] = {
+        0.0f, -17.0f, 10.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, -17.0f, 0.0f, 1.0f, 0.0f, 0.0f
+    };
 #endif // DEBUG
 };
