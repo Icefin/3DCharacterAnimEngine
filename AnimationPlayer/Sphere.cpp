@@ -27,9 +27,9 @@ Sphere::Sphere(glm::vec3 position, float radius, uint32 stackNumber, uint32 sect
             // vertex position (x, y, z)
             x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
             y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
-            vertices.push_back(x);
-            vertices.push_back(y);
-            vertices.push_back(z);
+            vertices.push_back(x + position.x);
+            vertices.push_back(y + position.y);
+            vertices.push_back(z + position.z);
             vertices.push_back(color.x);
             vertices.push_back(color.y);
             vertices.push_back(color.z);
@@ -72,7 +72,7 @@ Sphere::Sphere(glm::vec3 position, float radius, uint32 stackNumber, uint32 sect
     glBindVertexArray(_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size(), (void*)&vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -82,7 +82,7 @@ Sphere::Sphere(glm::vec3 position, float radius, uint32 stackNumber, uint32 sect
 
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indicesNumber, (void*)&indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32), indices.data(), GL_STATIC_DRAW);
 }
 
 Sphere::~Sphere(void)

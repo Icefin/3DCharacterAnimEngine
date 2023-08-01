@@ -13,6 +13,7 @@
 #include "Shader.h"
 #include "Camera3D.h"
 #include "CharacterLoader.h"
+#include "Sphere.h"
 #include "Cube.h"
 
 #define _CRTDBG_MAP_ALLOC
@@ -87,8 +88,9 @@ int main()
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
     shader.use();
 
-    Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(50.0f, 0.2, 50.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-    Cube* cube = new Cube(glm::vec3(10.0f, -10.0f, 0.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+    Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+    Cube* cube = new Cube(glm::vec3(15.0f, -10.0f, 15.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+    Sphere* sphere = new Sphere(glm::vec3(-15.0f, -10.0f, 15.0f), 5.0f);
     loadCharacter();
 
     float lastFrame = 0.0f;
@@ -108,6 +110,7 @@ int main()
 
         ground->update(shader, deltaTime * frameRate);
         cube->update(shader, deltaTime * frameRate);
+        sphere->update(shader, deltaTime * frameRate);
         character->update(shader, deltaTime * frameRate);
 
         glfwSwapBuffers(window);

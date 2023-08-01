@@ -2,7 +2,7 @@
 
 Cube::Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color)
 {
-    float vertices[] = {
+    float vertices[48] = {
         position.x - halfSideLength.x, position.y - halfSideLength.y, position.z - halfSideLength.z, color.x, color.y, color.z,
         position.x - halfSideLength.x, position.y - halfSideLength.y, position.z + halfSideLength.z, color.x, color.y, color.z,
         position.x + halfSideLength.x, position.y - halfSideLength.y, position.z + halfSideLength.z, color.x, color.y, color.z,
@@ -14,7 +14,7 @@ Cube::Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color)
         position.x + halfSideLength.x, position.y + halfSideLength.y, position.z - halfSideLength.z, color.x, color.y, color.z
     };
 
-    uint32 indices[] = {
+    uint32 indices[36] = {
          1,0,2,
          2,0,3,
          1,2,5,
