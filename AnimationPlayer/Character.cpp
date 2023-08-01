@@ -15,10 +15,6 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 
     _matrixPalette.resize(_skeleton->getJointNumber());
 
-    //vbo : object vertex set
-    //vao : attribute of vertex set
-    //ebo : vertex index order of object
-
 #ifdef DEBUG
     glGenBuffers(1, &axisBufferObject);
     glGenVertexArrays(1, &axisArrayObject);
@@ -139,7 +135,7 @@ void Character::setCharacterState(AnimationState state)
 void Character::move(bool isForward, float deltaTime)
 {
     const static float kForwardSpeed= 0.2f;
-    const static float kRunSpeed = 0.4f;
+    const static float kRunSpeed = 0.6f;
     const static float kBackwardSpeed = 0.1f;
 
     glm::vec3 offset = glm::vec3(-glm::sin(glm::radians(_rotation.y)), 0.0f, glm::cos(glm::radians(_rotation.y)));
