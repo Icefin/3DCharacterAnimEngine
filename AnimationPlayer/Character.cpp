@@ -8,11 +8,11 @@
     uint32 axisBufferObject, axisArrayObject;
 #endif // DEBUG
 
-
 Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 {
     _skeleton = skeleton;
     _animator = new Animator(motionList);
+
     _matrixPalette.resize(_skeleton->getJointNumber());
 
     //vbo : object vertex set
@@ -35,7 +35,6 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 #endif // DEBUG
-
 }
 
 Character::~Character()
@@ -52,7 +51,7 @@ Character::~Character()
         delete _animator;
 }
 
-void Character::render(Shader& shader, float deltaTime)
+void Character::update(Shader& shader, float deltaTime)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(2.0f);
@@ -62,14 +61,11 @@ void Character::render(Shader& shader, float deltaTime)
     renderSkeleton(shader);
 }
 
-void Character::render(Shader& shader)
-{
-    __noop;
-}
-
 void Character::updateMatrixPalette()
 {
-    _matrixPalette[0] = glm::mat4(_animator->getJointAnimation(0));
+    glm::mat4 rootMatrix = glm::translate(glm::mat4(1.0f), -_position);
+    rootMatrix = glm::rotate(rootMatrix, glm::radians(-_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    _matrixPalette[0] = rootMatrix /* glm::mat4(_animator->getJointAnimation(0)) */;
 
     int32 jointNumber = _skeleton->getJointNumber();
     for (int32 index = 1; index < jointNumber; ++index)
@@ -135,12 +131,20 @@ void Character::setCharacterState(AnimationState state)
     _currentState = state;
 }
 
-void Character::move()
+void Character::move(bool isForward, float deltaTime)
 {
+    const static float kCharacterSpeed = 0.1f;
 
+    glm::vec3 offset = glm::vec3(glm::sin(glm::radians(_rotation.y)), 0.0f, glm::cos(glm::radians(_rotation.y)));
+    _position += isForward ? offset : -offset;
 }
 
-void Character::rotate()
+void Character::rotate(bool isClockwise, float deltaTime)
 {
+    const static float kCharacterAngularSpeed = 5.0f;
 
+    int32 clockwise = isClockwise ? 1 : -1;
+    _rotation.y += clockwise * kCharacterAngularSpeed;
+    if (_rotation.y > 360.0f || _rotation.y < -360.0f)
+        _rotation.y = 0.0f;
 }

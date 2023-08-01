@@ -33,7 +33,7 @@ GLFWwindow* window;
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, float deltaTime);
 
 void loadCharacter()
 {
@@ -101,12 +101,12 @@ int main()
         lastFrame = currentFrame;
 
         glfwPollEvents();
-        processInput(window);
+        processInput(window, deltaTime * frameRate);
 
         camera->update(shader, deltaTime * frameRate);
 
-        ground->render(shader);
-        character->render(shader, deltaTime * frameRate);
+        ground->update(shader, deltaTime * frameRate);
+        character->update(shader, deltaTime * frameRate);
 
         glfwSwapBuffers(window);
     }
@@ -117,7 +117,7 @@ int main()
     return 0;
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -128,23 +128,31 @@ void processInput(GLFWwindow* window)
     {
         if (character->getCharacterState() != AnimationState::FORWARD)
             character->setCharacterState(AnimationState::FORWARD);
+        character->move(true, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         if (character->getCharacterState() != AnimationState::RUN)
             character->setCharacterState(AnimationState::RUN);
+        character->move(true, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         if (character->getCharacterState() != AnimationState::BACKWARD)
             character->setCharacterState(AnimationState::BACKWARD);
+        character->move(false, deltaTime);
     }
+
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        character->rotate(true, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        character->rotate(false, deltaTime);
+
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         if (character->getCharacterState() != AnimationState::JUMP)
             character->setCharacterState(AnimationState::JUMP);
     }
-
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
         if (character->getCharacterState() != AnimationState::ATTACK)

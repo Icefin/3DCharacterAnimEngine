@@ -13,29 +13,31 @@
 #include "Motion.h"
 #include "Animator.h"
 
+constexpr int32 kCharacterVelocity = 5;
+
 class Character : public GameObject
 {
 public:
-                        Character(Skeleton* skeleton, std::vector<Motion*>& motionList);
-	                    ~Character(void);
-	void	            render(Shader& shader, float deltaTime);
-    void                render(Shader& shader) override;
-    void                updateMatrixPalette(void);
+                                Character(Skeleton* skeleton, std::vector<Motion*>& motionList);
+	                            ~Character(void);
+    void                        update(Shader& shader, float deltaTime) override;
 
-    void                move();
-    void                rotate();
+    void                        move(bool isForward, float deltaTime);
+    void                        rotate(bool isClockwise, float deltaTime);
 
-    void                setCharacterState(AnimationState state);
-    AnimationState      getCharacterState(void) { return _currentState; };
+    void                        setCharacterState(AnimationState state);
+    AnimationState              getCharacterState(void) { return _currentState; };
 
 private:
-    void                renderSkeleton(Shader& shader);
-	Skeleton*                       _skeleton = nullptr;
-    Animator*                       _animator = nullptr;
+    void                        updateMatrixPalette(void);
+    void                        renderSkeleton(Shader& shader);
+
+	Skeleton*                   _skeleton = nullptr;
+    Animator*                   _animator = nullptr;
     //skinmesh
-    
-    std::vector<glm::mat4>          _matrixPalette;
-    AnimationState                  _currentState = AnimationState::IDLE;
+
+    std::vector<glm::mat4>      _matrixPalette;
+    AnimationState              _currentState = AnimationState::IDLE;
 
 #ifdef DEBUG
     float       axis[36] = {

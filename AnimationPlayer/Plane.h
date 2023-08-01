@@ -12,7 +12,7 @@ public :
     Plane(glm::vec3 position);
     ~Plane(void);
 
-	void render(Shader& shader) override;
+	void update(Shader& shader, float deltaTime) override;
 
 private :
 	GLuint _vbo;

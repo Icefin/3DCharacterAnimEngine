@@ -26,7 +26,7 @@ Plane::~Plane(void)
     glDeleteBuffers(1, &_vbo);
 }
 
-void Plane::render(Shader& shader)
+void Plane::update(Shader& shader, float deltaTime)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

@@ -8,10 +8,10 @@
 class GameObject
 {
 public :
-	virtual void render(Shader& shader) = 0;
+	virtual void update(Shader& shader, float deltaTime) = 0;
 
 protected :
-	int32		_objectID;
-	glm::vec3	_position;
-	glm::quat	_rotation;
+	uint32		_objectID;
+	glm::vec3	_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::quat	_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 };
