@@ -15,8 +15,6 @@
 
 #define DEBUG
 
-constexpr int32 kCharacterVelocity = 5;
-
 class Character : public GameObject
 {
 public:
