@@ -14,7 +14,7 @@ Cube::Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color)
         position.x + halfSideLength.x, position.y + halfSideLength.y, position.z - halfSideLength.z, color.x, color.y, color.z
     };
 
-    unsigned int indices[]{
+    uint32 indices[] = {
          1,0,2,
          2,0,3,
          1,2,5,
