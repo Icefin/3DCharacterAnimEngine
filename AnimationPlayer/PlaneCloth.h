@@ -36,8 +36,8 @@ public :
 	void update(Shader& shader, float deltaTime) override;
 
 private :
-	void applyInternalForce(void);
-	void applyExternalForce(void);
+	void applyInternalForces(void);
+	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
 	void solveCollision(void);
 	void render(Shader& shader);

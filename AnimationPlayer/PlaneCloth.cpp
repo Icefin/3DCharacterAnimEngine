@@ -27,7 +27,6 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 	}
 
 	// StructuralSpring Initialize
-	// Recheck edge cases... ex) Right Most, Lower Most....
 	for (int32 h = 0; h < heightNum - 1; ++h)
 	{
 		for (int32 w = 0; w < widthNum - 1; ++w)
@@ -119,15 +118,18 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 	}
 
 	// Indices Initialize
+	// <<<LINE TESTING>>>
 	for (uint32 h = 0; h < heightNum - 1; ++h)
 	{
 		for (uint32 w = 0; w < widthNum - 1; ++w)
 		{
 			_indices.push_back(w + h * widthNum);
 			_indices.push_back((w + 1) + (h + 1) * widthNum);
+			_indices.push_back((w + 1) + (h + 1) * widthNum);
 			_indices.push_back((w + 1) + h * widthNum);
 
 			_indices.push_back(w + h * widthNum);
+			_indices.push_back(w + (h + 1) * widthNum);
 			_indices.push_back(w + (h + 1) * widthNum);
 			_indices.push_back((w + 1) + (h + 1) * widthNum);
 		}
@@ -166,19 +168,19 @@ PlaneCloth::~PlaneCloth(void)
 #include <stdio.h>
 void PlaneCloth::update(Shader& shader, float deltaTime)
 {
-	applyInternalForce();
-	applyExternalForce();
+	applyInternalForces();
+	applyExternalForces();
 	updateMassPointState(deltaTime / 300);
 	solveCollision();
 	render(shader);
 }
 
-void PlaneCloth::applyInternalForce(void)
+void PlaneCloth::applyInternalForces(void)
 {
 	static const float stiffnessList[3] = {
-		0.1f, 
-		0.1f,
-		0.2f
+		10.0f, 
+		10.0f,
+		10.0f
 	};
 
 	static const float dampingCoefficient = 18.0f;
@@ -194,7 +196,7 @@ void PlaneCloth::applyInternalForce(void)
 		float stiffness = stiffnessList[static_cast<uint32>(spring.type)];
 		float dist = glm::length(posDifference);
 
-		glm::vec3 springForce = -stiffness * (spring.restLength - dist) * glm::normalize(posDifference);
+		glm::vec3 springForce = -stiffness * (dist - spring.restLength) * glm::normalize(posDifference);
 		glm::vec3 dampingForce = -dampingCoefficient * velDfference;
 
 		left->netForce += (springForce + dampingForce);
@@ -202,7 +204,7 @@ void PlaneCloth::applyInternalForce(void)
 	}
 }
 
-void PlaneCloth::applyExternalForce(void)
+void PlaneCloth::applyExternalForces(void)
 {
 	// Viscosity
 	for (MassPoint& massPoint : _massPointList)
@@ -267,14 +269,15 @@ void PlaneCloth::solveCollision(void)
 
 void PlaneCloth::render(Shader& shader)
 {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glBindVertexArray(_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
+	glLineWidth(1.0f);
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _position);
 	shader.setUniformMat4("model", modelMatrix);
-	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_LINES, _indices.size(), GL_UNSIGNED_INT, NULL);
 }
