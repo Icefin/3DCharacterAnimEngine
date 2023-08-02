@@ -358,6 +358,9 @@ Doodle :
 2. Rotation = {Transform + Motion, Transform, Transform + Motion} ?
 3. Rigid body relation
 
+#### Result :
+![Animation-Player-2023-07-31-21-29-59](https://github.com/Icefin/AnimationPlayer/assets/76864202/a4c5eb7c-b083-471f-a654-25bf4e100500)
+
 ---
 ### Collision Detection System & Point Based Dynamics Cloth Simulation
 #### Requirements :
