@@ -18,7 +18,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 			MassPoint newPoint;
 			newPoint.mass = 1.0f;
 			newPoint.position = glm::vec3(w * dw, 0, h * dh);
-			newPoint.velocity = glm::vec3(0.0f, -0.1f, 0.0f);
+			newPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 
@@ -269,7 +269,7 @@ void PlaneCloth::solveCollision(void)
 
 void PlaneCloth::render(Shader& shader)
 {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glBindVertexArray(_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
