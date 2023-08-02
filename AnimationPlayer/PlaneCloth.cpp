@@ -43,7 +43,27 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 			_springList.push_back({ SpringType::Structural, restLengthDownward, origin, lower });
 		}
 	}
-	
+
+	for (int32 w = 0; w < widthNum - 1; ++w)
+	{
+		MassPoint* origin = &_massPointList[w + (heightNum - 1) * widthNum];
+		MassPoint* right = &_massPointList[(w + 1) + (heightNum - 1) * widthNum];
+
+		float restLengthRightward = glm::distance(origin->position, right->position);
+
+		_springList.push_back({ SpringType::Structural, restLengthRightward, origin, right });
+	}
+
+	for (int32 h = 0; h < heightNum - 1; ++h)
+	{
+		MassPoint* origin = &_massPointList[widthNum - 1 + h * widthNum];
+		MassPoint* lower = &_massPointList[widthNum - 1 + (h + 1) * widthNum];
+
+		float restLengthDownward = glm::distance(origin->position, lower->position);
+
+		_springList.push_back({ SpringType::Structural, restLengthDownward, origin, lower });
+	}
+
 	// ShearSpring Initialize
 	for (int32 h = 0; h < heightNum - 1; ++h)
 	{
@@ -198,7 +218,7 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 
 		massPoint.velocity = newVelocity;
 		massPoint.position = newPosition;
-		massPoint.netForce = glm::vec3(0);
+		massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 }
 
