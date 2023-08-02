@@ -178,9 +178,9 @@ void PlaneCloth::update(Shader& shader, float deltaTime)
 void PlaneCloth::applyInternalForces(void)
 {
 	static const float stiffnessList[3] = {
-		10.0f, 
-		10.0f,
-		10.0f
+		2000.0f, 
+		2000.0f,
+		2400.0f
 	};
 
 	static const float dampingCoefficient = 18.0f;
