@@ -93,14 +93,14 @@ int main()
     PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60);
     loadCharacter();
 
-    camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT);
+    camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
     std::vector<GameObject*> gameObjectList;
     gameObjectList.push_back(ground);
     gameObjectList.push_back(cube);
     gameObjectList.push_back(sphere);
-    gameObjectList.push_back(planeCloth);
     gameObjectList.push_back(character);
+    gameObjectList.push_back(planeCloth);
 
     float lastFrame = 0.0f;
     while (glfwWindowShouldClose(window) == false)
@@ -117,8 +117,9 @@ int main()
 
         camera->update(shader, deltaTime * frameRate);
 
-        for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
+        for (int32 idx = 0; idx < gameObjectList.size() - 1; ++idx)
             gameObjectList[idx]->update(shader, deltaTime * frameRate);
+        gameObjectList.back()->update(shader, 0.003f);
 
         glfwSwapBuffers(window);
     }

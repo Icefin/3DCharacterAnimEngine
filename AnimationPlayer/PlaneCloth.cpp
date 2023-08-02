@@ -170,7 +170,7 @@ void PlaneCloth::update(Shader& shader, float deltaTime)
 {
 	applyInternalForces();
 	applyExternalForces();
-	updateMassPointState(deltaTime / 300);
+	updateMassPointState(deltaTime);
 	solveCollision();
 	render(shader);
 }
