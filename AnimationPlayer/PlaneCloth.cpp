@@ -148,19 +148,17 @@ void PlaneCloth::update(Shader& shader, float deltaTime)
 {
 	applyInternalForce();
 	applyExternalForce();
-	updateMassPointState(deltaTime / 600);
+	updateMassPointState(deltaTime / 300);
 	solveCollision();
 	render(shader);
-	
-	printf("MassPoint Position : (%f, %f, %f)\n", _massPointList[1230].position.x, _massPointList[1230].position.y, _massPointList[1230].position.z);
 }
 
 void PlaneCloth::applyInternalForce(void)
 {
-	static const uint32 stiffnessList[3] = {
-		10, 
-		10,
-		12
+	static const float stiffnessList[3] = {
+		0.1f, 
+		0.1f,
+		0.2f
 	};
 
 	static const float dampingCoefficient = 18.0f;
@@ -217,15 +215,15 @@ void PlaneCloth::solveCollision(void)
 			massPoint.velocity.y = 0.0f;
 		}
 
-		if ((position.y < -8.2f) && (position.x < 20.2f && position.x > 10.2f) && (position.z < 20.2f && position.z > 10.2f))
+		if ((position.y < -7.8f) && (position.x < 20.2f && position.x > 9.8f) && (position.z < 20.2f && position.z > 9.8f))
 		{
 			std::vector<float> depth(5);
 
-			float frontDepth = abs(position.x - 10.2f);
+			float frontDepth = abs(position.x - 9.8f);
 			float backDepth = abs(position.x - 20.2f);
-			float leftDepth = abs(position.z - 10.2f);
+			float leftDepth = abs(position.z - 9.8f);
 			float rightDepth = abs(position.z - 20.2f);
-			float upperDepth = abs(position.y + 8.2f);
+			float upperDepth = abs(position.y + 7.8f);
 
 			depth[0] = frontDepth;
 			depth[1] = backDepth;
@@ -236,30 +234,11 @@ void PlaneCloth::solveCollision(void)
 			std::sort(depth.begin(), depth.end());
 
 			if (depth[0] == upperDepth)
-			{
-				massPoint.position.y = -8.2f;
 				massPoint.velocity.y = 0.0f;
-			}
-			else if (depth[0] == frontDepth)
-			{
-				massPoint.position.x = 10.2f;
+			else if (depth[0] == frontDepth || depth[0] == backDepth)
 				massPoint.velocity.x = 0.0f;
-			}
-			else if (depth[0] == backDepth)
-			{
-				massPoint.position.x = 20.2f;
-				massPoint.velocity.x = 0.0f;
-			}
-			else if (depth[0] == leftDepth)
-			{
-				massPoint.position.z = 10.2f;
-				massPoint.velocity.z = 0.0f;
-			}
 			else
-			{
-				massPoint.position.z = 20.2f;
 				massPoint.velocity.z = 0.0f;
-			}
 
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 		}

@@ -88,16 +88,16 @@ int main()
     shader.use();
 
     Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-    //Cube* cube = new Cube(glm::vec3(20.0f, -13.0f, 20.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    Cube* cube = new Cube(glm::vec3(20.0f, -13.0f, 20.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f);
-    PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 20, 20, 40, 40);
+    PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 30, 30);
     loadCharacter();
 
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT);
 
     std::vector<GameObject*> gameObjectList;
     gameObjectList.push_back(ground);
-    //gameObjectList.push_back(cube);
+    gameObjectList.push_back(cube);
     gameObjectList.push_back(sphere);
     gameObjectList.push_back(planeCloth);
     gameObjectList.push_back(character);
