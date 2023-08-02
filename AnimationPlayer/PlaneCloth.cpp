@@ -99,9 +99,9 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 	}
 
 	// Indices Initialize
-	for (int32 h = 0; h < heightNum - 1; ++h)
+	for (uint32 h = 0; h < heightNum - 1; ++h)
 	{
-		for (int32 w = 0; w < widthNum - 1; ++w)
+		for (uint32 w = 0; w < widthNum - 1; ++w)
 		{
 			_indices.push_back(w + h * widthNum);
 			_indices.push_back((w + 1) + (h + 1) * widthNum);
@@ -119,7 +119,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, _massPointList.size() * sizeof(MassPoint), _massPointList.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _massPointList.size() * sizeof(MassPoint), _massPointList.data(), GL_DYNAMIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MassPoint), (void*)offsetof(MassPoint, position));
@@ -158,9 +158,9 @@ void PlaneCloth::update(Shader& shader, float deltaTime)
 void PlaneCloth::applyInternalForce(void)
 {
 	static const uint32 stiffnessList[3] = {
-		2000, 
-		2000,
-		2400
+		10, 
+		10,
+		12
 	};
 
 	static const float dampingCoefficient = 18.0f;
@@ -211,24 +211,21 @@ void PlaneCloth::solveCollision(void)
 		glm::vec3 position = massPoint.position;
 		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 
-		// Ground Check
 		if (position.y < -17.0f)
 		{
 			massPoint.position.y = -17.0f;
 			massPoint.velocity.y = 0.0f;
-
-			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 		}
 
-		if ((position.y < -8.0f) && (position.x < 20.0f && position.x > 10.0f) && (position.z < 20.0f && position.z > 10.0f))
+		if ((position.y < -8.2f) && (position.x < 20.2f && position.x > 10.2f) && (position.z < 20.2f && position.z > 10.2f))
 		{
 			std::vector<float> depth(5);
 
-			float frontDepth = abs(position.x - 10.0f);
-			float backDepth = abs(position.x - 20.0f);
-			float leftDepth = abs(position.z - 10.0f);
-			float rightDepth = abs(position.z - 20.0f);
-			float upperDepth = abs(position.y + 8.0f);
+			float frontDepth = abs(position.x - 10.2f);
+			float backDepth = abs(position.x - 20.2f);
+			float leftDepth = abs(position.z - 10.2f);
+			float rightDepth = abs(position.z - 20.2f);
+			float upperDepth = abs(position.y + 8.2f);
 
 			depth[0] = frontDepth;
 			depth[1] = backDepth;
@@ -239,11 +236,30 @@ void PlaneCloth::solveCollision(void)
 			std::sort(depth.begin(), depth.end());
 
 			if (depth[0] == upperDepth)
+			{
+				massPoint.position.y = -8.2f;
 				massPoint.velocity.y = 0.0f;
-			else if (depth[0] == frontDepth || depth[0] == backDepth)
+			}
+			else if (depth[0] == frontDepth)
+			{
+				massPoint.position.x = 10.2f;
 				massPoint.velocity.x = 0.0f;
-			else
+			}
+			else if (depth[0] == backDepth)
+			{
+				massPoint.position.x = 20.2f;
+				massPoint.velocity.x = 0.0f;
+			}
+			else if (depth[0] == leftDepth)
+			{
+				massPoint.position.z = 10.2f;
 				massPoint.velocity.z = 0.0f;
+			}
+			else
+			{
+				massPoint.position.z = 20.2f;
+				massPoint.velocity.z = 0.0f;
+			}
 
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 		}
@@ -256,6 +272,7 @@ void PlaneCloth::render(Shader& shader)
 
 	glBindVertexArray(_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
 	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _position);
