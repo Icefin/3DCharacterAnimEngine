@@ -23,8 +23,8 @@ struct Spring
 {
 	SpringType type;
 	float restLength;
-	MassPoint* first;
-	MassPoint* second;
+	MassPoint* left;
+	MassPoint* right;
 };
 
 class PlaneCloth : public GameObject
@@ -43,8 +43,8 @@ private :
 	void render(Shader& shader);
 
 private :
-	GLuint	_vbo;
 	GLuint	_vao;
+	GLuint	_vbo;
 	GLuint	_ebo;
 
 	std::vector<MassPoint>	_massPointList;
