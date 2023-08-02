@@ -17,7 +17,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 		{
 			MassPoint newPoint;
 			newPoint.mass = 1.0f;
-			newPoint.position = glm::vec3(position.x + w * dw, position.y, position.z + h * dh);
+			newPoint.position = glm::vec3(w * dw, 0, h * dh);
 			newPoint.velocity = glm::vec3(0.0f, -0.1f, 0.0f);
 			newPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
@@ -246,6 +246,7 @@ void PlaneCloth::render(Shader& shader)
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
-	shader.setUniformMat4("model", glm::mat4(1.0f));
+	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _position);
+	shader.setUniformMat4("model", modelMatrix);
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
 }

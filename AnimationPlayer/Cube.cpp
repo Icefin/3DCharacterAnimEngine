@@ -2,16 +2,18 @@
 
 Cube::Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color)
 {
-    float vertices[48] = {
-        position.x - halfSideLength.x, position.y - halfSideLength.y, position.z - halfSideLength.z, color.x, color.y, color.z,
-        position.x - halfSideLength.x, position.y - halfSideLength.y, position.z + halfSideLength.z, color.x, color.y, color.z,
-        position.x + halfSideLength.x, position.y - halfSideLength.y, position.z + halfSideLength.z, color.x, color.y, color.z,
-        position.x + halfSideLength.x, position.y - halfSideLength.y, position.z - halfSideLength.z, color.x, color.y, color.z,
+    _position = position;
 
-        position.x - halfSideLength.x, position.y + halfSideLength.y, position.z - halfSideLength.z, color.x, color.y, color.z,
-        position.x - halfSideLength.x, position.y + halfSideLength.y, position.z + halfSideLength.z, color.x, color.y, color.z,
-        position.x + halfSideLength.x, position.y + halfSideLength.y, position.z + halfSideLength.z, color.x, color.y, color.z,
-        position.x + halfSideLength.x, position.y + halfSideLength.y, position.z - halfSideLength.z, color.x, color.y, color.z
+    float vertices[48] = {
+        -halfSideLength.x, -halfSideLength.y, -halfSideLength.z, color.x, color.y, color.z,
+        -halfSideLength.x, -halfSideLength.y, halfSideLength.z, color.x, color.y, color.z,
+        halfSideLength.x, -halfSideLength.y, halfSideLength.z, color.x, color.y, color.z,
+        halfSideLength.x, -halfSideLength.y, -halfSideLength.z, color.x, color.y, color.z,
+
+        -halfSideLength.x, halfSideLength.y, -halfSideLength.z, color.x, color.y, color.z,
+        -halfSideLength.x, halfSideLength.y, halfSideLength.z, color.x, color.y, color.z,
+        halfSideLength.x, halfSideLength.y, halfSideLength.z, color.x, color.y, color.z,
+        halfSideLength.x, halfSideLength.y, -halfSideLength.z, color.x, color.y, color.z
     };
 
     uint32 indices[36] = {
@@ -46,10 +48,6 @@ Cube::Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color)
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    //glBindVertexArray(0);
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 Cube::~Cube(void)

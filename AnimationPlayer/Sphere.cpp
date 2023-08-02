@@ -4,6 +4,7 @@
 
 Sphere::Sphere(glm::vec3 position, float radius, uint32 stackNumber, uint32 sectorNumber, glm::vec3 color)
 {
+    _position = position;
     std::vector<float> vertices;
     static constexpr float kPI = glm::pi<float>();
     float sectorStep = 2 * kPI / sectorNumber;
@@ -27,9 +28,9 @@ Sphere::Sphere(glm::vec3 position, float radius, uint32 stackNumber, uint32 sect
             // vertex position (x, y, z)
             x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
             y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
-            vertices.push_back(x + position.x);
-            vertices.push_back(y + position.y);
-            vertices.push_back(z + position.z);
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
             vertices.push_back(color.x);
             vertices.push_back(color.y);
             vertices.push_back(color.z);
