@@ -15,6 +15,7 @@
 #include "CharacterLoader.h"
 #include "Sphere.h"
 #include "Cube.h"
+#include "PlaneCloth.h"
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -89,6 +90,7 @@ int main()
     Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     Cube* cube = new Cube(glm::vec3(15.0f, -13.0f, 15.0f), glm::vec3(5.0f, 5.0f, 5.0f));
     Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f);
+    PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 20, 20, 40, 40);
     loadCharacter();
 
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT);
@@ -97,6 +99,7 @@ int main()
     gameObjectList.push_back(ground);
     gameObjectList.push_back(cube);
     gameObjectList.push_back(sphere);
+    gameObjectList.push_back(planeCloth);
     gameObjectList.push_back(character);
 
     float lastFrame = 0.0f;
