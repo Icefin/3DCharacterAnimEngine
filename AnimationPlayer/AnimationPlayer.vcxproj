@@ -153,6 +153,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="Motion.cpp" />
     <ClCompile Include="PlaneCloth.cpp" />
+    <ClCompile Include="Rigidbody.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="CustomMath.cpp" />
     <ClCompile Include="Sphere.cpp" />
@@ -169,6 +170,7 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Motion.h" />
     <ClInclude Include="PlaneCloth.h" />
+    <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="CustomMath.h" />

@@ -2,7 +2,7 @@
 
 #include "PlaneCloth.h"
 
-PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum)
+PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum, bool test)
 {
 	_position = position;
 
@@ -156,6 +156,8 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	_test = test;
 }
 
 PlaneCloth::~PlaneCloth(void)
@@ -225,6 +227,8 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 
 void PlaneCloth::solveCollision(void)
 {
+	static glm::vec3 center = glm::vec3(15.0f, -13.0f, 15.0f);
+	static float radius = 5.0f;
 	for (MassPoint& massPoint : _massPointList)
 	{
 		glm::vec3 position = massPoint.position;
@@ -236,6 +240,16 @@ void PlaneCloth::solveCollision(void)
 			massPoint.velocity.y = 0.0f;
 		}
 
+		if (_test)
+		{
+		float distance = glm::distance(position, center);
+		if (distance < radius + 0.2)
+		{
+			massPoint.velocity = glm::vec3(0.0f);
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+		}
+		}
+		else
 		if ((position.y < -7.8f) && (position.x < 25.2f && position.x > 14.8f) && (position.z < 20.2f && position.z > 9.8f))
 		{
 			std::vector<float> depth(5);

@@ -91,9 +91,11 @@ int main()
 
     Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     Cube* cube = new Cube(glm::vec3(25.0f, -13.0f, 20.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f);
-    PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 20, 20, 60, 60);
+    Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     loadCharacter();
+
+    PlaneCloth* cubeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60, false);
+    PlaneCloth* sphereCloth = new PlaneCloth(glm::vec3(-30.0f, 0.0f, 0.0f), 30, 30, 60, 60, true);
 
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
@@ -102,7 +104,6 @@ int main()
     gameObjectList.push_back(cube);
     gameObjectList.push_back(sphere);
     gameObjectList.push_back(character);
-    gameObjectList.push_back(planeCloth);
 
     float lastFrame = 0.0f;
     while (glfwWindowShouldClose(window) == false)
@@ -119,9 +120,10 @@ int main()
         processInput(window, deltaTime * frameRate);
 
         //Object Update
-        for (int32 idx = 0; idx < gameObjectList.size() - 1; ++idx)
+        for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->update(deltaTime * frameRate);
-        gameObjectList.back()->update(0.003f);
+        cubeCloth->update(0.003f);
+        sphereCloth->update(0.003f);
 
         camera->update(shader);
 
@@ -130,6 +132,8 @@ int main()
         //Object Render
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->render(shader);
+        cubeCloth->render(shader);
+        sphereCloth->render(shader);
 
         glfwSwapBuffers(window);
     }

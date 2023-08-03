@@ -2,7 +2,7 @@
 
 #include "Sphere.h"
 
-Sphere::Sphere(glm::vec3 position, float radius, uint32 stackNumber, uint32 sectorNumber, glm::vec3 color)
+Sphere::Sphere(glm::vec3 position, float radius, glm::vec3 color, uint32 stackNumber, uint32 sectorNumber)
 {
     _position = position;
     std::vector<float> vertices;

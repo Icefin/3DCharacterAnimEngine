@@ -30,7 +30,7 @@ struct Spring
 class PlaneCloth : public GameObject
 {
 public :
-	PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
+	PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum, bool test);
 	~PlaneCloth(void);
 
 	void update(float deltaTime) override;
@@ -50,4 +50,6 @@ private :
 	std::vector<MassPoint>	_massPointList;
 	std::vector<uint32>		_indices;
 	std::vector<Spring>		_springList;
+
+	bool _test;
 };
