@@ -292,19 +292,23 @@ to a constant weight function.
 
 #### Requirements :
 1. Simple Cloth Simulation with Hard-Coded Cube && Sphere
+- Cloth simulation using Spring-MassPoint Model
 2. Choose Lighting Model
-3. Simple Cloth Simulation with Collider Cube && Sphere -> 8.4
-4. Make Character Mesh
-5. Apply Collider to Character
-6. Simple Cloth Simulation with Character
-7. Complex Cloth Simulation with Character -> 8.11
+- Phong Lighting Model : Not Enough for Cloth
+- Global Illmuination : Not Appropriate for Real-Time Rendering
+- Phong Lighting Model + Ambient Occlusion -> Acceptable
+3. Simple Cloth Simulation with Collider Cube && Sphere
+- Collision Detection System....!!
+4. Simple Cloth Simulation with Character
+5. Complex Cloth Simulation with Character
 
 #### GameObject && Geometric Primitives
 ```c++
 class GameObject
 {
 public :
-	virtual void update(Shader& shader, float deltaTime) = 0;
+	virtual void update(float deltaTime) = 0;
+	virtual void render(Shader& shader) = 0;
 
 	uint32		_objectID;
 	glm::vec3	_position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -319,7 +323,8 @@ public :
         Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f));
         ~Cube(void);
 	
-	void	update(Shader& shader, float deltaTime) override;
+	void	update(float deltaTime) override;
+	void	render(Shader& shader) override;
 
 private :
 	GLuint	_vbo;
@@ -330,10 +335,11 @@ private :
 class Sphere : public GameObject
 {
 public :
-	Sphere(glm::vec3 position, float radius, uint32 stackNumber = 20, uint32 sectorNumber = 20, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f));
+	Sphere(glm::vec3 position, float radius, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f), uint32 stackNumber = 20, uint32 sectorNumber = 20);
 	~Sphere(void);
 
-	void	update(Shader& shader, float deltaTime) override;
+	void	update(float deltaTime) override;
+	void	render(Shader& shader) override;
 
 private:
 	GLuint	_vbo;
@@ -375,14 +381,14 @@ public :
 	PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
 	~PlaneCloth(void);
 
-	void update(Shader& shader, float deltaTime) override;
+	void update(float deltaTime) override;
+	void render(Shader& shader) override;
 
 private :
 	void applyInternalForces(void);
 	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
 	void solveCollision(void);
-	void render(Shader& shader);
 
 private :
 	GLuint	_vao;
@@ -396,12 +402,13 @@ private :
 ```
 
 #### Lighting System
+Phong Lighting Model + (Ambient Occlusion)
 
 #### Collision Detection && Solving
 
 #### Game-Loop
 
-#### Result :
+#### Result(Temp) :
 
 ---
 ### Particle System
