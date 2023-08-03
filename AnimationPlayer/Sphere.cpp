@@ -97,7 +97,12 @@ Sphere::~Sphere(void)
 	glDeleteBuffers(1, &_ebo);
 }
 
-void Sphere::update(Shader& shader, float deltaTime)
+void Sphere::update(float deltaTime)
+{
+    __noop;
+}
+
+void Sphere::render(Shader& shader)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

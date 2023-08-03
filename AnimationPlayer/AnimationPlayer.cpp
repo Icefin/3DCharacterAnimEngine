@@ -85,6 +85,8 @@ int main()
     initializeGLContext();
 
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
+    //Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
+
     shader.use();
 
     Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
@@ -115,11 +117,14 @@ int main()
         glfwPollEvents();
         processInput(window, deltaTime * frameRate);
 
+        for (int32 idx = 0; idx < gameObjectList.size() - 1; ++idx)
+            gameObjectList[idx]->update(deltaTime * frameRate);
+        gameObjectList.back()->update(0.003f);
+
         camera->update(shader, deltaTime * frameRate);
 
-        for (int32 idx = 0; idx < gameObjectList.size() - 1; ++idx)
-            gameObjectList[idx]->update(shader, deltaTime * frameRate);
-        gameObjectList.back()->update(shader, 0.003f);
+        for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
+            gameObjectList[idx]->render(shader);
 
         glfwSwapBuffers(window);
     }

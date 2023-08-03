@@ -61,7 +61,12 @@ Cube::~Cube(void)
     glDeleteBuffers(1, &_ebo);
 }
 
-void Cube::update(Shader& shader, float deltaTime)
+void Cube::update(float deltaTime)
+{
+    __noop;
+}
+
+void Cube::render(Shader& shader)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

@@ -7,7 +7,8 @@ public :
 			Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f));
 			~Cube(void);
 	
-	void	update(Shader& shader, float deltaTime) override;
+	void	update(float deltaTime) override;
+	void	render(Shader& shader) override;
 
 private :
 	GLuint	_vbo;

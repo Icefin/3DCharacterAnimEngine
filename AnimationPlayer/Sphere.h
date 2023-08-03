@@ -7,7 +7,8 @@ public :
 	Sphere(glm::vec3 position, float radius, uint32 stackNumber = 20, uint32 sectorNumber = 20, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f));
 	~Sphere(void);
 
-	void	update(Shader& shader, float deltaTime) override;
+	void	update(float deltaTime) override;
+	void	render(Shader& shader) override;
 
 private:
 	GLuint	_vbo;

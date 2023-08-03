@@ -33,14 +33,14 @@ public :
 	PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
 	~PlaneCloth(void);
 
-	void update(Shader& shader, float deltaTime) override;
+	void update(float deltaTime) override;
+	void render(Shader& shader) override;
 
 private :
 	void applyInternalForces(void);
 	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
 	void solveCollision(void);
-	void render(Shader& shader);
 
 private :
 	GLuint	_vao;

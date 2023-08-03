@@ -48,13 +48,17 @@ Character::~Character()
         delete _animator;
 }
 
-void Character::update(Shader& shader, float deltaTime)
+void Character::update(float deltaTime)
+{
+    _animator->update(_currentState, deltaTime);
+    updateMatrixPalette();
+}
+
+void Character::render(Shader& shader)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glLineWidth(2.0f);
 
-    _animator->update(_currentState, deltaTime);
-    updateMatrixPalette();
     renderSkeleton(shader);
 
     glBindVertexArray(axisArrayObject);

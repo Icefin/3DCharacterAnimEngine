@@ -166,21 +166,20 @@ PlaneCloth::~PlaneCloth(void)
 }
 
 #include <stdio.h>
-void PlaneCloth::update(Shader& shader, float deltaTime)
+void PlaneCloth::update(float deltaTime)
 {
 	applyInternalForces();
 	applyExternalForces();
 	updateMassPointState(deltaTime);
 	solveCollision();
-	render(shader);
 }
 
 void PlaneCloth::applyInternalForces(void)
 {
 	static const float stiffnessList[3] = {
-		2000.0f, 
-		2000.0f,
-		2400.0f
+		3000.0f, 
+		3000.0f,
+		5000.0f
 	};
 
 	static const float dampingCoefficient = 18.0f;
