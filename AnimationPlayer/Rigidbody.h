@@ -3,7 +3,9 @@
 enum class ColliderType {
 	Cylinder,
 	Sphere,
-	Cube
+	Cube,
+	Group,
+	Mesh
 };
 
 class Rigidbody
