@@ -236,12 +236,12 @@ void PlaneCloth::solveCollision(void)
 			massPoint.velocity.y = 0.0f;
 		}
 
-		if ((position.y < -7.8f) && (position.x < 20.2f && position.x > 9.8f) && (position.z < 20.2f && position.z > 9.8f))
+		if ((position.y < -7.8f) && (position.x < 25.2f && position.x > 14.8f) && (position.z < 20.2f && position.z > 9.8f))
 		{
 			std::vector<float> depth(5);
 
-			float frontDepth = abs(position.x - 9.8f);
-			float backDepth = abs(position.x - 20.2f);
+			float frontDepth = abs(position.x - 14.8f);
+			float backDepth = abs(position.x - 25.2f);
 			float leftDepth = abs(position.z - 9.8f);
 			float rightDepth = abs(position.z - 20.2f);
 			float upperDepth = abs(position.y + 7.8f);

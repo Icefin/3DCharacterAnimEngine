@@ -45,7 +45,7 @@ public :
     float       prevCursorX;
     float       prevCursorY;
 
-    void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
+    void processMouseMovement(float xoffset, float yoffset)
     {
         xoffset *= _mouseSensitivity;
         yoffset *= _mouseSensitivity;
@@ -53,18 +53,15 @@ public :
         _azimuth += xoffset;
         _elevation += yoffset;
 
-        if (constrainPitch)
-        {
-            if (_elevation > 89.0f)
-                _elevation = 89.0f;
-            if (_elevation < -89.0f)
-                _elevation = -89.0f;
+        if (_elevation > 89.0f)
+            _elevation = 89.0f;
+        if (_elevation < -89.0f)
+            _elevation = -89.0f;
 
-            if (_azimuth > 360.0f)
-                _azimuth = 0.0f;
-            if (_azimuth < 0.0f)
-                _azimuth = 360.0f;
-        }
+        if (_azimuth > 360.0f)
+            _azimuth = 0.0f;
+        if (_azimuth < 0.0f)
+            _azimuth = 360.0f;
     }
 
     void processMouseScroll(float yoffset)
@@ -72,8 +69,8 @@ public :
         _zoom -= static_cast<float>(yoffset);
         if (_zoom < 1.0f)
             _zoom = 1.0f;
-        if (_zoom > 80.0f)
-            _zoom = 80.0f;
+        if (_zoom > 100.0f)
+            _zoom = 100.0f;
     }
 
 private:
