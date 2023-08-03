@@ -114,15 +114,20 @@ int main()
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        //Input Process
         glfwPollEvents();
         processInput(window, deltaTime * frameRate);
 
+        //Object Update
         for (int32 idx = 0; idx < gameObjectList.size() - 1; ++idx)
             gameObjectList[idx]->update(deltaTime * frameRate);
         gameObjectList.back()->update(0.003f);
 
-        camera->update(shader, deltaTime * frameRate);
+        camera->update(shader);
 
+        //Physics Solve
+
+        //Object Render
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->render(shader);
 

@@ -30,7 +30,7 @@ public:
 
     }
 
-    void update(Shader& shader, float deltaTime)
+    void update(Shader& shader)
     {
         calculateCameraPosition();
 
