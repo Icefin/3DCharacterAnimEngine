@@ -124,7 +124,7 @@ CharacterLoader.h
 std::vector<CompressedAnimationData>	compressAnimation(std::vector<AnimationData>& data);  
   
 #### Catmull-Rom Interpolation with u = 0.5
-```
+```c++
 float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float t)
 {
 	float c0 = 0.5f * 2 * p1;
@@ -136,7 +136,7 @@ float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float 
 ```
 
 #### Animation Data Compression
-```
+```c++
 std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vector<AnimationData>& data)
 {
 	static constexpr float kThreshold = 0.01f;
@@ -215,7 +215,7 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 ```
 
 #### Decompress & Get Animation Data
-```
+```c++
 glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 {
 	std::vector<CompressedAnimationData>& boneAnimation = _keyFrameAnimations[boneIndex];
@@ -284,92 +284,124 @@ starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an 
 to a constant weight function.
 
 #### Partial Body Animation
-
-#### Requirements :  
-1. Masking all the bones
-```
-enum class CharacterBodyMask : uint32
-{
-    ROOT = 1 << 0,
-
-    LEFT_HIP_JOINT = 1 << 1,
-    LEFT_FEMUR = 1 << 2,
-    LEFT_TIBIA = 1 << 3,
-    LEFT_FOOT = 1 << 4,
-    LEFT_TOES = 1 << 5,
-
-    RIGHT_HIT_JOINT = 1 << 6,
-    RIGHT_FEMUR = 1 << 7,
-    RIGHT_TIBIA = 1 << 8,
-    RIGHT_FOOT = 1 << 9,
-    RIGHT_TOES = 1 << 10,
-
-    LOWER_BACK = 1 << 11,
-    UPPER_BACK = 1 << 12,
-    THROAX = 1 << 13,
-    LOWER_NECK = 1 << 14,
-    UPPER_NECK = 1 << 15,
-    HEAD = 1 << 16,
-
-    LEFT_CLAVICLE = 1 << 17,
-    LEFT_HUMERUS = 1 << 18,
-    LEFT_RADIUS = 1 << 19,
-    LEFT_WRIST = 1 << 20,
-    LEFT_HAND = 1 << 21,
-    LEFT_FINGERS = 1 << 22,
-    LEFT_THUMB = 1 << 23,
-
-    RIGHT_CLAVICLE = 1 << 24,
-    RIGHT_HUMERUS = 1 << 25,
-    RIGHT_RADIUS = 1 << 26,
-    RIGHT_WRIST = 1 << 27,
-    RIGHT_HAND = 1 << 28,
-    RIGHT_FINGERS = 1 << 29,
-    RIGHT_THUMB = 1 << 30,
-
-    LEFT_LEG = LEFT_HIP_JOINT | LEFT_FEMUR | LEFT_TIBIA | LEFT_FOOT | LEFT_TOES,
-    RIGHT_LEG = RIGHT_HIT_JOINT | RIGHT_FEMUR | RIGHT_TIBIA | RIGHT_FOOT | RIGHT_TOES,
-    SPINE = LOWER_BACK | UPPER_BACK | THROAX | LOWER_NECK | UPPER_NECK | HEAD,
-    LEFT_ARM = LEFT_CLAVICLE | LEFT_HUMERUS | LEFT_RADIUS | LEFT_WRIST | LEFT_HAND | LEFT_FINGERS | LEFT_THUMB,
-    RIGHT_ARM = RIGHT_CLAVICLE | RIGHT_HUMERUS | RIGHT_RADIUS | RIGHT_WRIST | RIGHT_HAND | RIGHT_FINGERS | RIGHT_THUMB,
-
-    LOWER_BODY = LEFT_LEG | RIGHT_LEG,
-    UPPER_BODY = SPINE | LEFT_ARM | RIGHT_ARM,
-
-    WHOLE_BODY = LOWER_BODY | UPPER_BODY
-};
-```
-2. Give blending weight & state to all the bones
-3. setCharacterState(STATE, targetBoneMask)
-4. Is it better using dynamic programming to build modelMatrix....?
-5. 
-
----
-### Character Controller
-#### Requirements : 
-1. Realistic 3D In-Game Character Controller
-2. Independent Character Transform from Motions... -> But some kind of data is related to motion... ex) Y-position in Jumping Motion
-3. No more Hard-Coding...!!!
-4. Rotate Motion forward to Actual forward!!
-5. 
-
-Doodle :
-1. Position = {Transform, Transform + Motion, Transform} ?
-2. Rotation = {Transform + Motion, Transform, Transform + Motion} ?
-3. Rigid body relation
-
-#### Result :
 ![Animation-Player-2023-07-31-21-29-59](https://github.com/Icefin/AnimationPlayer/assets/76864202/a4c5eb7c-b083-471f-a654-25bf4e100500)
 
 ---
-### Collision Detection System & Point Based Dynamics Cloth Simulation
+### Collision Detection System & Cloth Simulation
+#### Reference :
+
 #### Requirements :
 1. Simple Cloth Simulation with Hard-Coded Cube && Sphere
-2. Simple Cloth Simulation with Collider Cube && Sphere -> 8.4 somewhere lighting...
-3. Make Character Mesh
-4. Apply Collider to Character
-5. Simple Cloth Simulation with Character
-6. Complex Cloth Simulation with Character -> 8.11
+2. Choose Lighting Model
+3. Simple Cloth Simulation with Collider Cube && Sphere -> 8.4
+4. Make Character Mesh
+5. Apply Collider to Character
+6. Simple Cloth Simulation with Character
+7. Complex Cloth Simulation with Character -> 8.11
+
+#### GameObject && Geometric Primitives
+```c++
+class GameObject
+{
+public :
+	virtual void update(Shader& shader, float deltaTime) = 0;
+
+	uint32		_objectID;
+	glm::vec3	_position = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::quat	_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+};
+```
+
+```c++
+class Cube : public GameObject
+{
+public :
+        Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f));
+        ~Cube(void);
+	
+	void	update(Shader& shader, float deltaTime) override;
+
+private :
+	GLuint	_vbo;
+	GLuint	_vao;
+	GLuint	_ebo;
+};
+
+class Sphere : public GameObject
+{
+public :
+	Sphere(glm::vec3 position, float radius, uint32 stackNumber = 20, uint32 sectorNumber = 20, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f));
+	~Sphere(void);
+
+	void	update(Shader& shader, float deltaTime) override;
+
+private:
+	GLuint	_vbo;
+	GLuint	_vao;
+	GLuint	_ebo;
+
+	int32	_indicesNumber;
+};
+```
+
+```c++
+struct MassPoint
+{
+	float		mass;
+	glm::vec3	position;
+	glm::vec3	velocity;
+	glm::vec3	netForce;
+	glm::vec3	color;
+};
+
+enum class SpringType :uint8
+{
+	Structural = 0,
+	Shear,
+	Flexion
+};
+
+struct Spring
+{
+	SpringType type;
+	float restLength;
+	MassPoint* left;
+	MassPoint* right;
+};
+
+class PlaneCloth : public GameObject
+{
+public :
+	PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
+	~PlaneCloth(void);
+
+	void update(Shader& shader, float deltaTime) override;
+
+private :
+	void applyInternalForces(void);
+	void applyExternalForces(void);
+	void updateMassPointState(float deltaTime);
+	void solveCollision(void);
+	void render(Shader& shader);
+
+private :
+	GLuint	_vao;
+	GLuint	_vbo;
+	GLuint	_ebo;
+
+	std::vector<MassPoint>	_massPointList;
+	std::vector<uint32>	_indices;
+	std::vector<Spring>	_springList;
+};
+```
+
+#### Lighting System
+
+#### Collision Detection && Solving
+
+#### Game-Loop
+
+#### Result :
 
 ---
 ### Particle System
