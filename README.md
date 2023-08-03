@@ -409,6 +409,7 @@ Phong Lighting Model + (Ambient Occlusion)
 #### Game-Loop
 
 #### Result(Temp) :
+https://github.com/Icefin/AnimationPlayer/assets/76864202/c73974bf-4ded-408e-887c-cfa4673ea058
 
 ---
 ### Particle System
