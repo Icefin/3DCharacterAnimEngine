@@ -309,7 +309,7 @@ void PlaneCloth:: phongUpdate(float deltaTime)
 void PlaneCloth::updateMassPointNormal(void)
 {
 	std::vector<std::vector<glm::vec3>> normals(_massPointList.size());
-	for (int i = 0; i < _indices.size(); i += 6) {
+	for (int32 i = 0; i < _indices.size(); i += 6) {
 
 		glm::vec3 v1 = _massPointList[_indices[i + 1]].position - _massPointList[_indices[i]].position;
 		glm::vec3 v2 = _massPointList[_indices[i + 2]].position - _massPointList[_indices[i]].position;
@@ -331,10 +331,10 @@ void PlaneCloth::updateMassPointNormal(void)
 		normals[_indices[i + 5]].push_back(normal2);
 	}
 
-	for (int i = 0; i < normals.size(); i++) {
+	for (int32 i = 0; i < normals.size(); i++) {
 		glm::vec3 avg{ 0,0,1.f };
 
-		for (int j = 0; j < normals[i].size(); j++) {
+		for (int32 j = 0; j < normals[i].size(); j++) {
 			avg += normals[i][j];
 
 		}
