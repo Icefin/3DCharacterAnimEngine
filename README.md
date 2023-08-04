@@ -342,13 +342,19 @@ private :
 1. Simple Cloth Simulation with Hard-Coded Cube && Sphere
 - Cloth simulation using Spring-MassPoint Model
 2. Choose Lighting Model
-- Phong Lighting Model : Not Enough for Cloth
+- Phong Lighting Model : Not Enough for Multiple Objects || Single Concave Object
 - Global Illmuination : Not Appropriate for Real-Time Rendering
-- Phong Lighting Model + Ambient Occlusion -> Acceptable
-3. Simple Cloth Simulation with Collider Cube && Sphere
-- Collision Detection System....!!
+- Phong Lighting Model + (Shadowing, Ambient Occlusion) -> Acceptable
+3. Simple Cloth Simulation with Collider Cube && Sphere  
+- Collision Detection && Resolution System is required
+- What's the best way to detect collision between Mesh && Primitives
+  
 4. Simple Cloth Simulation with Character
+- How to simplify character with collider?
+
 5. Complex Cloth Simulation with Character
+- Import .obj asset
+- Physics time-step would become problem...
 
 #### GameObject && Geometric Primitives
 ```c++
@@ -449,23 +455,25 @@ private :
 	std::vector<uint32>	_indices;
 	std::vector<Spring>	_springList;
 
-        glm::vec3	_materialAmbient{0.0f, 0.0f, 0.0f};
+        glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
 	glm::vec3	_materialSpecular{0.2f, 0.2f, 0.2f};
-	glm::vec3	_materialDiffuse{0.1f, 0.1f, 0.1f};
+	glm::vec3	_materialEmissive{0.0f, 0.0f, 0.0f};
 	float		_materialShininess = 5.0f;
 };
 ```
 
 #### Lighting System
-Phong Lighting Model + (Ambient Occlusion)  
+Phong Lighting Model + (Shadowing, Ambient Occlusion)  
 ![phong](https://github.com/Icefin/AnimationPlayer/assets/76864202/bdefd196-4a8e-4dbb-8bd7-2dc179a7f335)
 
+errors...  
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
 
 
-#### Collision Detection && Solving
+#### Collision Detection && Resolution
 
 #### Game-Loop
+update -> physics -> render
 
 #### Result(Temp) :
 https://github.com/Icefin/AnimationPlayer/assets/76864202/c73974bf-4ded-408e-887c-cfa4673ea058
