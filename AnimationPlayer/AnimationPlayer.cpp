@@ -102,8 +102,8 @@ int main()
     gameObjectList.push_back(character);
 
     Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-    PlaneCloth* phongCube = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 50, 50, false);
-    PlaneCloth* phongSphere = new PlaneCloth(glm::vec3(-30.0f, 0.0f, 0.0f), 30, 30, 50, 50, true);
+    PlaneCloth* phongCube = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60, false);
+    PlaneCloth* phongSphere = new PlaneCloth(glm::vec3(-30.0f, 0.0f, 0.0f), 30, 30, 60, 60, true);
     DirectionalLight phongLight{
         glm::vec3(1.0f,1.0f,1.0f),
         glm::vec3(0.1f,0.1f,0.1f),
@@ -144,11 +144,11 @@ int main()
         phong.setUniformVec3("Sd", phongLight.diffuse);
         phong.setUniformVec3("Ss", phongLight.specular);
         camera->phongUpdate(phong);
-        phongCube->phongUpdate(0.003f);
-        phongSphere->phongUpdate(0.003f);
+        phongCube->update(0.005f);
+        phongSphere->update(0.005f);
 
-        phongCube->phongRender(phong);
-        phongSphere->phongRender(phong);
+        phongCube->render(phong);
+        phongSphere->render(phong);
 
         glfwSwapBuffers(window);
     }

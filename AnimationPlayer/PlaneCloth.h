@@ -37,13 +37,12 @@ public:
 	void update(float deltaTime) override;
 	void render(Shader& shader) override;
 
-	void phongUpdate(float deltaTime);
-	void phongRender(Shader& shader);
 private:
 	void applyInternalForces(void);
 	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
 	void solveCollision(void);
+	void updateMassPointNormal(void);
 
 private:
 	GLuint	_vao;
@@ -57,7 +56,6 @@ private:
 	bool _test;
 
 private:
-	void		updateMassPointNormal(void);
 	glm::vec3	_materialAmbient{0.0f, 0.0f, 0.0f};
 	glm::vec3	_materialSpecular{0.2f, 0.2f, 0.2f};
 	glm::vec3	_materialDiffuse{0.1f, 0.1f, 0.1f};

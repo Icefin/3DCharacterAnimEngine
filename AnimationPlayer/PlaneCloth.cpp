@@ -18,7 +18,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 			MassPoint newPoint;
 			newPoint.mass = 1.0f;
 			newPoint.position = glm::vec3(w * dw, 0, h * dh);
-			newPoint.velocity = glm::vec3(0.0f, -10.0f, 0.0f);
+			newPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 
@@ -118,19 +118,16 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 	}
 
 	// Indices Initialize
-	// <<<LINE TESTING>>>
 	for (uint32 h = 0; h < heightNum - 1; ++h)
 	{
 		for (uint32 w = 0; w < widthNum - 1; ++w)
 		{
 			_indices.push_back(w + h * widthNum);
 			_indices.push_back((w + 1) + (h + 1) * widthNum);
-			//_indices.push_back((w + 1) + (h + 1) * widthNum);
 			_indices.push_back((w + 1) + h * widthNum);
 
 			_indices.push_back(w + h * widthNum);
 			_indices.push_back(w + (h + 1) * widthNum);
-			//_indices.push_back(w + (h + 1) * widthNum);
 			_indices.push_back((w + 1) + (h + 1) * widthNum);
 		}
 	}
@@ -176,6 +173,27 @@ void PlaneCloth::update(float deltaTime)
 	applyExternalForces();
 	updateMassPointState(deltaTime);
 	solveCollision();
+	updateMassPointNormal();
+}
+
+void PlaneCloth::render(Shader& shader)
+{
+	glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), _position);
+	shader.setUniformVec3("Ka", _materialAmbient);
+	shader.setUniformVec3("Ke", _materialDiffuse);
+	shader.setUniformVec3("Ks", _materialSpecular);
+	shader.setUniformFloat("sh", _materialShininess);
+	shader.setUniformMat4("worldMat", worldMat);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	glBindVertexArray(_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+
+	glLineWidth(1.0f);
+	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
 }
 
 void PlaneCloth::applyInternalForces(void)
@@ -209,7 +227,7 @@ void PlaneCloth::applyInternalForces(void)
 
 void PlaneCloth::applyExternalForces(void)
 {
-	// Viscosity
+	// Viscosity, Friction...
 	for (MassPoint& massPoint : _massPointList)
 		massPoint.netForce += glm::vec3(0.0f, -9.81f, 0.0f) * massPoint.mass;
 }
@@ -240,70 +258,47 @@ void PlaneCloth::solveCollision(void)
 		{
 			massPoint.position.y = -17.0f;
 			massPoint.velocity.y = 0.0f;
+			continue;
 		}
 
 		if (_test)
 		{
-		float distance = glm::distance(position, center);
-		if (distance < radius + 0.2)
-		{
-			massPoint.velocity = glm::vec3(0.0f);
-			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-		}
+			float distance = glm::distance(position, center);
+			if (distance < radius + 0.2)
+			{
+				massPoint.velocity = glm::vec3(0.0f);
+				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			}
 		}
 		else
-		if ((position.y < -7.8f) && (position.x < 25.2f && position.x > 14.8f) && (position.z < 20.2f && position.z > 9.8f))
-		{
-			std::vector<float> depth(5);
+			if ((position.y < -7.8f) && (position.x < 25.2f && position.x > 14.8f) && (position.z < 20.2f && position.z > 9.8f))
+			{
+				std::vector<float> depth(5);
 
-			float frontDepth = abs(position.x - 14.8f);
-			float backDepth = abs(position.x - 25.2f);
-			float leftDepth = abs(position.z - 9.8f);
-			float rightDepth = abs(position.z - 20.2f);
-			float upperDepth = abs(position.y + 7.8f);
+				float frontDepth = abs(position.x - 14.8f);
+				float backDepth = abs(position.x - 25.2f);
+				float leftDepth = abs(position.z - 9.8f);
+				float rightDepth = abs(position.z - 20.2f);
+				float upperDepth = abs(position.y + 7.8f);
 
-			depth[0] = frontDepth;
-			depth[1] = backDepth;
-			depth[2] = leftDepth;
-			depth[3] = rightDepth;
-			depth[4] = upperDepth;
+				depth[0] = frontDepth;
+				depth[1] = backDepth;
+				depth[2] = leftDepth;
+				depth[3] = rightDepth;
+				depth[4] = upperDepth;
 
-			std::sort(depth.begin(), depth.end());
+				std::sort(depth.begin(), depth.end());
 
-			if (depth[0] == upperDepth)
-				massPoint.velocity.y = 0.0f;
-			else if (depth[0] == frontDepth || depth[0] == backDepth)
-				massPoint.velocity.x = 0.0f;
-			else
-				massPoint.velocity.z = 0.0f;
+				if (depth[0] == upperDepth)
+					massPoint.velocity.y = 0.0f;
+				else if (depth[0] == frontDepth || depth[0] == backDepth)
+					massPoint.velocity.x = 0.0f;
+				else
+					massPoint.velocity.z = 0.0f;
 
-			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-		}
+				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			}
 	}
-}
-
-void PlaneCloth::render(Shader& shader)
-{
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	glBindVertexArray(_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-
-	glLineWidth(1.0f);
-	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _position);
-	shader.setUniformMat4("model", modelMatrix);
-	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
-}
-
-void PlaneCloth:: phongUpdate(float deltaTime)
-{
-	applyInternalForces();
-	applyExternalForces();
-	updateMassPointState(deltaTime);
-	solveCollision();
-	updateMassPointNormal();
 }
 
 void PlaneCloth::updateMassPointNormal(void)
@@ -332,33 +327,12 @@ void PlaneCloth::updateMassPointNormal(void)
 	}
 
 	for (int32 i = 0; i < normals.size(); i++) {
-		glm::vec3 avg{ 0,0,1.f };
+		glm::vec3 avg{ 0.0f, 0.0f, 0.0f };
 
-		for (int32 j = 0; j < normals[i].size(); j++) {
+		for (int32 j = 0; j < normals[i].size(); j++)
 			avg += normals[i][j];
 
-		}
 		avg = glm::normalize(avg);
-		_massPointList[i].normal = avg; // why minus??
+		_massPointList[i].normal = avg;
 	}
-}
-
-void PlaneCloth::phongRender(Shader& shader)
-{
-	glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), _position);
-	shader.setUniformVec3("Ka", _materialAmbient);
-	shader.setUniformVec3("Ke", _materialDiffuse);
-	shader.setUniformVec3("Ks", _materialSpecular);
-	shader.setUniformFloat("sh", _materialShininess);
-	shader.setUniformMat4("worldMat", worldMat);
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	glBindVertexArray(_vao);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-
-	glLineWidth(1.0f);
-	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
 }

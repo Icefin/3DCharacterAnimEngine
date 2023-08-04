@@ -64,7 +64,7 @@ void Character::render(Shader& shader)
     glBindVertexArray(axisArrayObject);
     shader.setUniformMat4("model", _matrixPalette[0]);
     glLineWidth(5.0f);
-    glDrawArrays(GL_LINES, 0, 12);
+    glDrawArrays(GL_LINES, 0, 36);
 }
 
 void Character::updateMatrixPalette()

@@ -5,6 +5,7 @@
 Sphere::Sphere(glm::vec3 position, float radius, glm::vec3 color, uint32 stackNumber, uint32 sectorNumber)
 {
     _position = position;
+
     std::vector<float> vertices;
     static constexpr float kPI = glm::pi<float>();
     float sectorStep = 2 * kPI / sectorNumber;
@@ -13,7 +14,7 @@ Sphere::Sphere(glm::vec3 position, float radius, glm::vec3 color, uint32 stackNu
     float sectorAngle, stackAngle;
     float x, y, z, xy;
 
-    for (int i = 0; i <= stackNumber; ++i)
+    for (int32 i = 0; i <= stackNumber; ++i)
     {
         stackAngle = kPI / 2 - i * stackStep;        // starting from pi/2 to -pi/2
         xy = radius * cosf(stackAngle);             // r * cos(u)
@@ -21,7 +22,7 @@ Sphere::Sphere(glm::vec3 position, float radius, glm::vec3 color, uint32 stackNu
 
         // add (sectorCount+1) vertices per stack
         // first and last vertices have same position and normal, but different tex coords
-        for (int j = 0; j <= sectorNumber; ++j)
+        for (int32 j = 0; j <= sectorNumber; ++j)
         {
             sectorAngle = j * sectorStep;           // starting from 0 to 2pi
 
@@ -38,13 +39,13 @@ Sphere::Sphere(glm::vec3 position, float radius, glm::vec3 color, uint32 stackNu
     }
 
     std::vector<uint32> indices;
-    int k1, k2;
-    for (int i = 0; i < stackNumber; ++i)
+    int32 k1, k2;
+    for (int32 i = 0; i < stackNumber; ++i)
     {
         k1 = i * (sectorNumber + 1);     // beginning of current stack
         k2 = k1 + sectorNumber + 1;      // beginning of next stack
 
-        for (int j = 0; j < sectorNumber; ++j, ++k1, ++k2)
+        for (int32 j = 0; j < sectorNumber; ++j, ++k1, ++k2)
         {
             // 2 triangles per sector excluding first and last stacks
             // k1 => k2 => k1+1

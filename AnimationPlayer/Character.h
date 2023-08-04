@@ -41,9 +41,13 @@ private:
     AnimationState              _currentState = AnimationState::IDLE;
 
 #ifdef DEBUG
-    float       axis[12] = {
+    float       axis[36] = {
         0.0f, -17.0f, 10.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, -17.0f, 0.0f, 1.0f, 0.0f, 0.0f
+        0.0f, -17.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, -17.0f, 10.0f, 1.0f, 0.0f, 0.0f,
+        2.0f, -17.0f, 7.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, -17.0f, 10.0f, 1.0f, 0.0f, 0.0f,
+        -2.0f, -17.0f, 7.0f, 1.0f, 0.0f, 0.0f
     };
 #endif // DEBUG
 };
