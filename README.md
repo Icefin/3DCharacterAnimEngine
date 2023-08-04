@@ -337,7 +337,8 @@ private :
 ---
 ### Collision Detection System & Cloth Simulation
 #### Reference :
-
+https://learnopengl.com/Lighting/Basic-Lighting  
+https://carmencincotti.com/2022-07-11/position-based-dynamics/
 #### Requirements :
 1. Simple Cloth Simulation with Hard-Coded Cube && Sphere
 - Cloth simulation using Spring-MassPoint Model
@@ -350,11 +351,11 @@ private :
 - What's the best way to detect collision between Mesh && Primitives
   
 4. Simple Cloth Simulation with Character
+- Position Based Dynamics comes here
 - How to simplify character with collider?
 
 5. Complex Cloth Simulation with Character
 - Import .obj asset
-- Physics time-step would become problem...
 
 #### GameObject && Geometric Primitives
 ```c++
@@ -443,7 +444,7 @@ private :
 	void applyInternalForces(void);
 	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
-	void solveCollision(void);
+	void solveConstraint(void);
         void updateMassPointNormal(void);
 
 private :
