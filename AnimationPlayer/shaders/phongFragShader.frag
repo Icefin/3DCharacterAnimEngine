@@ -1,41 +1,28 @@
 #version 330 core
 
-struct Material {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    float shiniess;
-};
-
-struct Light {
-    vec3 direction;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-};
-
-uniform Material material;
-uniform Light phongLight;
-
-in vec3 vertexNormal, vertexView;
-in vec4 vertexColor;
+in vec3 vertexNormal;
+in vec3 vertexColor;
+in vec3 viewDirection;
 
 out vec4 fragColor;
 
-void main()
-{
-    //diffuse term
+uniform vec3 Ka,Ks,Ke;
+uniform vec3 Sa,Ss,Sd;
+uniform vec3 lightDir;
+uniform float sh;
+
+void main(){
     vec3 normal = normalize(vertexNormal);
-    vec3 light = normalize(phongLight.direction);
-    vec3 diffuse = max(dot(normal, light), 0.0) * phongLight.diffuse * material.diffuse;
+    vec3 view = normalize(viewDirection);
+    vec3 light = normalize(lightDir);
 
-    //specular term
-    vec3 view = normalize(vertexView);
-    vec3 reflect = 2.0 * normal * dot(normal, light) - light;
-    vec3 specular = pow(max(dot(reflect, view), 0.0), material.shiniess) * phongLight.specular * material.specular;
+    vec3 diff = max(dot(normal, light), 0.0) * Sd * vertexColor;
 
-    //ambient term
-    vec3 ambient = phongLight.ambient * material.ambient;
+    vec3 refl = 2.0 * normal * dot(normal, light) - light;
+    vec3 spec = pow(max(dot(refl, view), 0), sh) * Ss * Ks;
 
-    fragColor = vec4(diffuse + specular + ambient, 1.0) * vertexColor;
+    vec3 ambi = Ka * Sa;
+
+    fragColor = vec4(diff + spec + ambi + Ke, 1.0);
+
 }

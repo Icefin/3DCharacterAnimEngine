@@ -93,9 +93,6 @@ int main()
     Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     loadCharacter();
 
-    //PlaneCloth* cubeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60, false);
-    PlaneCloth* sphereCloth = new PlaneCloth(glm::vec3(-30.0f, 0.0f, 0.0f), 30, 30, 60, 60, true);
-
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
     std::vector<GameObject*> gameObjectList;
@@ -105,9 +102,10 @@ int main()
     gameObjectList.push_back(character);
 
     Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-    PlaneCloth* phongCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60, false);
+    PlaneCloth* phongCube = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 50, 50, false);
+    PlaneCloth* phongSphere = new PlaneCloth(glm::vec3(-30.0f, 0.0f, 0.0f), 30, 30, 50, 50, true);
     DirectionalLight phongLight{
-        glm::vec3(-1.0f,1.0f,1.0f),
+        glm::vec3(1.0f,1.0f,1.0f),
         glm::vec3(0.1f,0.1f,0.1f),
         glm::vec3(1.0f,1.0f,1.0f),
         glm::vec3(1.0f,1.0f,1.0f)
@@ -131,8 +129,6 @@ int main()
         //Object Update
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->update(deltaTime * frameRate);
-        //cubeCloth->update(0.003f);
-        sphereCloth->update(0.003f);
 
         camera->update(shader);
 
@@ -141,17 +137,18 @@ int main()
         //Object Render
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->render(shader);
-        //cubeCloth->render(shader);
-        sphereCloth->render(shader);
 
         phong.use();
-        phong.setUniformVec3("phongLight.direction", phongLight.direction);
-        phong.setUniformVec3("phongLight.ambient", phongLight.ambient);
-        phong.setUniformVec3("phongLight.diffuse", phongLight.diffuse);
-        phong.setUniformVec3("phongLight.specular", phongLight.specular);
+        phong.setUniformVec3("lightDir", phongLight.direction);
+        phong.setUniformVec3("Sa", phongLight.ambient);
+        phong.setUniformVec3("Sd", phongLight.diffuse);
+        phong.setUniformVec3("Ss", phongLight.specular);
         camera->phongUpdate(phong);
-        phongCloth->phongUpdate(0.003f);
-        phongCloth->phongRender(phong);
+        phongCube->phongUpdate(0.003f);
+        phongSphere->phongUpdate(0.003f);
+
+        phongCube->phongRender(phong);
+        phongSphere->phongRender(phong);
 
         glfwSwapBuffers(window);
     }

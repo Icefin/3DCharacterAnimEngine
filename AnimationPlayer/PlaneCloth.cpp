@@ -18,7 +18,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 			MassPoint newPoint;
 			newPoint.mass = 1.0f;
 			newPoint.position = glm::vec3(w * dw, 0, h * dh);
-			newPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+			newPoint.velocity = glm::vec3(0.0f, -10.0f, 0.0f);
 			newPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 
@@ -181,9 +181,9 @@ void PlaneCloth::update(float deltaTime)
 void PlaneCloth::applyInternalForces(void)
 {
 	static const float stiffnessList[3] = {
-		3000.0f, 
-		3000.0f,
-		5000.0f
+		2000.0f, 
+		2000.0f,
+		3000.0f
 	};
 
 	static const float dampingCoefficient = 18.0f;
@@ -346,10 +346,10 @@ void PlaneCloth::updateMassPointNormal(void)
 void PlaneCloth::phongRender(Shader& shader)
 {
 	glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), _position);
-	shader.setUniformVec3("material.ambient", _materialAmbient);
-	shader.setUniformVec3("material.diffuse", _materialDiffuse);
-	shader.setUniformVec3("material.specular", _materialSpecular);
-	shader.setUniformFloat("material.shininess", _materialShininess);
+	shader.setUniformVec3("Ka", _materialAmbient);
+	shader.setUniformVec3("Ke", _materialDiffuse);
+	shader.setUniformVec3("Ks", _materialSpecular);
+	shader.setUniformFloat("sh", _materialShininess);
 	shader.setUniformMat4("worldMat", worldMat);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
