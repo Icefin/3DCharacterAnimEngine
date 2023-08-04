@@ -243,6 +243,7 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 
 		massPoint.velocity = newVelocity;
 		massPoint.position = newPosition;
+		massPoint.color = glm::normalize(massPoint.position);
 		massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 }
