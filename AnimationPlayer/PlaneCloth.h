@@ -56,8 +56,8 @@ private:
 	bool _test;
 
 private:
-	glm::vec3	_materialAmbient{0.0f, 0.0f, 0.0f};
+	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
 	glm::vec3	_materialSpecular{0.2f, 0.2f, 0.2f};
-	glm::vec3	_materialDiffuse{0.1f, 0.1f, 0.1f};
+	glm::vec3	_materialEmissive{0.0f, 0.0f, 0.0f};
 	float		_materialShininess = 5.0f;
 };

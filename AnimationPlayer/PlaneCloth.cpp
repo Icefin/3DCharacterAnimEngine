@@ -179,10 +179,10 @@ void PlaneCloth::update(float deltaTime)
 void PlaneCloth::render(Shader& shader)
 {
 	glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), _position);
-	shader.setUniformVec3("Ka", _materialAmbient);
-	shader.setUniformVec3("Ke", _materialDiffuse);
-	shader.setUniformVec3("Ks", _materialSpecular);
-	shader.setUniformFloat("sh", _materialShininess);
+	shader.setUniformVec3("material.ambient", _materialAmbient);
+	shader.setUniformVec3("material.emissive", _materialEmissive);
+	shader.setUniformVec3("material.specular", _materialSpecular);
+	shader.setUniformFloat("material.shininess", _materialShininess);
 	shader.setUniformMat4("worldMat", worldMat);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
