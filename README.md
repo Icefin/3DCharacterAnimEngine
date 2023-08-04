@@ -337,6 +337,7 @@ private :
 ---
 ### Collision Detection System & Cloth Simulation
 #### Reference :
+https://graphics.stanford.edu/~mdfisher/cloth.html
 https://learnopengl.com/Lighting/Basic-Lighting  
 https://carmencincotti.com/2022-07-11/position-based-dynamics/
 #### Requirements :
