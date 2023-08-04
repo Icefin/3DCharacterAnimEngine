@@ -283,7 +283,55 @@ A transition involves two motions and a weight function that
 starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according
 to a constant weight function.
 
-#### Partial Body Animation
+#### Animation Layering
+```c++
+constexpr float kBlendTime = 30.0f;
+
+enum class AnimationState : uint8
+{
+	IDLE = 0,
+	FORWARD,
+	BACKWARD,
+	RUN,
+	JUMP,
+	ATTACK
+};
+
+struct LayerInfo
+{
+	int32		parentLayerIndex = -1;
+
+	int32		animationRootBoneIndex = 0;
+
+	AnimationState	prevState = AnimationState::IDLE;
+	float		prevMotionTime = 0.0f;
+
+	AnimationState	currentState = AnimationState::IDLE;
+	float		currentMotionTime = 0.0f;
+
+	float		layerBlendWeight = kBlendTime;
+	float		crossFadeBlendWeight = kBlendTime;
+	int32		maxFrameTime = 0;
+	bool		isLooping = true;
+};
+
+class Animator
+{
+public :
+                         Animator(std::vector<Motion*>& motionList);
+                        ~Animator();
+
+	void		update(AnimationState state, float deltaTime);
+
+	glm::quat	getJointAnimation(int32 jointIndex);
+
+private :
+	void		updateAnimationLayerListState(AnimationState state, float deltaTime);
+	std::vector<Motion*>	_motionList;
+	std::vector<LayerInfo>	_animationLayerList;
+};
+```
+
 ![Animation-Player-2023-07-31-21-29-59](https://github.com/Icefin/AnimationPlayer/assets/76864202/a4c5eb7c-b083-471f-a654-25bf4e100500)
 
 ---
@@ -355,6 +403,7 @@ struct MassPoint
 {
 	float		mass;
 	glm::vec3	position;
+        glm::vec3       normal;
 	glm::vec3	velocity;
 	glm::vec3	netForce;
 	glm::vec3	color;
@@ -370,7 +419,7 @@ enum class SpringType :uint8
 struct Spring
 {
 	SpringType type;
-	float restLength;
+	float      restLength;
 	MassPoint* left;
 	MassPoint* right;
 };
@@ -389,6 +438,7 @@ private :
 	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
 	void solveCollision(void);
+        void updateMassPointNormal(void);
 
 private :
 	GLuint	_vao;
@@ -398,11 +448,20 @@ private :
 	std::vector<MassPoint>	_massPointList;
 	std::vector<uint32>	_indices;
 	std::vector<Spring>	_springList;
+
+        glm::vec3	_materialAmbient{0.0f, 0.0f, 0.0f};
+	glm::vec3	_materialSpecular{0.2f, 0.2f, 0.2f};
+	glm::vec3	_materialDiffuse{0.1f, 0.1f, 0.1f};
+	float		_materialShininess = 5.0f;
 };
 ```
 
 #### Lighting System
-Phong Lighting Model + (Ambient Occlusion)
+Phong Lighting Model + (Ambient Occlusion)  
+![phong](https://github.com/Icefin/AnimationPlayer/assets/76864202/bdefd196-4a8e-4dbb-8bd7-2dc179a7f335)
+
+![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
+
 
 #### Collision Detection && Solving
 
