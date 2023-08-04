@@ -17,6 +17,8 @@
 #include "Cube.h"
 #include "PlaneCloth.h"
 
+#include "Light.h"
+
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -85,16 +87,13 @@ int main()
     initializeGLContext();
 
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
-    //Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-
-    shader.use();
 
     Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     Cube* cube = new Cube(glm::vec3(25.0f, -13.0f, 20.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     loadCharacter();
 
-    PlaneCloth* cubeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60, false);
+    //PlaneCloth* cubeCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60, false);
     PlaneCloth* sphereCloth = new PlaneCloth(glm::vec3(-30.0f, 0.0f, 0.0f), 30, 30, 60, 60, true);
 
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
@@ -104,6 +103,15 @@ int main()
     gameObjectList.push_back(cube);
     gameObjectList.push_back(sphere);
     gameObjectList.push_back(character);
+
+    Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
+    PlaneCloth* phongCloth = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 60, 60, false);
+    DirectionalLight phongLight{
+        glm::vec3(-1.0f,1.0f,1.0f),
+        glm::vec3(0.1f,0.1f,0.1f),
+        glm::vec3(1.0f,1.0f,1.0f),
+        glm::vec3(1.0f,1.0f,1.0f)
+    };
 
     float lastFrame = 0.0f;
     while (glfwWindowShouldClose(window) == false)
@@ -115,6 +123,7 @@ int main()
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        shader.use();
         //Input Process
         glfwPollEvents();
         processInput(window, deltaTime * frameRate);
@@ -122,7 +131,7 @@ int main()
         //Object Update
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->update(deltaTime * frameRate);
-        cubeCloth->update(0.003f);
+        //cubeCloth->update(0.003f);
         sphereCloth->update(0.003f);
 
         camera->update(shader);
@@ -132,8 +141,17 @@ int main()
         //Object Render
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->render(shader);
-        cubeCloth->render(shader);
+        //cubeCloth->render(shader);
         sphereCloth->render(shader);
+
+        phong.use();
+        phong.setUniformVec3("phongLight.direction", phongLight.direction);
+        phong.setUniformVec3("phongLight.ambient", phongLight.ambient);
+        phong.setUniformVec3("phongLight.diffuse", phongLight.diffuse);
+        phong.setUniformVec3("phongLight.specular", phongLight.specular);
+        camera->phongUpdate(phong);
+        phongCloth->phongUpdate(0.003f);
+        phongCloth->phongRender(phong);
 
         glfwSwapBuffers(window);
     }

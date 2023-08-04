@@ -12,7 +12,7 @@ out vec4 vertexColor;
 void main()
 {
     vertexNormal = normalize(transpose(inverse(mat3(worldMat))) * normal);
-    vec3 worldPos = (modelMat * vec4(pos, 1.0)).xyz;
+    vec3 worldPos = (worldMat * vec4(pos, 1.0)).xyz;
     
     vertexView = normalize(eyePos - worldPos);
     gl_Position = projMat * viewMat * worldMat * vec4(pos, 1.0f);

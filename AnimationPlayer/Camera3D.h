@@ -41,6 +41,19 @@ public:
         shader.setUniformMat4("view", viewMatrix);
     }
 
+    void phongUpdate(Shader& shader)
+    {
+        calculateCameraPosition();
+
+        glm::mat4 projMat = glm::perspective(glm::radians(_zoom), (float)_screenWidth / (float)_screenHeight, 0.1f, 1000.0f);
+        shader.setUniformMat4("projMat", projMat);
+
+        glm::mat4 viewMat = glm::lookAt(_cameraPosition + *_targetPosition, *_targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+        shader.setUniformMat4("viewMat", viewMat);
+
+        shader.setUniformVec3("eyePos", _cameraPosition + *_targetPosition);
+    }
+
 public :
     float       prevCursorX;
     float       prevCursorY;
@@ -55,8 +68,8 @@ public :
 
         if (_elevation > 89.0f)
             _elevation = 89.0f;
-        if (_elevation < -89.0f)
-            _elevation = -89.0f;
+        if (_elevation < -10.0f)
+            _elevation = -10.0f;
 
         if (_azimuth > 360.0f)
             _azimuth = 0.0f;

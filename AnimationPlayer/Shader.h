@@ -15,7 +15,7 @@
 class Shader
 {
 public:
-    uint32 program;
+    uint32 programID;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
     Shader(const utf8* vertexPath, const utf8* fragmentPath)
@@ -58,11 +58,11 @@ public:
         checkCompileErrors(fragment, "FRAGMENT");
 
         // shader Program
-        program = glCreateProgram();
-        glAttachShader(program, vertex);
-        glAttachShader(program, fragment);
-        glLinkProgram(program);
-        checkCompileErrors(program, "PROGRAM");
+        programID = glCreateProgram();
+        glAttachShader(programID, vertex);
+        glAttachShader(programID, fragment);
+        glLinkProgram(programID);
+        checkCompileErrors(programID, "PROGRAM");
 
         // delete the shaders as they're linked into our program now and no longer necessary
         glDeleteShader(vertex);
@@ -72,56 +72,54 @@ public:
     // ------------------------------------------------------------------------
     void use(void)
     {
-        glUseProgram(program);
+        glUseProgram(programID);
     }
     // utility uniform functions
     // ------------------------------------------------------------------------
     void setUniformBool(const std::string& name, bool value) const
     {
-        glUniform1i(glGetUniformLocation(program, name.c_str()), (int)value);
+        glUniform1i(glGetUniformLocation(programID, name.c_str()), (int)value);
     }
     // ------------------------------------------------------------------------
     void setUniformInt(const std::string& name, int32 value) const
     {
-        glUniform1i(glGetUniformLocation(program, name.c_str()), value);
+        glUniform1i(glGetUniformLocation(programID, name.c_str()), value);
     }
     // ------------------------------------------------------------------------
     void setUniformFloat(const std::string& name, float value) const
     {
-        glUniform1f(glGetUniformLocation(program, name.c_str()), value);
+        glUniform1f(glGetUniformLocation(programID, name.c_str()), value);
     }
     // ------------------------------------------------------------------------
     void setUniformVec3(const std::string& name, const glm::vec3& value) const
     {
-        glUniform3fv(glGetUniformLocation(program, name.c_str()), 1, &value[0]);
+        glUniform3fv(glGetUniformLocation(programID, name.c_str()), 1, &value[0]);
     }
     void setUniformVec3(const std::string& name, float x, float y, float z) const
     {
-        glUniform3f(glGetUniformLocation(program, name.c_str()), x, y, z);
+        glUniform3f(glGetUniformLocation(programID, name.c_str()), x, y, z);
     }
     // ------------------------------------------------------------------------
     void setUniformVec4(const std::string& name, const glm::vec4& value) const
     {
-        glUniform4fv(glGetUniformLocation(program, name.c_str()), 1, &value[0]);
+        glUniform4fv(glGetUniformLocation(programID, name.c_str()), 1, &value[0]);
     }
     void setUniformVec4(const std::string& name, float x, float y, float z, float w) const
     {
-        glUniform4f(glGetUniformLocation(program, name.c_str()), x, y, z, w);
+        glUniform4f(glGetUniformLocation(programID, name.c_str()), x, y, z, w);
     }
     // ------------------------------------------------------------------------
     void setUniformMat3(const std::string& name, const glm::mat3& mat) const
     {
-        glUniformMatrix3fv(glGetUniformLocation(program, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+        glUniformMatrix3fv(glGetUniformLocation(programID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
     void setUniformMat4(const std::string& name, const glm::mat4& mat) const
     {
-        glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(programID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
 private:
-    // utility function for checking shader compilation/linking errors.
-    // ------------------------------------------------------------------------
     void checkCompileErrors(uint32 shader, std::string type)
     {
         int32 success;
