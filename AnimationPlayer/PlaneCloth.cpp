@@ -18,7 +18,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 w
 			MassPoint newPoint;
 			newPoint.mass = 1.0f;
 			newPoint.position = glm::vec3(w * dw, 0, h * dh);
-			newPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+			newPoint.velocity = glm::vec3(0.0f, -10.0f, 0.0f);
 			newPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 
@@ -199,9 +199,9 @@ void PlaneCloth::render(Shader& shader)
 void PlaneCloth::applyInternalForces(void)
 {
 	static const float stiffnessList[3] = {
-		2000.0f, 
-		2000.0f,
-		3000.0f
+		1000.0f, 
+		1000.0f,
+		1000.0f
 	};
 
 	static const float dampingCoefficient = 18.0f;
@@ -229,7 +229,7 @@ void PlaneCloth::applyExternalForces(void)
 {
 	// Viscosity, Friction...
 	for (MassPoint& massPoint : _massPointList)
-		massPoint.netForce += glm::vec3(0.0f, -9.81f, 0.0f) * massPoint.mass;
+		massPoint.netForce += glm::vec3(0.0f, -98.1f, 0.0f) * massPoint.mass;
 }
 
 void PlaneCloth::updateMassPointState(float deltaTime)
@@ -254,7 +254,6 @@ void PlaneCloth::solveConstraint(void)
 	for (MassPoint& massPoint : _massPointList)
 	{
 		glm::vec3 position = massPoint.position;
-		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 
 		if (position.y < -17.0f)
 		{
@@ -267,10 +266,7 @@ void PlaneCloth::solveConstraint(void)
 		{
 			float distance = glm::distance(position, center);
 			if (distance < radius + 0.2)
-			{
-				massPoint.velocity = glm::vec3(0.0f);
-				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-			}
+				massPoint.velocity = 0.01f * glm::normalize(massPoint.position - center);
 		}
 		else
 			if ((position.y < -7.8f) && (position.x < 25.2f && position.x > 14.8f) && (position.z < 20.2f && position.z > 9.8f))
@@ -292,13 +288,15 @@ void PlaneCloth::solveConstraint(void)
 				std::sort(depth.begin(), depth.end());
 
 				if (depth[0] == upperDepth)
-					massPoint.velocity.y = 0.0f;
-				else if (depth[0] == frontDepth || depth[0] == backDepth)
-					massPoint.velocity.x = 0.0f;
+					massPoint.velocity.y = 0.1f;
+				else if (depth[0] == frontDepth)
+					massPoint.velocity.x = -0.1f;
+				else if (depth[0] == backDepth)
+					massPoint.velocity.x = 0.1f;
+				else if (depth[0] == rightDepth)
+					massPoint.velocity.z = 0.1f;
 				else
-					massPoint.velocity.z = 0.0f;
-
-				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+					massPoint.velocity.z = -0.1f;
 			}
 	}
 }
