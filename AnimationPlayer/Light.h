@@ -7,3 +7,7 @@ struct DirectionalLight {
 	glm::vec3 diffuse;
 	glm::vec3 specular;
 };
+
+struct SpotLight;
+
+struct PointLight;

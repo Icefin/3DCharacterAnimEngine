@@ -22,10 +22,10 @@ enum class SpringType :uint8
 
 struct Spring
 {
-	SpringType type;
-	float restLength;
-	MassPoint* left;
-	MassPoint* right;
+	SpringType	type;
+	float		restLength;
+	MassPoint*	left;
+	MassPoint*	right;
 };
 
 class PlaneCloth : public GameObject
