@@ -172,7 +172,7 @@ void PlaneCloth::update(float deltaTime)
 	applyInternalForces();
 	applyExternalForces();
 	updateMassPointState(deltaTime);
-	solveCollision();
+	solveConstraint();
 	updateMassPointNormal();
 }
 
@@ -236,6 +236,8 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 {
 	for (MassPoint& massPoint : _massPointList)
 	{
+		//Currently using Explicit Method (Euler-method)
+		//For the stable system, need to use implicit method
 		glm::vec3 newVelocity = massPoint.velocity + deltaTime * massPoint.netForce / massPoint.mass;
 		glm::vec3 newPosition = massPoint.position + deltaTime * massPoint.velocity;
 
@@ -245,7 +247,7 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 	}
 }
 
-void PlaneCloth::solveCollision(void)
+void PlaneCloth::solveConstraint(void)
 {
 	static glm::vec3 center = glm::vec3(15.0f, -13.0f, 15.0f);
 	static float radius = 5.0f;

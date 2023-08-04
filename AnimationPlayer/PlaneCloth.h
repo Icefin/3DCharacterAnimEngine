@@ -41,7 +41,7 @@ private:
 	void applyInternalForces(void);
 	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
-	void solveCollision(void);
+	void solveConstraint(void);
 	void updateMassPointNormal(void);
 
 private:
