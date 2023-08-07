@@ -11,7 +11,11 @@ typedef glm::vec3 Point;
 
 struct Line
 {
+	Line(void) { }
+	Line(const Point& pt1, const Point& pt2) : p1(pt1), p2(pt2) { }
 
+	Point p1;
+	Point p2;
 };
 
 struct Triangle
@@ -96,7 +100,7 @@ struct Mesh
 
 	union
 	{
-		std::vector<Triangle>	triangle;
+		std::vector<Triangle>	triangles;
 		std::vector<Point>		points;
 		float					values;
 	};
