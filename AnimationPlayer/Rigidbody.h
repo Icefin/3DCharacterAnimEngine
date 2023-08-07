@@ -1,18 +1,23 @@
 #pragma once
+#include <vector>
 
-enum class ColliderType {
-	Cylinder,
-	Sphere,
-	Cube,
-	Group,
-	Mesh
-};
+#include "Geometry3D.h"
 
-class Rigidbody
+namespace pa
 {
-public :
+	class Rigidbody
+	{
+	public:
+		Rigidbody() { }
+		virtual ~Rigidbody() { }
 
-private :
-	ColliderType type;
-};
+		virtual void update(float deltaTime) { }
+		virtual void render() { }
+		virtual void applyInternalForces() { }
+		virtual void applyExternalForces() { }
+		virtual void solveConstraints() { }
 
+	private:
+
+	};
+}
