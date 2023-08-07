@@ -17,6 +17,8 @@ namespace pa
 	struct OBB;
 	struct Cylinder;
 	struct Mesh;
+
+	struct Frustum;
 }
 
 namespace pa
@@ -100,6 +102,15 @@ namespace pa
 
 namespace pa
 {
+	struct RaycastInfo
+	{
+		Point		hitPoint;
+		glm::vec3	normal;
+		float		rayTime;
+		bool		isHit;
+	};
+	void resetRaycastInfo(RaycastInfo* outInfo);
+
 	struct Ray
 	{
 		Ray(void) : origin(0.0f, 0.0f, 0.0f), direction(0.0f, 0.0f, 1.0f) { }
@@ -112,9 +123,9 @@ namespace pa
 	glm::vec3 getBarycentricCoordinate(const Point& point, const Triangle& triangle);
 	float raycast(const Ray& ray, const Triangle& triangle);
 	float raycast(const Ray& ray, const Plane& plane);
-	float raycast(const Ray& ray, const Sphere& sphere);
-	float raycast(const Ray& ray, const AABB& aabb);
-	float raycast(const Ray& ray, const OBB& obb);
+	bool raycast(const Ray& ray, const Sphere& sphere, RaycastInfo* outInfo);
+	bool raycast(const Ray& ray, const AABB& aabb, RaycastInfo* outInfo);
+	bool raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo);
 	float raycast(const Ray& ray, const Mesh& mesh);
 }
 
@@ -203,6 +214,31 @@ namespace pa
 	bool isMeshAABBCollision(const Mesh& mesh, const AABB& aabb);
 	bool isMeshOBBCollision(const Mesh& mesh, const OBB& obb);
 	bool isMeshCylinderCollision(const Mesh& mesh, const Cylinder& cylinder);
+}
+
+namespace pa
+{
+	struct Frustum
+	{
+		Frustum() { }
+
+		union
+		{
+			struct
+			{
+				Plane top;
+				Plane bottom;
+				Plane left;
+				Plane right;
+				Plane near;
+				Plane far;
+			};
+			Plane planes[6];
+		};
+	};
+
+	Point findIntersectionPoint(const Plane& p1, const Plane& p2, const Plane& p3);
+	void getCorners(const Frustum& f, glm::vec3* outCorners);
 }
 
 namespace pa

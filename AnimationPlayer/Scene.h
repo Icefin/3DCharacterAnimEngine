@@ -59,6 +59,8 @@ namespace pa
 		std::vector<Model*> query(const AABB& aabb);
 
 		bool accelerate(const glm::vec3& position, float size);
+
+		//std::vector<Model*> cullSceneObjects(const Frustum& f);
 	};
 }
 

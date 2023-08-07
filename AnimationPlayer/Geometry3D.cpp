@@ -221,6 +221,17 @@ namespace pa
 
 
 #pragma region Ray
+	void resetRaycastInfo(RaycastInfo* outInfo)
+	{
+		if (outInfo != nullptr)
+		{
+			outInfo->hitPoint = glm::vec3(0.0f, 0.0f, 0.0f);
+			outInfo->normal = glm::vec3(0.0f, 0.0f, 1.0f);
+			outInfo->rayTime = -1.0f;
+			outInfo->isHit = false;
+		}
+	}
+
 	glm::vec3 getBarycentricCoordinate(const Point& point, const Triangle& triangle)
 	{
 		glm::vec3 ap = point - triangle.p1;
@@ -268,19 +279,25 @@ namespace pa
 		return -1;
 	}
 
-	float raycast(const Ray& ray, const Sphere& sphere)
+	bool raycast(const Ray& ray, const Sphere& sphere, RaycastInfo* outInfo)
 	{
-		__noop;
+		resetRaycastInfo(outInfo);
+
+		glm::vec3 toSphere = sphere.position - ray.origin;
+		float dot = glm::dot(toSphere, ray.direction);
+
+
+
 	}
 
-	float raycast(const Ray& ray, const AABB& aabb)
+	bool raycast(const Ray& ray, const AABB& aabb, RaycastInfo* outInfo)
 	{
-		__noop;
+		resetRaycastInfo(outInfo);
 	}
 
-	float raycast(const Ray& ray, const OBB& obb)
+	bool raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 	{
-		__noop;
+		resetRaycastInfo(outInfo);
 	}
 
 	float raycast(const Ray& ray, const Mesh& mesh)
@@ -462,6 +479,20 @@ namespace pa
 				return true;
 		}
 		return false;
+	}
+#pragma endregion
+
+
+
+#pragma region Frustum
+	Point findIntersectionPoint(const Plane& p1, const Plane& p2, const Plane& p3)
+	{
+		__noop;
+	}
+
+	void getCorners(const Frustum& f, glm::vec3* outCorners)
+	{
+		__noop;
 	}
 #pragma endregion
 
