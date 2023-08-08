@@ -14,13 +14,13 @@ namespace pa
 	}
 	bool isPointInside(const Point& point, const Triangle& triangle)
 	{
-		glm::vec3 a = triangle.p1 - point;
-		glm::vec3 b = triangle.p2 - point;
-		glm::vec3 c = triangle.p3 - point;
+		glm::vec3 pa = triangle.p1 - point;
+		glm::vec3 pb = triangle.p2 - point;
+		glm::vec3 pc = triangle.p3 - point;
 
-		glm::vec3 u = glm::cross(b, c);
-		glm::vec3 v = glm::cross(c, a);
-		glm::vec3 w = glm::cross(a, b);
+		glm::vec3 u = glm::cross(pa, pc);
+		glm::vec3 v = glm::cross(pc, pa);
+		glm::vec3 w = glm::cross(pa, pb);
 
 		if (glm::dot(u, v) < 0.0f)
 			return false;
@@ -77,10 +77,6 @@ namespace pa
 				return false;
 		}
 		return true;
-	}
-	bool isPointInside(const Point& point, const Cylinder& cylinder)
-	{
-		__noop;
 	}
 
 	Point findClosestPoint(const Point& point, const Line& line)
@@ -174,10 +170,6 @@ namespace pa
 		}
 		return closest;
 	}
-	Point findClosestPoint(const Point& point, const Cylinder& cylinder)
-	{
-		__noop;
-	}
 #pragma endregion
 
 
@@ -189,6 +181,17 @@ namespace pa
 		return glm::dot(direction, direction);
 	}
 
+	bool isIntersection(const Line& line, const Triangle& triangle)
+	{
+		Ray ray;
+		ray.origin = line.p1;
+		ray.direction = glm::normalize(line.p2 - line.p1);
+
+		float rayTime = raycast(ray, triangle);
+		float squareLength = calculateSquareLength(line);
+		
+		return (rayTime >= 0.0f && rayTime * rayTime <= squareLength);
+	}
 	bool isIntersection(const Line& line, const Plane& plane)
 	{
 		glm::vec3 direction = line.p2 - line.p1;
@@ -527,7 +530,7 @@ namespace pa
 		return Ray(from, direction);
 	}
 
-	glm::vec3 getBarycentricCoordinate(const Point& point, const Triangle& triangle)
+	glm::vec3 findBarycentricCoordinate(const Point& point, const Triangle& triangle)
 	{
 		glm::vec3 ap = point - triangle.p1;
 		glm::vec3 bp = point - triangle.p2;
@@ -536,20 +539,32 @@ namespace pa
 		glm::vec3 ab = triangle.p2 - triangle.p1;
 		glm::vec3 ac = triangle.p3 - triangle.p1;
 		glm::vec3 bc = triangle.p3 - triangle.p2;
+		glm::vec3 cb = triangle.p2 - triangle.p3;
+		glm::vec3 ca = triangle.p1 - triangle.p3;
 
-		__noop;
+		glm::vec3 perp = ab - glm::proj(ab, cb);
+		float a = 1.0f - (glm::dot(perp, ap) / glm::dot(perp, ab));
+
+		perp = bc - glm::proj(bc, ac);
+		float b = 1.0f - (glm::dot(perp, bp) / glm::dot(perp, bc));
+
+		perp = ca - glm::proj(ca, ab);
+		float c = 1.0f - (glm::dot(perp, cp) / glm::dot(perp, ca));
+
+		return glm::vec3(a, b, c);
 	}
 
 	bool raycast(const Ray& ray, const Triangle& triangle, RaycastInfo* outInfo)
 	{
 		Plane plane = makePlaneFromTriangle(triangle);
+
 		float t = raycast(ray, plane);
 		if (t < 0.0f)
 			return t;
 
 		Point rayPoint = ray.origin + ray.direction * t;
 
-		glm::vec3 barycentric = getBarycentricCoordinate(rayPoint, triangle);
+		glm::vec3 barycentric = findBarycentricCoordinate(rayPoint, triangle);
 		if (barycentric.x >= 0.0f && barycentric.x <= 1.0f &&
 			barycentric.y >= 0.0f && barycentric.y <= 1.0f &&
 			barycentric.z >= 0.0f && barycentric.z <= 1.0f)
@@ -610,6 +625,11 @@ namespace pa
 
 
 #pragma region Sphere
+	bool isSphereTriangleCollision(const Sphere& sphere, const Triangle& triangle)
+	{
+		return isTriangleSphereCollision(triangle, sphere);
+	}
+
 	bool isSpherePlaneCollision(const Sphere& sphere, const Plane& plane)
 	{
 		Point closestPoint = findClosestPoint(sphere.position, plane);
@@ -853,18 +873,6 @@ namespace pa
 		for (int32 i = 0; i < n; ++i)
 		{
 			if (isTriangleOBBCollision(mesh.triangles[i], obb) == true)
-				return true;
-		}
-		return false;
-	}
-
-	bool isMeshCylinderCollision(const Mesh& mesh, const Cylinder& cylinder)
-	{
-		int32 n = mesh.numTriangles;
-
-		for (int32 i = 0; i < n; ++i)
-		{
-			if (isTriangleCylinderCollision(mesh.triangles[i], cylinder) == true)
 				return true;
 		}
 		return false;
