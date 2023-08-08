@@ -543,4 +543,50 @@ namespace pa
 		return localMatrix;
 	}
 #pragma endregion
+
+
+
+#pragma region Collision
+	void resetCollisionManifold(CollisionManifold* manifold)
+	{
+		if (manifold != nullptr)
+		{
+			manifold->isColliding = false;
+			manifold->normal = glm::vec3(0.0f, 0.0f, 1.0f);
+			manifold->depth = 0.0f;
+			manifold->contacts.clear();
+		}
+	}
+
+	CollisionManifold findCollisionManifold(const Sphere& s1, const Sphere& s2)
+	{
+		CollisionManifold manifold;
+		resetCollisionManifold(&manifold);
+
+		__noop;
+
+		return manifold;
+	}
+
+	CollisionManifold findCollisionManifold(const OBB& obb, const Sphere& sphere)
+	{
+		CollisionManifold manifold;
+		resetCollisionManifold(&manifold);
+
+		__noop;
+
+		return manifold;
+	}
+
+	CollisionManifold findCollisionManifold(const OBB& o1, const OBB& o2)
+	{
+		CollisionManifold manifold;
+		resetCollisionManifold(&manifold);
+
+		__noop;
+
+		return manifold;
+	}
+#pragma endregion
+
 }

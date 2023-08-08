@@ -271,3 +271,19 @@ namespace pa
 		Model* parent;
 	};
 }
+
+namespace pa
+{
+	struct CollisionManifold
+	{
+		bool				isColliding;
+		glm::vec3			normal;
+		float				depth;
+		std::vector<Point>	contacts;
+	};
+
+	void resetCollisionManifold(CollisionManifold* manifold);
+	CollisionManifold findCollisionManifold(const Sphere& s1, const Sphere& s2);
+	CollisionManifold findCollisionManifold(const OBB& obb, const Sphere& sphere);
+	CollisionManifold findCollisionManifold(const OBB& o1, const OBB& o2);
+}
