@@ -7,12 +7,11 @@ namespace pa
 #pragma region Point
 	bool isPointInside(const Point& point, const Line& line)
 	{
-		Point closest = getClosestPoint(point, line);
+		Point closest = findClosestPoint(point, line);
 
-		float distance = glm::length(closest - point);
-		return (distance < EPSILON);
+		float squareLength = calculateSquareLength(Line(closest, point));
+		return (squareLength < EPSILON);
 	}
-
 	bool isPointInside(const Point& point, const Triangle& triangle)
 	{
 		glm::vec3 a = triangle.p1 - point;
@@ -29,26 +28,31 @@ namespace pa
 			return false;
 		return true;
 	}
-
 	bool isPointInside(const Point& point, const Plane& plane)
 	{
-		float distance = glm::abs(glm::dot(point, plane.normal));
+		float distance = glm::dot(point, plane.normal);
 
 		return (distance - plane.distance < EPSILON);
 	}
+	bool isPointInside(const Point& point, const Ray& ray)
+	{
+		if (point == ray.origin)
+			return true;
 
+		glm::vec3 rayToPoint = glm::normalize(point - ray.origin);
+		float similarity = glm::dot(rayToPoint, ray.direction);
+		return (glm::abs(similarity - 1.0f) < EPSILON);
+	}
 	bool isPointInside(const Point& point, const Sphere& sphere)
 	{
-		// Square Root Replacement
-		float distance = glm::length(point - sphere.position);
+		float squareLength = calculateSquareLength(Line(point, sphere.position));
 
-		return distance < sphere.radius;
+		return (squareLength < sphere.radius * sphere.radius);
 	}
-
 	bool isPointInside(const Point& point, const AABB& aabb)
 	{
-		glm::vec3 min = getMinFromAABB(aabb);
-		glm::vec3 max = getMaxFromAABB(aabb);
+		Point min = getMinFromAABB(aabb);
+		Point max = getMaxFromAABB(aabb);
 
 		if (point.x < min.x || point.y < min.y || point.z < min.z)
 			return false;
@@ -56,89 +60,121 @@ namespace pa
 			return false;
 		return true;
 	}
-
 	bool isPointInside(const Point& point, const OBB& obb)
 	{
-		__noop;
-	}
+		glm::vec3 obbToPoint = point - obb.position;
 
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		for (int32 i = 0; i < 3; i++)
+		{
+			//Recheck Here
+			glm::vec3 basis = glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]);
+			float distance = glm::dot(obbToPoint, basis);
+
+			if (distance > obb.size[i])
+				return false;
+			if (distance < -obb.size[i])
+				return false;
+		}
+		return true;
+	}
 	bool isPointInside(const Point& point, const Cylinder& cylinder)
 	{
 		__noop;
 	}
 
-	Point getClosestPoint(const Point& point, const Line& line)
+	Point findClosestPoint(const Point& point, const Line& line)
 	{
-		glm::vec3 lineDirection = line.p2 - line.p1;
-		//Recheck Here
-		float t = glm::dot(point - line.p1, lineDirection) / glm::length(lineDirection);
+		glm::vec3 lineVector = line.p2 - line.p1;
+		float t = glm::dot(point - line.p1, lineVector) / glm::dot(lineVector, lineVector);
 
 		t = fmaxf(t, 0.0f);
 		t = fminf(t, 1.0f);
-		return line.p1 + lineDirection * t;
+		return line.p1 + lineVector * t;
 	}
-
-	Point getClosestPoint(const Point& point, const Triangle& triangle)
+	Point findClosestPoint(const Point& point, const Triangle& triangle)
 	{
 		Plane plane = makePlaneFromTriangle(triangle);
 
-		Point closest = getClosestPoint(point, plane);
+		Point closest = findClosestPoint(point, plane);
 		if (isPointInside(closest, triangle) == true)
 			return closest;
 
-		Point c1 = getClosestPoint(point, Line(triangle.p1, triangle.p2));
-		Point c2 = getClosestPoint(point, Line(triangle.p1, triangle.p2));
-		Point c3 = getClosestPoint(point, Line(triangle.p1, triangle.p2));
+		Point c1 = findClosestPoint(point, Line(triangle.p1, triangle.p2));
+		Point c2 = findClosestPoint(point, Line(triangle.p1, triangle.p2));
+		Point c3 = findClosestPoint(point, Line(triangle.p1, triangle.p2));
 
-		float magSq1 = glm::length(point - c1);
-		float magSq2 = glm::length(point - c2);
-		float magSq3 = glm::length(point - c3);
+		float squareLength1 = calculateSquareLength(Line(point, c1));
+		float squareLength2 = calculateSquareLength(Line(point, c2));
+		float squareLength3 = calculateSquareLength(Line(point, c3));
 
-		if (magSq1 < magSq2 && magSq1 < magSq3)
+		if (squareLength1 < squareLength2 && squareLength1 < squareLength3)
 			return c1;
-		else if (magSq2 < magSq1 && magSq2 < magSq3)
+		else if (squareLength2 < squareLength1 && squareLength2 < squareLength3)
 			return c2;
 		return c3;
 	}
-
-	Point getClosestPoint(const Point& point, const Plane& plane)
+	Point findClosestPoint(const Point& point, const Plane& plane)
 	{
-		//Recheck Here
 		float dot = glm::dot(plane.normal, point);
 		float distance = dot - plane.distance;
 
 		return (point - plane.normal * distance);
 	}
+	Point findClosestPoint(const Point& point, const Ray& ray)
+	{
+		glm::vec3 rayToPoint = point - ray.origin;
 
-	Point getClosestPoint(const Point& point, const Sphere& sphere)
+		float t = glm::dot(rayToPoint, ray.direction);
+		t = fmaxf(t, 0.0f);
+		
+		return ray.origin + ray.direction * t;
+	}
+	Point findClosestPoint(const Point& point, const Sphere& sphere)
 	{
 		glm::vec3 sphereToPoint = glm::normalize(point - sphere.position) * sphere.radius;
 
 		return sphere.position + sphereToPoint;
 	}
-
-	Point getClosestPoint(const Point& point, const AABB& aabb)
+	Point findClosestPoint(const Point& point, const AABB& aabb)
 	{
-		Point result = point;
+		Point closest = point;
 		Point min = getMinFromAABB(aabb);
 		Point max = getMaxFromAABB(aabb);
 
-		result.x = (result.x < min.x) ? min.x : result.x;
-		result.y = (result.y < min.x) ? min.y : result.y;
-		result.z = (result.z < min.x) ? min.z : result.z;
+		closest.x = (closest.x < min.x) ? min.x : closest.x;
+		closest.y = (closest.y < min.x) ? min.y : closest.y;
+		closest.z = (closest.z < min.x) ? min.z : closest.z;
 
-		result.x = (result.x > max.x) ? max.x : result.x;
-		result.y = (result.y > max.x) ? max.y : result.y;
-		result.z = (result.z > max.x) ? max.z : result.z;
-		return result;
+		closest.x = (closest.x > max.x) ? max.x : closest.x;
+		closest.y = (closest.y > max.x) ? max.y : closest.y;
+		closest.z = (closest.z > max.x) ? max.z : closest.z;
+
+		//Recheck Here
+		return closest;
 	}
-
-	Point getClosestPoint(const Point& point, const OBB& obb)
+	Point findClosestPoint(const Point& point, const OBB& obb)
 	{
-		__noop;
-	}
+		Point closest = obb.position;
+		glm::vec3 obbToPoint = point - obb.position;
 
-	Point getClosestPoint(const Point& point, const Cylinder& cylinder)
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		for (int32 i = 0; i < 3; i++)
+		{
+			//Recheck Here
+			glm::vec3 basis = glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]);
+			float distance = glm::dot(obbToPoint, basis);
+
+			if (distance > obb.size[i])
+				distance = obb.size[i];
+			if (distance < -obb.size[i])
+				distance = -obb.size[i];
+
+			closest = closest + (basis * distance);
+		}
+		return closest;
+	}
+	Point findClosestPoint(const Point& point, const Cylinder& cylinder)
 	{
 		__noop;
 	}
@@ -147,9 +183,173 @@ namespace pa
 
 
 #pragma region Line
-	float getLineLength(const Line& line)
+	float calculateSquareLength(const Line& line)
 	{
-		return glm::length(line.p1 - line.p2);
+		glm::vec3 direction = line.p2 - line.p1;
+		return glm::dot(direction, direction);
+	}
+
+	bool isIntersection(const Line& line, const Plane& plane)
+	{
+		glm::vec3 direction = line.p2 - line.p1;
+
+		float nA = glm::dot(plane.normal, line.p1);
+		float nBA = glm::dot(plane.normal, direction);
+
+		float t = (plane.distance - nA) / nBA;
+
+		return (t >= 0.0f && t <= 1.0f);
+	}
+	bool isIntersection(const Line& line, const Sphere& sphere)
+	{
+		Point closest = findClosestPoint(sphere.position, line);
+
+		float squareLength = calculateSquareLength(Line(sphere.position, closest));
+		return (squareLength < sphere.radius * sphere.radius);
+	}
+	bool isIntersection(const Line& line, const AABB& aabb)
+	{
+		Ray ray;
+		ray.origin = line.p1;
+		ray.direction = glm::normalize(line.p2 - line.p1);
+
+		RaycastInfo raycastInfo;
+		raycast(ray, aabb, &raycastInfo);
+
+		float squareLength = calculateSquareLength(line);
+
+		return (raycastInfo.isHit && raycastInfo.rayTime * raycastInfo.rayTime < squareLength);
+	}
+	bool isIntersection(const Line& line, const OBB& obb)
+	{
+		Ray ray;
+		ray.origin = line.p1;
+		ray.direction = glm::normalize(line.p2 - line.p1);
+
+		RaycastInfo raycastInfo;
+		raycast(ray, obb, &raycastInfo);
+
+		float squareLength = calculateSquareLength(line);
+
+		return (raycastInfo.isHit && raycastInfo.rayTime * raycastInfo.rayTime < squareLength);
+	}
+#pragma endregion
+
+
+
+#pragma region Interval
+	Interval findInterval(const Triangle& triangle, const glm::vec3& axis)
+	{
+		Interval interval;
+
+		float p1 = glm::dot(axis, triangle.p1);
+		float p2 = glm::dot(axis, triangle.p2);
+		float p3 = glm::dot(axis, triangle.p3);
+		
+		interval.min = fminf(p1, fminf(p2, p3));
+		interval.max = fmaxf(p1, fmaxf(p2, p3));
+
+		return interval;
+	}
+	Interval findInterval(const AABB& aabb, const glm::vec3& axis)
+	{
+		Interval interval;
+
+		Point min = getMinFromAABB(aabb);
+		Point max = getMaxFromAABB(aabb);
+
+		Point points[8] = {
+			Point(min.x, max.y, max.z),
+			Point(min.x, max.y, min.z),
+			Point(min.x, min.y, max.z),
+			Point(min.x, min.y, min.z),
+			Point(max.x, max.y, max.z),
+			Point(max.x, max.y, min.z),
+			Point(max.x, min.y, max.z),
+			Point(max.x, min.y, min.z)
+		};
+
+		interval.min = interval.max = glm::dot(axis, points[0]);
+		for (int32 i = 1; i < 8; ++i)
+		{
+			float projection = glm::dot(axis, points[i]);
+			interval.min = (projection < interval.min) ? projection : interval.min;
+			interval.max = (projection > interval.max) ? projection : interval.max;
+		}
+
+		return interval;
+	}
+	Interval findInterval(const OBB& obb, const glm::vec3& axis)
+	{
+		Interval interval;
+
+		Point center = obb.position;
+		glm::vec3 halfSide = obb.size;
+
+		//Recheck Here
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 basis[3] = {
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		Point points[8] = {
+			center + basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2],
+			center + basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2],
+			center + basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2],
+			center + basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2],
+			center - basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2],
+			center - basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2],
+			center - basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2],
+			center - basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2]
+		};
+
+		interval.min = interval.max = glm::dot(axis, points[0]);
+		for (int32 i = 1; i < 8; ++i)
+		{
+			float projection = glm::dot(axis, points[i]);
+			interval.min = (projection < interval.min) ? projection : interval.min;
+			interval.max = (projection > interval.max) ? projection : interval.max;
+		}
+
+		return interval;
+	}
+
+	bool isOverlapOnAxis(const Triangle& t1, const Triangle& t2, const glm::vec3 axis)
+	{
+		Interval a = findInterval(t1, axis);
+		Interval b = findInterval(t2, axis);
+
+		return ((b.min <= a.max) && (a.min <= b.max));
+	}
+	bool isOverlapOnAxis(const AABB& aabb, const Triangle& triangle, const glm::vec3& axis)
+	{
+		Interval a = findInterval(aabb, axis);
+		Interval b = findInterval(triangle, axis);
+
+		return ((b.min <= a.max) && (a.min <= b.max));
+	}
+	bool isOverlapOnAxis(const AABB& aabb, const OBB& obb, const glm::vec3& axis)
+	{
+		Interval a = findInterval(aabb, axis);
+		Interval b = findInterval(obb, axis);
+
+		return ((b.min <= a.max) && (a.min <= b.max));
+	}
+	bool isOverlapOnAxis(const OBB& obb, const Triangle& triangle, const glm::vec3& axis)
+	{
+		Interval a = findInterval(obb, axis);
+		Interval b = findInterval(triangle, axis);
+
+		return ((b.min <= a.max) && (a.min <= b.max));
+	}
+	bool isOverlapOnAxis(const OBB& o1, const OBB& o2, const glm::vec3& axis)
+	{
+		Interval a = findInterval(o1, axis);
+		Interval b = findInterval(o2, axis);
+
+		return ((b.min <= a.max) && (a.min <= b.max));
 	}
 #pragma endregion
 
@@ -158,7 +358,28 @@ namespace pa
 #pragma region Triangle
 	bool isTriangleTriangleCollision(const Triangle& t1, const Triangle& t2)
 	{
-		__noop;
+		glm::vec3 t1e1 = t1.p2 - t1.p1;
+		glm::vec3 t1e2 = t1.p3 - t1.p2;
+		glm::vec3 t1e3 = t1.p1 - t1.p3;
+
+		glm::vec3 t2e1 = t2.p2 - t2.p1;
+		glm::vec3 t2e2 = t2.p3 - t2.p2;
+		glm::vec3 t2e3 = t2.p1 - t2.p3;
+	
+		glm::vec3 axis[11] = {
+			glm::cross(t1e1, t1e2),
+			glm::cross(t2e1, t2e2),
+			glm::cross(t2e1, t1e1), glm::cross(t2e1, t1e2), glm::cross(t2e1, t1e3),
+			glm::cross(t2e2, t1e1), glm::cross(t2e2, t1e2), glm::cross(t2e2, t1e3),
+			glm::cross(t2e3, t1e1), glm::cross(t2e3, t1e2), glm::cross(t2e3, t1e3)
+		};
+
+		for (int32 i = 0; i < 11; ++i)
+		{
+			if (isOverlapOnAxis(t1, t2, axis[i]) == false)
+				return false;
+		}
+		return true;
 	}
 
 	bool isTrianglePlaneCollision(const Triangle& triangle, const Plane& plane)
@@ -178,25 +399,63 @@ namespace pa
 
 	bool isTriangleSphereCollision(const Triangle& triangle, const Sphere& sphere)
 	{
-		Point closest = getClosestPoint(sphere.position, triangle);
-		// Square Root Replacement
-		float length = glm::length(closest - sphere.position);
-		return (length <= sphere.radius);
+		Point closest = findClosestPoint(sphere.position, triangle);
+		
+		float squareLength = calculateSquareLength(Line(closest, sphere.position));
+		return (squareLength <= sphere.radius * sphere.radius);
 	}
 
 	bool isTriangleAABBCollision(const Triangle& triangle, const AABB& aabb)
 	{
-		__noop;
+		glm::vec3 e1 = triangle.p2 - triangle.p1;
+		glm::vec3 e2 = triangle.p3 - triangle.p2;
+		glm::vec3 e3 = triangle.p1 - triangle.p3;
+
+		glm::vec3 u = glm::vec3(1.0f, 0.0f, 0.0f);
+		glm::vec3 v = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 w = glm::vec3(0.0f, 0.0f, 1.0f);
+
+		glm::vec3 axis[13] = {
+			u, v, w,
+			glm::cross(e1, e2),
+			glm::cross(u, e1), glm::cross(u, e2), glm::cross(u, e3),
+			glm::cross(v, e1), glm::cross(v, e2), glm::cross(v, e3),
+			glm::cross(w, e1), glm::cross(w, e2), glm::cross(w, e3)
+		};
+
+		for (int32 i = 0; i < 13; ++i)
+		{
+			if (isOverlapOnAxis(aabb, triangle, axis[i]) == false)
+				return false;
+		}
+		return true;
 	}
 
 	bool isTriangleOBBCollision(const Triangle& triangle, const OBB& obb)
 	{
-		__noop;
-	}
+		glm::vec3 e1 = triangle.p2 - triangle.p1;
+		glm::vec3 e2 = triangle.p3 - triangle.p2;
+		glm::vec3 e3 = triangle.p1 - triangle.p3;
 
-	bool isTriangleCylinderCollision(const Triangle& triangle, const Cylinder& cylinder)
-	{
-		__noop;
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 u = glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]);
+		glm::vec3 v = glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]);
+		glm::vec3 w = glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2]);
+
+		glm::vec3 axis[13] = {
+			u, v, w,
+			glm::cross(e1, e2),
+			glm::cross(u, e1), glm::cross(u, e2), glm::cross(u, e3),
+			glm::cross(v, e1), glm::cross(v, e2), glm::cross(v, e3),
+			glm::cross(w, e1), glm::cross(w, e2), glm::cross(w, e3)
+		};
+
+		for (int32 i = 0; i < 13; ++i)
+		{
+			if (isOverlapOnAxis(obb, triangle, axis[i]) == false)
+				return false;
+		}
+		return true;
 	}
 #pragma endregion
 
@@ -205,6 +464,9 @@ namespace pa
 #pragma region Plane
 	float planeEquation(const Point& point, const Plane& plane)
 	{
+		// 0 : on plane
+		// positive : front of plane
+		// negative : behind of plane
 		return (glm::dot(point, plane.normal) - plane.distance);
 	}
 
@@ -215,6 +477,33 @@ namespace pa
 		result.normal = glm::normalize(glm::cross(triangle.p2 - triangle.p1, triangle.p3 - triangle.p1));
 		result.distance = glm::dot(result.normal, triangle.p1);
 		return result;
+	}
+
+	bool isPlaneTriangleCollision(const Plane& plane, const Triangle& triangle)
+	{
+		return isTrianglePlaneCollision(triangle, plane);
+	}
+
+	bool isPlanePlaneCollision(const Plane& p1, const Plane& p2)
+	{
+		float similarity = glm::dot(p1.normal, p2.normal);
+
+		return (fabsf(similarity - 1.0f) > EPSILON);
+	}
+
+	bool isPlaneSphereCollision(const Plane& plane, const Sphere& sphere)
+	{
+		return isSpherePlaneCollision(sphere, plane);
+	}
+
+	bool isPlaneAABBCollision(const Plane& plane, const AABB& aabb)
+	{
+		return isAABBPlaneCollision(aabb, plane);
+	}
+
+	bool isPlaneOBBCollision(const Plane& plane, const OBB& obb)
+	{
+		return isOBBPlaneCollision(obb, plane);
 	}
 #pragma endregion
 
@@ -232,6 +521,12 @@ namespace pa
 		}
 	}
 
+	Ray makeRayFromPoints(const Point& from, const Point& to)
+	{
+		glm::vec3 direction = glm::normalize(to - from);
+		return Ray(from, direction);
+	}
+
 	glm::vec3 getBarycentricCoordinate(const Point& point, const Triangle& triangle)
 	{
 		glm::vec3 ap = point - triangle.p1;
@@ -245,7 +540,7 @@ namespace pa
 		__noop;
 	}
 
-	float raycast(const Ray& ray, const Triangle& triangle)
+	bool raycast(const Ray& ray, const Triangle& triangle, RaycastInfo* outInfo)
 	{
 		Plane plane = makePlaneFromTriangle(triangle);
 		float t = raycast(ray, plane);
@@ -262,8 +557,7 @@ namespace pa
 
 		return -1;
 	}
-
-	float raycast(const Ray& ray, const Plane& plane)
+	bool raycast(const Ray& ray, const Plane& plane, RaycastInfo* outInfo)
 	{
 		float nd = glm::dot(ray.direction, plane.normal);
 		float pn = glm::dot(ray.origin, plane.normal);
@@ -278,7 +572,6 @@ namespace pa
 
 		return -1;
 	}
-
 	bool raycast(const Ray& ray, const Sphere& sphere, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
@@ -286,21 +579,21 @@ namespace pa
 		glm::vec3 toSphere = sphere.position - ray.origin;
 		float dot = glm::dot(toSphere, ray.direction);
 
-
-
+		__noop;
 	}
-
 	bool raycast(const Ray& ray, const AABB& aabb, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
-	}
 
+		__noop;
+	}
 	bool raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
-	}
 
-	float raycast(const Ray& ray, const Mesh& mesh)
+		__noop;
+	}
+	bool raycast(const Ray& ray, const Mesh& mesh, RaycastInfo* outInfo)
 	{
 		int32 n = mesh.numTriangles;
 
@@ -316,28 +609,82 @@ namespace pa
 
 
 
+#pragma region Sphere
+	bool isSpherePlaneCollision(const Sphere& sphere, const Plane& plane)
+	{
+		Point closestPoint = findClosestPoint(sphere.position, plane);
+
+		float squareLength = calculateSquareLength(Line(sphere.position, closestPoint));
+		return (squareLength < sphere.radius * sphere.radius);
+	}
+
+	bool isSphereSphereCollision(const Sphere& s1, const Sphere& s2)
+	{
+		float squareLength = calculateSquareLength(Line(s1.position, s2.position));
+		float radiusSum = s1.radius + s2.radius;
+
+		return (squareLength < radiusSum * radiusSum);
+	}
+
+	bool isSphereAABBCollision(const Sphere& sphere, const AABB& aabb)
+	{
+		Point closestPoint = findClosestPoint(sphere.position, aabb);
+
+		float squareLength = calculateSquareLength(Line(sphere.position, closestPoint));
+		return (squareLength < sphere.radius * sphere.radius);
+	}
+
+	bool isSphereOBBCollision(const Sphere& sphere, const OBB& obb)
+	{
+		Point closestPoint = findClosestPoint(sphere.position, obb);
+
+		float squareLength = calculateSquareLength(Line(sphere.position, closestPoint));
+		return (squareLength < sphere.radius * sphere.radius);
+	}
+#pragma endregion
+
+
+
 #pragma region AABB
-	glm::vec3 getMinFromAABB(const AABB& aabb) 
+	Point getMinFromAABB(const AABB& aabb)
 	{
 		glm::vec3 p1 = aabb.position + aabb.size;
 		glm::vec3 p2 = aabb.position - aabb.size;
-		return glm::vec3(fminf(p1.x, p2.x),
-			fminf(p1.y, p2.y),
-			fminf(p1.z, p2.z));
+
+		return Point(fminf(p1.x, p2.x), fminf(p1.y, p2.y), fminf(p1.z, p2.z));
 	}
 
-	glm::vec3 getMaxFromAABB(const AABB& aabb)
+	Point getMaxFromAABB(const AABB& aabb)
 	{
 		glm::vec3 p1 = aabb.position + aabb.size;
 		glm::vec3 p2 = aabb.position - aabb.size;
-		return glm::vec3(fmaxf(p1.x, p2.x),
-			fmaxf(p1.y, p2.y),
-			fmaxf(p1.z, p2.z));
+
+		return Point(fmaxf(p1.x, p2.x), fmaxf(p1.y, p2.y), fmaxf(p1.z, p2.z));
 	}
 
-	AABB makeAABBFromMinMax(const glm::vec3& min, const glm::vec3& max) 
+	AABB makeAABBFromMinMax(const Point& min, const Point& max)
 	{
-		return AABB((min + max) * 0.5f, (max - min) * 0.5f);
+		glm::vec3 position = (min + max) * 0.5f;
+		glm::vec3 size = (max - min) * 0.5f;
+
+		return AABB(position, size);
+	}
+
+	bool isAABBTriangleCollision(const AABB& aabb, const Triangle& triangle)
+	{
+		return isTriangleAABBCollision(triangle, aabb);
+	}
+
+	bool isAABBPlaneCollision(const AABB& aabb, const Plane& plane)
+	{
+		float projection = aabb.size.x * fabsf(plane.normal.x)
+			+ aabb.size.y * fabsf(plane.normal.y)
+			+ aabb.size.z * fabsf(plane.normal.z);
+
+		float dot = glm::dot(plane.normal, aabb.position);
+		float dist = dot - plane.distance;
+
+		return (fabsf(dist) <= projection);
 	}
 
 	bool isAABBAABBCollision(const AABB& a1, const AABB& a2)
@@ -360,16 +707,87 @@ namespace pa
 
 	bool isAABBOBBCollision(const AABB& aabb, const OBB& obb)
 	{
-		__noop;
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+
+		glm::vec3 axis[15] = {
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		for (int32 i = 0; i < 3; ++i)
+		{
+			axis[6 + i * 3] = glm::cross(axis[i], axis[0]);
+			axis[6 + i * 3 + 1] = glm::cross(axis[i], axis[1]);
+			axis[6 + i * 3 + 2] = glm::cross(axis[i], axis[2]);
+		}
+
+		for (int32 i = 0; i < 15; ++i)
+		{
+			if (isOverlapOnAxis(aabb, obb, axis[i]) == false)
+				return false;
+		}
+		return true;
 	}
 #pragma endregion
 
 
 
 #pragma region OBB
+	bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle)
+	{
+		return isTriangleOBBCollision(triangle, obb);
+	}
+
+	bool isOBBPlaneCollision(const OBB& obb, const Plane& plane)
+	{
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 basis[3] = {
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		float projection = obb.size.x * fabsf(glm::dot(plane.normal, basis[0]))
+			+ obb.size.y * fabsf(glm::dot(plane.normal, basis[1]))
+			+ obb.size.z * fabsf(glm::dot(plane.normal, basis[2]));
+
+		float dot = glm::dot(plane.normal, obb.position);
+		float dist = dot - plane.distance;
+
+		return (fabsf(dist) <= projection);
+	}
+
 	bool isOBBOBBCollision(const OBB& o1, const OBB& o2)
 	{
-		__noop;
+		glm::mat3 rotation1 = glm::mat3(o1.orientation);
+		glm::mat3 rotation2 = glm::mat3(o2.orientation);
+
+		glm::vec3 axis[15] = {
+			glm::vec3(rotation1[0][0], rotation1[0][1], rotation1[0][2]),
+			glm::vec3(rotation1[1][0], rotation1[1][1], rotation1[1][2]),
+			glm::vec3(rotation1[2][0], rotation1[2][1], rotation1[2][2]),
+			glm::vec3(rotation2[0][0], rotation2[0][1], rotation2[0][2]),
+			glm::vec3(rotation2[1][0], rotation2[1][1], rotation2[1][2]),
+			glm::vec3(rotation2[2][0], rotation2[2][1], rotation2[2][2])
+		};
+
+		for (int32 i = 0; i < 3; ++i)
+		{
+			axis[6 + i * 3] = glm::cross(axis[i], axis[0]);
+			axis[6 + i * 3 + 1] = glm::cross(axis[i], axis[1]);
+			axis[6 + i * 3 + 2] = glm::cross(axis[i], axis[2]);
+		}
+
+		for (int32 i = 0; i < 15; ++i)
+		{
+			if (isOverlapOnAxis(o1, o2, axis[i]) == false)
+				return false;
+		}
+		return true;
 	}
 
 	bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere)
@@ -380,35 +798,6 @@ namespace pa
 	bool isOBBAABBCollision(const OBB& obb, const AABB& aabb)
 	{
 		return isAABBOBBCollision(aabb, obb);
-	}
-#pragma endregion
-
-
-
-#pragma region Sphere
-	bool isSphereSphereCollision(const Sphere& s1, const Sphere& s2)
-	{
-		//Square Root Replacement
-		float distance = glm::length(s1.position - s2.position);
-		float radiusSum = s1.radius + s2.radius;
-
-		return distance < radiusSum;
-	}
-
-	bool isSphereAABBCollision(const Sphere& sphere, const AABB& aabb)
-	{
-		Point closestPoint = getClosestPoint(sphere.position, aabb);
-
-		float distance = glm::length(sphere.position - closestPoint);
-		return distance < sphere.radius;
-	}
-
-	bool isSphereOBBCollision(const Sphere& sphere, const OBB& obb)
-	{
-		Point closestPoint = getClosestPoint(sphere.position, obb);
-
-		float distance = glm::length(sphere.position - closestPoint);
-		return (distance < sphere.radius);
 	}
 #pragma endregion
 

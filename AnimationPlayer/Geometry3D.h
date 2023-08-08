@@ -4,14 +4,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/projection.hpp>
 
 #include "CommonTypes.h"
 
 namespace pa
 {
 	struct Line;
+	struct Interval;
 	struct Triangle;
 	struct Plane;
+	struct Ray;
 	struct Sphere;
 	struct AABB;
 	struct OBB;
@@ -28,18 +31,20 @@ namespace pa
 	bool isPointInside(const Point& point, const Line& line);
 	bool isPointInside(const Point& point, const Triangle& triangle);
 	bool isPointInside(const Point& point, const Plane& plane);
+	bool isPointInside(const Point& point, const Ray& ray);
 	bool isPointInside(const Point& point, const Sphere& sphere);
 	bool isPointInside(const Point& point, const AABB& aabb);
 	bool isPointInside(const Point& point, const OBB& obb);
 	bool isPointInside(const Point& point, const Cylinder& cylinder);
 
-	Point getClosestPoint(const Point& point, const Line& line);
-	Point getClosestPoint(const Point& point, const Triangle& triangle);
-	Point getClosestPoint(const Point& point, const Plane& plane);
-	Point getClosestPoint(const Point& point, const Sphere& sphere);
-	Point getClosestPoint(const Point& point, const AABB& aabb);
-	Point getClosestPoint(const Point& point, const OBB& obb);
-	Point getClosestPoint(const Point& point, const Cylinder& cylinder);
+	Point findClosestPoint(const Point& point, const Line& line);
+	Point findClosestPoint(const Point& point, const Triangle& triangle);
+	Point findClosestPoint(const Point& point, const Plane& plane);
+	Point findClosestPoint(const Point& point, const Ray& ray);
+	Point findClosestPoint(const Point& point, const Sphere& sphere);
+	Point findClosestPoint(const Point& point, const AABB& aabb);
+	Point findClosestPoint(const Point& point, const OBB& obb);
+	Point findClosestPoint(const Point& point, const Cylinder& cylinder);
 }
 
 namespace pa
@@ -53,28 +58,43 @@ namespace pa
 		Point p2;
 	};
 
-	float getLineLength(const Line& line);
+	float	calculateSquareLength(const Line& line);
+
+	bool isIntersection(const Line& line, const Plane& plane);
+	bool isIntersection(const Line& line, const Sphere& sphere);
+	bool isIntersection(const Line& line, const AABB& aabb);
+	bool isIntersection(const Line& line, const OBB& obb);
+}
+
+namespace pa
+{
+	struct Interval
+	{
+		float min;
+		float max;
+	};
+
+	Interval	findInterval(const Triangle& triangle, const glm::vec3& axis);
+	Interval	findInterval(const AABB& aabb, const glm::vec3& axis);
+	Interval	findInterval(const OBB& obb, const glm::vec3& axis);
+
+	bool		isOverlapOnAxis(const Triangle& t1, const Triangle& t2, const glm::vec3 axis);
+	bool		isOverlapOnAxis(const AABB& aabb, const Triangle& triangle, const glm::vec3& axis);
+	bool		isOverlapOnAxis(const AABB& aabb, const OBB& obb, const glm::vec3& axis);
+	bool		isOverlapOnAxis(const OBB& obb, const Triangle& triangle, const glm::vec3& axis);
+	bool		isOverlapOnAxis(const OBB& o1, const OBB& o2, const glm::vec3& axis);
 }
 
 namespace pa
 {
 	struct Triangle
 	{
-		Triangle(void) { }
+		Triangle(void) : p1(0.0f, 0.0f, 0.0f), p2(1.0f, 0.0f, 0.0f), p3(0.0f, 0.0f, 1.0f) { }
 		Triangle(const Point& pt1, const Point& pt2, const Point& pt3) : p1(pt1), p2(pt2), p3(pt3) { }
 
-		union
-		{
-			struct
-			{
-				Point p1;
-				Point p2;
-				Point p3;
-			};
-
-			Point	points[3];
-			float	values[9];
-		};
+		Point p1;
+		Point p2;
+		Point p3;
 	};
 
 	bool isTriangleTriangleCollision(const Triangle& t1, const Triangle& t2);
@@ -82,15 +102,14 @@ namespace pa
 	bool isTriangleSphereCollision(const Triangle& triangle, const Sphere& sphere);
 	bool isTriangleAABBCollision(const Triangle& triangle, const AABB& aabb);
 	bool isTriangleOBBCollision(const Triangle& triangle, const OBB& obb);
-	bool isTriangleCylinderCollision(const Triangle& triangle, const Cylinder& cylinder);
 }
 
 namespace pa
 {
 	struct Plane
 	{
-		Plane(void) { }
-		Plane(const float d, const glm::vec3& n) : distance(d), normal(n) { }
+		Plane(void) : distance(0.0f), normal(1.0f, 0.0f, 0.0f) { }
+		Plane(const float d, const glm::vec3& n) : distance(d), normal(glm::normalize(n)) { }
 
 		float		distance;
 		glm::vec3	normal;
@@ -98,6 +117,12 @@ namespace pa
 
 	float planeEquation(const Point& point, const Plane& plane);
 	Plane makePlaneFromTriangle(const Triangle& triangle);
+
+	bool isPlaneTriangleCollision(const Plane& plane, const Triangle& triangle);
+	bool isPlanePlaneCollision(const Plane& p1, const Plane& p2);
+	bool isPlaneSphereCollision(const Plane& plane, const Sphere& sphere);
+	bool isPlaneAABBCollision(const Plane& plane, const AABB& aabb);
+	bool isPlaneOBBCollision(const Plane& plane, const OBB& obb);
 }
 
 namespace pa
@@ -120,50 +145,15 @@ namespace pa
 		glm::vec3 direction;
 	};
 
+	Ray makeRayFromPoints(const Point& from, const Point& to);
 	glm::vec3 getBarycentricCoordinate(const Point& point, const Triangle& triangle);
-	float raycast(const Ray& ray, const Triangle& triangle);
-	float raycast(const Ray& ray, const Plane& plane);
+
+	bool raycast(const Ray& ray, const Triangle& triangle, RaycastInfo* outInfo);
+	bool raycast(const Ray& ray, const Plane& plane, RaycastInfo* outInfo);
 	bool raycast(const Ray& ray, const Sphere& sphere, RaycastInfo* outInfo);
 	bool raycast(const Ray& ray, const AABB& aabb, RaycastInfo* outInfo);
 	bool raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo);
-	float raycast(const Ray& ray, const Mesh& mesh);
-}
-
-namespace pa
-{
-	struct AABB
-	{
-		AABB(void) : position(0.0f, 0.0f, 0.0f), size(1.0f, 1.0f, 1.0f) { }
-		AABB(const glm::vec3& p, const glm::vec3& s) : position(p), size(s) { }
-
-		glm::vec3 position;
-		glm::vec3 size;
-	};
-
-	glm::vec3 getMinFromAABB(const AABB& aabb);
-	glm::vec3 getMaxFromAABB(const AABB& aabb);
-	AABB makeAABBFromMinMax(const glm::vec3& min, const glm::vec3& max);
-	bool isAABBSphereCollision(const AABB& aabb, const Sphere& sphere);
-	bool isAABBAABBCollision(const AABB& a1, const AABB& a2);
-	bool isAABBOBBCollision(const AABB& aabb, const OBB& obb);
-}
-
-namespace pa
-{
-	struct OBB
-	{
-		OBB(void) : position(0.0f, 0.0f, 0.0f), size(1.0f, 1.0f, 1.0f) { }
-		OBB(const glm::vec3& p, const glm::vec3& s) : position(p), size(s) { }
-		OBB(const glm::vec3& p, const glm::vec3& s, const glm::mat3& m) : position(p), size(s), orientation(m) { }
-
-		glm::vec3 position;
-		glm::vec3 size;
-		glm::mat3 orientation;
-	};
-
-	bool isOBBOBBCollision(const OBB& o1, const OBB& o2);
-	bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere);
-	bool isOBBAABBCollision(const OBB& obb, const AABB& aabb);
+	bool raycast(const Ray& ray, const Mesh& mesh, RaycastInfo* outInfo);
 }
 
 namespace pa
@@ -177,9 +167,52 @@ namespace pa
 		float		radius;
 	};
 
+	bool isSpherePlaneCollision(const Sphere& sphere, const Plane& plane);
 	bool isSphereSphereCollision(const Sphere& s1, const Sphere& s2);
 	bool isSphereAABBCollision(const Sphere& sphere, const AABB& aabb);
 	bool isSphereOBBCollision(const Sphere& sphere, const OBB& obb);
+}
+
+namespace pa
+{
+	struct AABB
+	{
+		AABB(void) : position(0.0f, 0.0f, 0.0f), size(1.0f, 1.0f, 1.0f) { }
+		AABB(const glm::vec3& p, const glm::vec3& s) : position(p), size(s) { }
+
+		glm::vec3 position;
+		glm::vec3 size;
+	};
+
+	Point getMinFromAABB(const AABB& aabb);
+	Point getMaxFromAABB(const AABB& aabb);
+	AABB makeAABBFromMinMax(const Point& min, const Point& max);
+
+	bool isAABBTriangleCollision(const AABB& aabb, const Triangle& triangle);
+	bool isAABBPlaneCollision(const AABB& aabb, const Plane& plane);
+	bool isAABBSphereCollision(const AABB& aabb, const Sphere& sphere);
+	bool isAABBAABBCollision(const AABB& a1, const AABB& a2);
+	bool isAABBOBBCollision(const AABB& aabb, const OBB& obb);
+}
+
+namespace pa
+{
+	struct OBB
+	{
+		OBB(void) : position(0.0f, 0.0f, 0.0f), size(1.0f, 1.0f, 1.0f), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
+		OBB(const glm::vec3& p, const glm::vec3& s) : position(p), size(s), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
+		OBB(const glm::vec3& p, const glm::vec3& s, const glm::quat& q) : position(p), size(s), orientation(q) { }
+
+		glm::vec3 position;
+		glm::vec3 size;
+		glm::quat orientation;
+	};
+
+	bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle);
+	bool isOBBPlaneCollision(const OBB& obb, const Plane& plane);
+	bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere);
+	bool isOBBAABBCollision(const OBB& obb, const AABB& aabb);
+	bool isOBBOBBCollision(const OBB& o1, const OBB& o2);
 }
 
 namespace pa
@@ -283,6 +316,7 @@ namespace pa
 	};
 
 	void resetCollisionManifold(CollisionManifold* manifold);
+
 	CollisionManifold findCollisionManifold(const Sphere& s1, const Sphere& s2);
 	CollisionManifold findCollisionManifold(const OBB& obb, const Sphere& sphere);
 	CollisionManifold findCollisionManifold(const OBB& o1, const OBB& o2);

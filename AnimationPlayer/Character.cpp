@@ -12,7 +12,7 @@ Character::Character(Skeleton* skeleton, std::vector<Motion*>& motionList)
 {
     _skeleton = skeleton;
     _animator = new Animator(motionList);
-
+   
     _matrixPalette.resize(_skeleton->getJointNumber());
 
 #ifdef DEBUG
