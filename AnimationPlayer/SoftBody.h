@@ -23,6 +23,7 @@ namespace pa
 
 		class SoftBody
 		{
+
 		};
 	};
 }

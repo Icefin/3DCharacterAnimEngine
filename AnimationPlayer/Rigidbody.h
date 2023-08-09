@@ -13,18 +13,19 @@ namespace pa
 	class Rigidbody
 	{
 	public :
-		Rigidbody() { }
+		Rigidbody() { _bodyType = RIGIDBODY_TYPE_BASE; }
 		virtual ~Rigidbody() { }
 
 		virtual void update(float deltaTime) { }
 		virtual void render() { }
 		virtual void applyExternalForces() { }
-		virtual void solveConstraints() { }
+		virtual void solveConstraints(std::vector<OBB>& constraints) { }
 
-		int32 bodyType = RIGIDBODY_TYPE_BASE;
-		bool hasVolume(void) { return (bodyType == RIGIDBODY_TYPE_SPHERE || bodyType == RIGIDBODY_TYPE_CUBE); }
+		bool hasVolume(void) { return (_bodyType == RIGIDBODY_TYPE_SPHERE || _bodyType == RIGIDBODY_TYPE_CUBE); }
 
-	private :
+	protected :
+		int32 _bodyType = RIGIDBODY_TYPE_BASE;
 
+		glm::vec3 _gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 	};
 }

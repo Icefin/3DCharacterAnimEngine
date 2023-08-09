@@ -11,10 +11,10 @@ namespace pa
 	{
 		const float damping = 0.98f;
 
-		glm::vec3 acceleration = netForce * getInverseMass();
-		linearVelocity = (linearVelocity + acceleration * deltaTime) * damping;
+		glm::vec3 acceleration = _netForce * getInverseMass();
+		_linearVelocity = (_linearVelocity + acceleration * deltaTime) * damping;
 
-		position += linearVelocity * deltaTime;
+		_position += _linearVelocity * deltaTime;
 
 		syncCollisionVolumes();
 	}
@@ -26,40 +26,71 @@ namespace pa
 
 	void RigidbodyVolume::applyExternalForces()
 	{
-		netForce += glm::vec3(0.0f, -9.81f, 0.0f) * mass;
+		_netForce += _mass * _gravity;
 	}
 
-	void RigidbodyVolume::solveConstraints()
+	void RigidbodyVolume::solveConstraints(std::vector<OBB>& constraints)
 	{
 		__noop;
 	}
 
 	void	RigidbodyVolume::syncCollisionVolumes()
 	{
-		obb.position = position;
-		sphere.position = position;
+		_obb.position = _position;
+		_sphere.position = _position;
 	}
 
 	float	RigidbodyVolume::getInverseMass(void)
 	{
-		if (mass == 0.0f)
+		if (_mass == 0.0f)
 			return 0.0f;
 
-		return 1.0f / mass;
+		return 1.0f / _mass;
 	}
 
-	glm::mat4	RigidbodyVolume::getInverseTensor(void)
+	glm::mat4	RigidbodyVolume::getInverseInertiaTensor(void)
 	{
-		__noop;
-		return glm::mat4(1.0f);
+		float ix = 0.0f;
+		float iy = 0.0f;
+		float iz = 0.0f;
+		float iw = 0.0f;
+
+		if (_mass != 0.0f && _bodyType == RIGIDBODY_TYPE_SPHERE)
+		{
+			float squareR = _sphere.radius * _sphere.radius;
+			float fraction = 2.0f / 5.0f;
+			ix = iy = iz = squareR * _mass * fraction;
+			iw = 1.0f;
+		}
+		else if (_mass != 0.0f && _bodyType == RIGIDBODY_TYPE_CUBE)
+		{
+			glm::vec3 sideLength = _obb.size * 2.0f;
+			float fraction = 1.0f / 12.0f;
+			float squareX = sideLength.x * sideLength.x;
+			float squareY = sideLength.y * sideLength.y;
+			float squareZ = sideLength.z * sideLength.z;
+
+			ix = (squareY + squareZ) * _mass * fraction;
+			iy = (squareX + squareZ) * _mass * fraction;
+			iz = (squareX + squareY) * _mass * fraction;
+			iw = 1.0f;
+		}
+
+		glm::mat4 inertia(0.0f);
+		inertia[0][0] = ix;
+		inertia[1][1] = iy;
+		inertia[2][2] = iz;
+		inertia[3][3] = iw;
+
+		return glm::inverse(inertia);
 	}
 
 	void	RigidbodyVolume::applyLinearImpulse(const glm::vec3& impulse)
 	{
-		linearVelocity += impulse;
+		_linearVelocity += impulse;
 	}
 
-	void	RigidbodyVolume::applyAngularImpulse(const Point& point, const glm::vec3 impulse)
+	void	RigidbodyVolume::applyAngularImpulse(const Point& point, const glm::vec3& impulse)
 	{
 		__noop;
 	}
@@ -67,14 +98,11 @@ namespace pa
 
 namespace pa
 {
-	CollisionManifold findCollisionManifold(RigidbodyVolume& ra, RigidbodyVolume& rb)
+	void findCollisionManifold(const RigidbodyVolume& ra, const RigidbodyVolume& rb, CollisionManifold* outManifold)
 	{
-		CollisionManifold manifold;
-		resetCollisionManifold(&manifold);
+		resetCollisionManifold(outManifold);
 
 		__noop;
-
-		return manifold;
 	}
 
 	void applyImpulse(RigidbodyVolume& ra, RigidbodyVolume& rb, const CollisionManifold& manifold, int32 c)

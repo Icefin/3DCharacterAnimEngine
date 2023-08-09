@@ -324,7 +324,7 @@ namespace pa
 
 	void resetCollisionManifold(_Out_ CollisionManifold* manifold);
 
-	CollisionManifold findCollisionManifold(const Sphere& s1, const Sphere& s2);
-	CollisionManifold findCollisionManifold(const OBB& obb, const Sphere& sphere);
-	CollisionManifold findCollisionManifold(const OBB& o1, const OBB& o2);
+	void findCollisionManifold(const Sphere& s1, const Sphere& s2, _Out_ CollisionManifold* outManifold);
+	void findCollisionManifold(const OBB& obb, const Sphere& sphere, _Out_ CollisionManifold* outManifold);
+	void findCollisionManifold(const OBB& o1, const OBB& o2, _Out_ CollisionManifold* outManifold);
 }

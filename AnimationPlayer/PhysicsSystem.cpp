@@ -27,14 +27,12 @@ namespace pa
 				if (i == j)
 					continue;
 
-				CollisionManifold manifold;
-				resetCollisionManifold(&manifold);
-
 				if (rigidbodies[i]->hasVolume() && rigidbodies[j]->hasVolume())
 				{
-					RigidbodyVolume* m1 = (RigidbodyVolume*)rigidbodies[i];
-					RigidbodyVolume* m2 = (RigidbodyVolume*)rigidbodies[j];
-					manifold = findCollisionManifold(*m1, *m2);
+					CollisionManifold manifold;
+					RigidbodyVolume* m1 = static_cast<RigidbodyVolume*>(rigidbodies[i]);
+					RigidbodyVolume* m2 = static_cast<RigidbodyVolume*>(rigidbodies[j]);
+					findCollisionManifold(*m1, *m2, &manifold);
 
 					if (manifold.isColliding == true)
 					{
@@ -64,8 +62,8 @@ namespace pa
 				int32 numContacts = collisionManifolds[i].contacts.size();
 				for (int32 j = 0; j < numContacts; ++j) 
 				{
-					RigidbodyVolume* m1 = (RigidbodyVolume*)colliders1[i];
-					RigidbodyVolume* m2 = (RigidbodyVolume*)colliders2[i];
+					RigidbodyVolume* m1 = static_cast<RigidbodyVolume*>(colliders1[i]);
+					RigidbodyVolume* m2 = static_cast<RigidbodyVolume*>(colliders2[i]);
 					applyImpulse(*m1, *m2, collisionManifolds[i], j);
 				}
 			}
@@ -80,10 +78,10 @@ namespace pa
 		}
 
 		for (int32 i = 0; i < numBodies; ++i)
-			rigidbodies[i]->solveConstraints();
+			rigidbodies[i]->solveConstraints(constraints);
 	}
 
-	void PhysicsSystem::render()
+	void PhysicsSystem::render(Shader& shader)
 	{
 		int32 n = rigidbodies.size();
 		for (int32 i = 0; i < n; ++i)

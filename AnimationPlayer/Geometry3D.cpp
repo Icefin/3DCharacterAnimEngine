@@ -1105,34 +1105,64 @@ namespace pa
 		}
 	}
 
-	CollisionManifold findCollisionManifold(const Sphere& s1, const Sphere& s2)
+	void findCollisionManifold(const Sphere& s1, const Sphere& s2, CollisionManifold* outManifold)
 	{
-		CollisionManifold manifold;
-		resetCollisionManifold(&manifold);
+		resetCollisionManifold(outManifold);
 
-		__noop;
+		float radiusSum = s1.radius + s2.radius;
+		float squareDistance = calculateSquareLength(Line(s1.position, s2.position));
 
-		return manifold;
+		if (squareDistance > radiusSum * radiusSum || squareDistance <= EPSILON)
+			return;
+
+		if (outManifold != nullptr)
+		{
+			outManifold->isColliding = true;
+			outManifold->normal = glm::normalize(s2.position - s1.position);
+			outManifold->depth = glm::abs(glm::sqrt(squareDistance) - radiusSum) * 0.5f;
+			//contacts
+		}
 	}
 
-	CollisionManifold findCollisionManifold(const OBB& obb, const Sphere& sphere)
+	void findCollisionManifold(const OBB& obb, const Sphere& sphere, CollisionManifold* outManifold)
 	{
-		CollisionManifold manifold;
-		resetCollisionManifold(&manifold);
+		resetCollisionManifold(outManifold);
 
 		__noop;
 
-		return manifold;
 	}
 
-	CollisionManifold findCollisionManifold(const OBB& o1, const OBB& o2)
+	void findCollisionManifold(const OBB& o1, const OBB& o2, CollisionManifold* outManifold)
 	{
-		CollisionManifold manifold;
-		resetCollisionManifold(&manifold);
+		resetCollisionManifold(outManifold);
 
 		__noop;
 
-		return manifold;
+	}
+
+	static std::vector<Point> GetVertices(const OBB& obb)
+	{
+		__noop;
+	}
+	static std::vector<Line> GetEdges(const OBB& obb)
+	{
+		__noop;
+	}
+	static std::vector<Plane> GetPlanes(const OBB& obb)
+	{
+		__noop;
+	}
+	static bool ClipToPlane(const Plane& plane, const Line& line, Point* outPoint)
+	{
+		__noop;
+	}
+	static std::vector<Point> ClipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb)
+	{
+		__noop;
+	}
+	static float PenetrationDepth(const OBB& o1, const OBB& o2, const glm::vec3& axis, bool* outShouldFlip)
+	{
+		__noop;
 	}
 #pragma endregion
 
