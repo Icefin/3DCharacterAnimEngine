@@ -2,14 +2,6 @@
 
 namespace pa
 {
-	RigidbodyVolume::RigidbodyVolume(void) : mass(1.0f), friction(0.6f)
-	{ 
-		bodyType = RIGIDBODY_TYPE_BASE;
-	}
-	RigidbodyVolume::RigidbodyVolume(int32 type) : mass(1.0f), friction(0.6f)
-	{ 
-		bodyType = type;
-	}
 	RigidbodyVolume::~RigidbodyVolume(void)
 	{
 		__noop;
@@ -64,6 +56,7 @@ namespace pa
 	glm::mat4	RigidbodyVolume::getInverseTensor(void)
 	{
 		__noop;
+		return glm::mat4(1.0f);
 	}
 
 	void	RigidbodyVolume::applyLinearImpulse(const glm::vec3& impulse)

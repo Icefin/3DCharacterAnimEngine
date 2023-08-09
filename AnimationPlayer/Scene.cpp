@@ -95,15 +95,16 @@ namespace pa
 		int32 n = set.size();
 		for (int32 i = 0; i < n; ++i)
 		{
-			float t = set[i]->isRayCollision(ray);
+			RaycastInfo raycastInfo;
+			raycast(ray, *(set[i]), &raycastInfo);
 
-			if (t < 0.0f)
+			if (raycastInfo.isHit == false)
 				continue;
 
-			if (rayTime < 0.0f || t < rayTime)
+			if (rayTime < 0.0f || raycastInfo.rayTime < rayTime)
 			{
 				closest = set[i];
-				rayTime = t;
+				rayTime = raycastInfo.rayTime;
 			}
 		}
 
@@ -112,9 +113,10 @@ namespace pa
 
 	Model* raycast(const Ray& ray, OctreeNode* node)
 	{
-		float rayTime = raycast(ray, node->boundary);
+		RaycastInfo raycastInfo;
+		raycast(ray, node->boundary, &raycastInfo);
 
-		if (rayTime >= 0.0f)
+		if (raycastInfo.isHit == true)
 		{
 			if (node->children == nullptr)
 				return findClosestModel(ray, node->models);
@@ -253,8 +255,8 @@ namespace pa
 		for (int32 i = 0; i < n; ++i)
 		{
 			RaycastInfo raycastInfo;
-			raycast(ray, objects[i], &raycastInfo);
-			if (closest == nullptr && raycastInfo.rayTime >= 0.0f)
+			pa::raycast(ray, *objects[i], &raycastInfo);
+			if (closest == nullptr && raycastInfo.isHit == true)
 			{
 				closest = objects[i];
 				rayTime = raycastInfo.rayTime;

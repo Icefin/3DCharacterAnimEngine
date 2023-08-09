@@ -245,6 +245,7 @@ namespace pa
 	bool isIntersection(const Line& line, const Mesh& mesh)
 	{
 		__noop;
+		return true;
 	}
 	bool isIntersection(const Line& line, const Model& model)
 	{
@@ -653,17 +654,34 @@ namespace pa
 		glm::vec3 toSphere = sphere.position - ray.origin;
 
 		float squareRadius = sphere.radius * sphere.radius;
-		float squareLength = glm::dot(toSphere, toSphere);
+		float squareDistance = glm::dot(toSphere, toSphere);
+		float tangentLength = glm::dot(toSphere, ray.direction);
+		
+		if (squareRadius + tangentLength * tangentLength < squareDistance)
+			return;
 
-		glm::vec3 
+		float squarePerpLength = squareDistance - (tangentLength * tangentLength);
+		float penetratedLength = glm::sqrt(squareRadius - squarePerpLength);
 
-		__noop;
+		// Outer || Inner Check
+		float t = (squareDistance > squareRadius) ?  tangentLength - penetratedLength : tangentLength + penetratedLength;
+
+		if (outInfo != nullptr)
+		{
+			outInfo->hitPoint = ray.origin + t * ray.direction;
+			outInfo->normal = glm::normalize(outInfo->hitPoint - sphere.position);
+			outInfo->rayTime = t;
+			outInfo->isHit = true;
+		}
 	}
 	void raycast(const Ray& ray, const AABB& aabb, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
 
-		__noop;
+		glm::vec3 min = getMinFromAABB(aabb);
+		glm::vec3 max = getMaxFromAABB(aabb);
+
+
 	}
 	void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 	{
