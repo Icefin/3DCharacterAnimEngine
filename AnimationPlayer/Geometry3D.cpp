@@ -187,10 +187,16 @@ namespace pa
 		ray.origin = line.p1;
 		ray.direction = glm::normalize(line.p2 - line.p1);
 
-		float rayTime = raycast(ray, triangle);
-		float squareLength = calculateSquareLength(line);
+		RaycastInfo raycastInfo;
+		raycast(ray, triangle, &raycastInfo);
+
+		if (raycastInfo.isHit == false)
+			return false;
 		
-		return (rayTime >= 0.0f && rayTime * rayTime <= squareLength);
+		float squareLength = calculateSquareLength(line);
+		float squareRayTime = raycastInfo.rayTime * raycastInfo.rayTime;
+
+		return (squareRayTime <= squareLength);
 	}
 	bool isIntersection(const Line& line, const Plane& plane)
 	{
@@ -235,6 +241,23 @@ namespace pa
 		float squareLength = calculateSquareLength(line);
 
 		return (raycastInfo.isHit && raycastInfo.rayTime * raycastInfo.rayTime < squareLength);
+	}
+	bool isIntersection(const Line& line, const Mesh& mesh)
+	{
+		__noop;
+	}
+	bool isIntersection(const Line& line, const Model& model)
+	{
+		glm::mat4 worldMatrix = model.getWorldMatrix();
+		glm::mat4 invWorld = glm::inverse(worldMatrix);
+
+		Line localLine;
+		localLine.p1 = glm::vec3(invWorld * glm::vec4(line.p1, 1.0f));
+		localLine.p2 = glm::vec3(invWorld * glm::vec4(line.p2, 1.0f));
+
+		if (model.getMesh() != nullptr)
+			return isIntersection(localLine, *(model.getMesh()));
+		return false;
 	}
 #pragma endregion
 
@@ -460,6 +483,20 @@ namespace pa
 		}
 		return true;
 	}
+	bool isTriangleModelCollision(const Triangle& triangle, const Model& model)
+	{
+		glm::mat4 worldMatrix = model.getWorldMatrix();
+		glm::mat4 invWorld = glm::inverse(worldMatrix);
+
+		Triangle localTriangle;
+		localTriangle.p1 = glm::vec3(invWorld * glm::vec4(triangle.p1, 1.0f));
+		localTriangle.p2 = glm::vec3(invWorld * glm::vec4(triangle.p2, 1.0f));
+		localTriangle.p3 = glm::vec3(invWorld * glm::vec4(triangle.p3, 1.0f));
+
+		if (model.getMesh() != nullptr)
+			return isMeshTriangleCollision(*(model.getMesh()), localTriangle);
+		return false;
+	}
 #pragma endregion
 
 
@@ -508,6 +545,21 @@ namespace pa
 	{
 		return isOBBPlaneCollision(obb, plane);
 	}
+
+	bool isPlaneModelCollision(const Plane& plane, const Model& model)
+	{
+		glm::mat4 worldMatrix = model.getWorldMatrix();
+		glm::mat4 invWorld = glm::inverse(worldMatrix);
+
+		Plane localPlane;
+		localPlane.normal = glm::vec3(invWorld * glm::vec4(plane.normal, 0.0f));
+		//Recheck Here
+		localPlane.distance = plane.distance;
+
+		if (model.getMesh() != nullptr)
+			return isMeshPlaneCollision(*(model.getMesh()), localPlane);
+		return false;
+	}
 #pragma endregion
 
 
@@ -554,71 +606,89 @@ namespace pa
 		return glm::vec3(a, b, c);
 	}
 
-	bool raycast(const Ray& ray, const Triangle& triangle, RaycastInfo* outInfo)
+	void raycast(const Ray& ray, const Triangle& triangle, RaycastInfo* outInfo)
 	{
+		resetRaycastInfo(outInfo);
+
 		Plane plane = makePlaneFromTriangle(triangle);
+		raycast(ray, plane, outInfo);
+		
+		if (outInfo->isHit == false)
+			return;
 
-		float t = raycast(ray, plane);
-		if (t < 0.0f)
-			return t;
+		Point hitPoint = ray.origin + outInfo->rayTime * ray.direction;
 
-		Point rayPoint = ray.origin + ray.direction * t;
-
-		glm::vec3 barycentric = findBarycentricCoordinate(rayPoint, triangle);
+		glm::vec3 barycentric = findBarycentricCoordinate(hitPoint, triangle);
 		if (barycentric.x >= 0.0f && barycentric.x <= 1.0f &&
 			barycentric.y >= 0.0f && barycentric.y <= 1.0f &&
 			barycentric.z >= 0.0f && barycentric.z <= 1.0f)
-			return t;
+			return;
 
-		return -1;
+		resetRaycastInfo(outInfo);
 	}
-	bool raycast(const Ray& ray, const Plane& plane, RaycastInfo* outInfo)
+	void raycast(const Ray& ray, const Plane& plane, RaycastInfo* outInfo)
 	{
+		resetRaycastInfo(outInfo);
+
 		float nd = glm::dot(ray.direction, plane.normal);
 		float pn = glm::dot(ray.origin, plane.normal);
 
 		if (nd >= 0.0f)
-			return -1;
+			return;
 
 		float t = (plane.distance - pn) / nd;
 
 		if (t > 0.0f)
-			return t;
-
-		return -1;
+		{
+			outInfo->hitPoint = ray.origin + t * ray.direction;
+			outInfo->normal = plane.normal;
+			outInfo->rayTime = t;
+			outInfo->isHit = true;
+		}
 	}
-	bool raycast(const Ray& ray, const Sphere& sphere, RaycastInfo* outInfo)
+	void raycast(const Ray& ray, const Sphere& sphere, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
 
 		glm::vec3 toSphere = sphere.position - ray.origin;
-		float dot = glm::dot(toSphere, ray.direction);
+
+		float squareRadius = sphere.radius * sphere.radius;
+		float squareLength = glm::dot(toSphere, toSphere);
+
+		glm::vec3 
 
 		__noop;
 	}
-	bool raycast(const Ray& ray, const AABB& aabb, RaycastInfo* outInfo)
+	void raycast(const Ray& ray, const AABB& aabb, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
 
 		__noop;
 	}
-	bool raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
+	void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
 
 		__noop;
 	}
-	bool raycast(const Ray& ray, const Mesh& mesh, RaycastInfo* outInfo)
+	//Recheck Here
+	void raycast(const Ray& ray, const Mesh& mesh, RaycastInfo* outInfo)
 	{
+		resetRaycastInfo(outInfo);
 		int32 n = mesh.numTriangles;
 
 		for (int32 i = 0; i < n; ++i)
 		{
-			float t = raycast(ray, mesh.triangles[i]);
-			if (t >= 0.0f)
-				return t;
+			raycast(ray, mesh.triangles[i], outInfo);
+			if (outInfo->isHit)
+				return;
 		}
-		return -1;
+	}
+	void raycast(const Ray& ray, const Model& model, RaycastInfo* outInfo)
+	{
+		resetRaycastInfo(outInfo);
+
+		__noop;
 	}
 #pragma endregion
 
@@ -660,6 +730,19 @@ namespace pa
 
 		float squareLength = calculateSquareLength(Line(sphere.position, closestPoint));
 		return (squareLength < sphere.radius * sphere.radius);
+	}
+	bool isSphereModelCollision(const Sphere& sphere, const Model& model)
+	{
+		glm::mat4 worldMatrix = model.getWorldMatrix();
+		glm::mat4 invWorld = glm::inverse(worldMatrix);
+
+		Sphere localSphere;
+		localSphere.position = glm::vec3(invWorld * glm::vec4(sphere.position, 1.0f));
+		localSphere.radius = sphere.radius;
+
+		if (model.getMesh() != nullptr)
+			return isMeshSphereCollision(*(model.getMesh()), sphere);
+		return false;
 	}
 #pragma endregion
 
@@ -752,6 +835,21 @@ namespace pa
 		}
 		return true;
 	}
+
+	bool isAABBModelCollision(const AABB& aabb, const Model& model)
+	{
+		glm::mat4 worldMatrix = model.getWorldMatrix();
+		glm::mat4 invWorld = glm::inverse(worldMatrix);
+
+		OBB localOBB;
+		localOBB.size = aabb.size;
+		localOBB.position = glm::vec3(invWorld * glm::vec4(aabb.position, 1.0f));
+		localOBB.orientation = glm::quat_cast(glm::mat3(invWorld));
+
+		if (model.getMesh() != nullptr)
+			return isMeshOBBCollision(*(model.getMesh()), localOBB);
+		return false;
+	}
 #pragma endregion
 
 
@@ -819,6 +917,22 @@ namespace pa
 	{
 		return isAABBOBBCollision(aabb, obb);
 	}
+
+	bool isOBBModelCollision(const OBB& obb, const Model& model)
+	{
+		glm::mat4 worldMatrix = model.getWorldMatrix();
+		glm::mat4 invWorld = glm::inverse(worldMatrix);
+
+		OBB localOBB;
+		localOBB.size = obb.size;
+		localOBB.position = glm::vec3(invWorld * glm::vec4(obb.position, 1.0f));
+		//Recheck Here
+		localOBB.orientation = obb.orientation * glm::quat_cast(glm::mat3(invWorld));
+
+		if (model.getMesh() != nullptr)
+			return isMeshOBBCollision(*(model.getMesh()), localOBB);
+		return false;
+	}
 #pragma endregion
 
 
@@ -830,6 +944,18 @@ namespace pa
 
 
 #pragma region Mesh
+	bool isMeshTriangleCollision(const Mesh& mesh, const Triangle& triangle)
+	{
+		int32 n = mesh.numTriangles;
+
+		for (int32 i = 0; i < n; ++i)
+		{
+			if (isTriangleTriangleCollision(mesh.triangles[i], triangle) == true)
+				return true;
+		}
+		return false;
+	}
+
 	bool isMeshPlaneCollision(const Mesh& mesh, const Plane& plane)
 	{
 		int32 n = mesh.numTriangles;
@@ -881,17 +1007,17 @@ namespace pa
 
 
 
-#pragma region Frustum
-	Point findIntersectionPoint(const Plane& p1, const Plane& p2, const Plane& p3)
-	{
-		__noop;
-	}
-
-	void getCorners(const Frustum& f, glm::vec3* outCorners)
-	{
-		__noop;
-	}
-#pragma endregion
+//#pragma region Frustum
+//	Point findIntersectionPoint(const Plane& p1, const Plane& p2, const Plane& p3)
+//	{
+//		__noop;
+//	}
+//
+//	void getCorners(const Frustum& f, glm::vec3* outCorners)
+//	{
+//		__noop;
+//	}
+//#pragma endregion
 
 
 
@@ -900,7 +1026,7 @@ namespace pa
 	{
 		_mesh = mesh;
 
-		if (_mesh != 0)
+		if (_mesh != nullptr)
 		{
 			glm::vec3 min = _mesh->points[0];
 			glm::vec3 max = _mesh->points[0];
@@ -913,29 +1039,37 @@ namespace pa
 				max.y = fmaxf(mesh->points[i].y, max.y);
 				max.z = fmaxf(mesh->points[i].z, max.z);
 			}
-			_bounds = makeAABBFromMinMax(min, max);
+			_boundary = makeAABBFromMinMax(min, max);
 		}
 	}
 
 	OBB Model::getOBB(void)
 	{
-		OBB result;
+		OBB obb;
 
 		glm::mat4 worldMatrix = getWorldMatrix();
-		__noop;
+		AABB boundary = getBoundary();
+		
+		//Recheck Here
+		obb.size = boundary.size;
+		obb.position = glm::vec3(worldMatrix * glm::vec4(boundary.position, 1.0f));
+		obb.orientation = glm::quat(glm::mat3(worldMatrix));
+		
+		return obb;
 	}
 
 	glm::mat4 Model::getWorldMatrix(void) const
 	{
-		glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
-		//glm::mat4 rotation = glm::rotate();
+		glm::mat4 translation = glm::translate(glm::mat4(1.0f), _position);
+		glm::mat4 rotation = glm::mat4_cast(_rotation);
 
-		glm::mat4 localMatrix = /*rotation * */translation;
+		//Recheck Here
+		glm::mat4 localMatrix = rotation * translation;
 
-		if (parent != nullptr)
+		if (_parent != nullptr)
 		{
-			glm::mat4 parentMatrix = parent->getWorldMatrix();
-			return localMatrix * parentMatrix;
+			glm::mat4 parentMatrix = _parent->getWorldMatrix();
+			return parentMatrix * localMatrix;
 		}
 		return localMatrix;
 	}

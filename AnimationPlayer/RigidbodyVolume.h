@@ -3,7 +3,7 @@
 
 namespace pa
 {
-	class RigidbodyVolume : Rigidbody
+	class RigidbodyVolume : public Rigidbody
 	{
 	public :
 		RigidbodyVolume(void) : mass(1.0f), friction(0.6f) { bodyType = RIGIDBODY_TYPE_BASE; }

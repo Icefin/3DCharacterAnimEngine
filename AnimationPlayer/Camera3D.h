@@ -79,7 +79,8 @@ public :
 
     void processMouseScroll(float yoffset)
     {
-        _zoom -= static_cast<float>(yoffset);
+        _zoom -= yoffset;
+
         if (_zoom < 1.0f)
             _zoom = 1.0f;
         if (_zoom > 100.0f)

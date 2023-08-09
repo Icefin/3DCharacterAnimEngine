@@ -6,7 +6,7 @@
 namespace pa
 {
 #pragma region Octree
-	void splitTree(OctreeNode* node, int32 depth)
+	void splitOctree(OctreeNode* node, int32 depth)
 	{
 		if (depth <= 0)
 			return;
@@ -15,17 +15,17 @@ namespace pa
 		{
 			node->children = new OctreeNode[8];
 
-			glm::vec3 center = node->bounds.position;
-			glm::vec3 edge = node->bounds.size * 0.5f;
+			glm::vec3 center = node->boundary.position;
+			glm::vec3 edge = node->boundary.size * 0.5f;
 
-			node->children[0].bounds = AABB(center + glm::vec3(-edge.x, edge.y, -edge.z), edge);
-			node->children[1].bounds = AABB(center + glm::vec3(edge.x, edge.y, -edge.z), edge);
-			node->children[2].bounds = AABB(center + glm::vec3(-edge.x, edge.y, edge.z), edge);
-			node->children[3].bounds = AABB(center + glm::vec3(edge.x, edge.y, edge.z), edge);
-			node->children[4].bounds = AABB(center + glm::vec3(-edge.x, -edge.y, -edge.z), edge);
-			node->children[5].bounds = AABB(center + glm::vec3(edge.x, -edge.y, -edge.z), edge);
-			node->children[6].bounds = AABB(center + glm::vec3(-edge.x, -edge.y, edge.z), edge);
-			node->children[7].bounds = AABB(center + glm::vec3(edge.x, -edge.y, edge.z), edge);
+			node->children[0].boundary = AABB(center + glm::vec3(-edge.x, edge.y, -edge.z), edge);
+			node->children[1].boundary = AABB(center + glm::vec3(edge.x, edge.y, -edge.z), edge);
+			node->children[2].boundary = AABB(center + glm::vec3(-edge.x, edge.y, edge.z), edge);
+			node->children[3].boundary = AABB(center + glm::vec3(edge.x, edge.y, edge.z), edge);
+			node->children[4].boundary = AABB(center + glm::vec3(-edge.x, -edge.y, -edge.z), edge);
+			node->children[5].boundary = AABB(center + glm::vec3(edge.x, -edge.y, -edge.z), edge);
+			node->children[6].boundary = AABB(center + glm::vec3(-edge.x, -edge.y, edge.z), edge);
+			node->children[7].boundary = AABB(center + glm::vec3(edge.x, -edge.y, edge.z), edge);
 		}
 
 		if (node->children != nullptr && node->models.size() > 0)
@@ -35,35 +35,35 @@ namespace pa
 				int32 n = node->models.size();
 				for (int32 j = 0; j < n; ++j)
 				{
-					OBB bounds = node->models[j]->getOBB();
-					if (isAABBOBBCollision(node->children[i].bounds, bounds) == true)
+					OBB boundary = node->models[j]->getOBB();
+					if (isAABBOBBCollision(node->children[i].boundary, boundary) == true)
 						node->children[i].models.push_back(node->models[j]);
 				}
 			}
 			node->models.clear();
 
 			for (int32 i = 0; i < 8; ++i)
-				splitTree(&(node->children[i]), depth - 1);
+				splitOctree(&(node->children[i]), depth - 1);
 		}
 	}
 
-	void insertTree(OctreeNode* node, Model* model)
+	void insertOctree(OctreeNode* node, Model* model)
 	{
-		OBB bounds = model->getOBB();
+		OBB boundary = model->getOBB();
 
-		if (isAABBOBBCollision(node->bounds, bounds) == true)
+		if (isAABBOBBCollision(node->boundary, boundary) == true)
 		{
 			if (node->children == nullptr)
 				node->models.push_back(model);
 			else
 			{
 				for (int32 i = 0; i < 8; ++i)
-					insertTree(&(node->children[i]), model);
+					insertOctree(&(node->children[i]), model);
 			}
 		}
 	}
 
-	void removeTree(OctreeNode* node, Model* model)
+	void removeOctree(OctreeNode* node, Model* model)
 	{
 		if (node->children == nullptr)
 		{
@@ -74,14 +74,14 @@ namespace pa
 		else
 		{
 			for (int32 i = 0; i < 8; ++i)
-				removeTree(&(node->children[i]), model);
+				removeOctree(&(node->children[i]), model);
 		}
 	}
 
-	void updateTree(OctreeNode* node, Model* model)
+	void updateOctree(OctreeNode* node, Model* model)
 	{
-		removeTree(node, model);
-		insertTree(node, model);
+		removeOctree(node, model);
+		insertOctree(node, model);
 	}
 
 	Model* findClosestModel(const Ray& ray, const std::vector<Model*>& set)
@@ -112,7 +112,7 @@ namespace pa
 
 	Model* raycast(const Ray& ray, OctreeNode* node)
 	{
-		float rayTime = raycast(ray, node->bounds);
+		float rayTime = raycast(ray, node->boundary);
 
 		if (rayTime >= 0.0f)
 		{
@@ -136,18 +136,18 @@ namespace pa
 
 	std::vector<Model*> query(OctreeNode* node, const Sphere& sphere)
 	{
-		std::vector<Model*> collided;
+		std::vector<Model*> contained;
 
-		if (isSphereAABBCollision(sphere, node->bounds) == true)
+		if (isSphereAABBCollision(sphere, node->boundary) == true)
 		{
 			if (node->children == nullptr)
 			{
 				int32 n = node->models.size();
 				for (int32 i = 0; i < n; ++i)
 				{
-					OBB bounds = node->models[i]->getOBB();
-					if (isSphereOBBCollision(sphere, bounds) == true)
-						collided.push_back(node->models[i]);
+					OBB boundary = node->models[i]->getOBB();
+					if (isSphereOBBCollision(sphere, boundary) == true)
+						contained.push_back(node->models[i]);
 				}
 			}
 			else
@@ -156,28 +156,28 @@ namespace pa
 				{
 					std::vector<Model*> child = query(&(node->children[i]), sphere);
 					if (child.size() > 0)
-						collided.insert(collided.end(), child.begin(), child.end());
+						contained.insert(contained.end(), child.begin(), child.end());
 				}
 			}
 		}
 		
-		return collided;
+		return contained;
 	}
 
 	std::vector<Model*> query(OctreeNode* node, const AABB& aabb)
 	{
-		std::vector<Model*> collided;
+		std::vector<Model*> contained;
 
-		if (isAABBAABBCollision(aabb, node->bounds) == true)
+		if (isAABBAABBCollision(aabb, node->boundary) == true)
 		{
 			if (node->children == nullptr)
 			{
 				int32 n = node->models.size();
 				for (int32 i = 0; i < n; ++i)
 				{
-					OBB bounds = node->models[i]->getOBB();
-					if (isAABBOBBCollision(aabb, bounds) == true)
-						collided.push_back(node->models[i]);
+					OBB boundary = node->models[i]->getOBB();
+					if (isAABBOBBCollision(aabb, boundary) == true)
+						contained.push_back(node->models[i]);
 				}
 			}
 			else
@@ -186,12 +186,12 @@ namespace pa
 				{
 					std::vector<Model*> child = query(&(node->children[i]), aabb);
 					if (child.size() > 0)
-						collided.insert(collided.end(), child.begin(), child.end());
+						contained.insert(contained.end(), child.begin(), child.end());
 				}
 			}
 		}
 
-		return collided;
+		return contained;
 	}
 #pragma endregion
 
@@ -218,7 +218,7 @@ namespace pa
 
 	std::vector<Model*> Scene::findChildren(const Model* model)
 	{
-		std::vector<Model*> result;
+		std::vector<Model*> children;
 
 		int32 n = objects.size();
 		for (int32 i = 0; i < n; ++i)
@@ -226,19 +226,19 @@ namespace pa
 			if (objects[i] == nullptr || objects[i] == model)
 				continue;
 
-			Model* iterator = objects[i]->parent;
+			Model* iterator = objects[i]->_parent;
 			//Recheck Here
 			if (iterator != nullptr)
 			{
 				if (iterator == model)
 				{
-					result.push_back(objects[i]);
+					children.push_back(objects[i]);
 					continue;
 				}
-				iterator = iterator->parent;
+				iterator = iterator->_parent;
 			}
 		}
-		return result;
+		return children;
 	}
 
 	Model* Scene::raycast(const Ray& ray)
@@ -252,16 +252,17 @@ namespace pa
 		int32 n = objects.size();
 		for (int32 i = 0; i < n; ++i)
 		{
-			float t = objects[i]->isRayCollision(ray);
-			if (closest == nullptr && t >= 0.0f)
+			RaycastInfo raycastInfo;
+			raycast(ray, objects[i], &raycastInfo);
+			if (closest == nullptr && raycastInfo.rayTime >= 0.0f)
 			{
 				closest = objects[i];
-				rayTime = t;
+				rayTime = raycastInfo.rayTime;
 			}
-			else if (closest != nullptr && t < rayTime)
+			else if (closest != nullptr && raycastInfo.rayTime < rayTime)
 			{
 				closest = objects[i];
-				rayTime = t;
+				rayTime = raycastInfo.rayTime;
 			}
 		}
 		return closest;
@@ -272,16 +273,16 @@ namespace pa
 		if (octree != nullptr)
 			return pa::query(octree, sphere);
 
-		std::vector<Model*> collided;
+		std::vector<Model*> contained;
 
 		int32 n = objects.size();
 		for (int32 i = 0; i < n; ++i)
 		{
-			OBB bounds = objects[i]->getOBB();
-			if (isSphereOBBCollision(sphere, bounds) == true)
-				collided.push_back(objects[i]);
+			OBB boundary = objects[i]->getOBB();
+			if (isSphereOBBCollision(sphere, boundary) == true)
+				contained.push_back(objects[i]);
 		}
-		return collided;
+		return contained;
 	}
 
 	std::vector<Model*> Scene::query(const AABB& aabb)
@@ -289,16 +290,16 @@ namespace pa
 		if (octree != nullptr)
 			return pa::query(octree, aabb);
 
-		std::vector<Model*> collided;
+		std::vector<Model*> contained;
 
 		int32 n = objects.size();
 		for (int32 i = 0; i < n; ++i)
 		{
-			OBB bounds = objects[i]->getOBB();
-			if (isAABBOBBCollision(aabb, bounds) == true)
-				collided.push_back(objects[i]);
+			OBB boundary = objects[i]->getOBB();
+			if (isAABBOBBCollision(aabb, boundary) == true)
+				contained.push_back(objects[i]);
 		}
-		return collided;
+		return contained;
 	}
 
 	bool Scene::accelerate(const glm::vec3& position, float size)
@@ -310,14 +311,14 @@ namespace pa
 		glm::vec3 max(position.x + size, position.y + size, position.z + size);
 
 		octree = new OctreeNode();
-		octree->bounds = makeAABBFromMinMax(min, max);
+		octree->boundary = makeAABBFromMinMax(min, max);
 		octree->children = nullptr;
 
 		int32 n = objects.size();
 		for (int32 i = 0; i < n; ++i)
 			octree->models.push_back(objects[i]);
 
-		splitTree(octree, 5);
+		splitOctree(octree, 5);
 		return true;
 	}
 #pragma endregion

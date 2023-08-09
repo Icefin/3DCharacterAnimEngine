@@ -7,22 +7,22 @@ namespace pa
 {
 	struct OctreeNode
 	{
-		OctreeNode(void) : children(0) { }
+		OctreeNode(void) : children(nullptr) { }
 		~OctreeNode(void)
 		{
 			if (children != nullptr)
 				delete[] children;
 		}
 
-		AABB bounds;
-		OctreeNode* children;
+		AABB				boundary;
+		OctreeNode*			children;
 		std::vector<Model*> models;
 	};
 
-	void splitTree(OctreeNode* node, int32 depth);
-	void insertTree(OctreeNode* node, Model* model);
-	void removeTree(OctreeNode* node, Model* model);
-	void updateTree(OctreeNode* node, Model* model);
+	void splitOctree(OctreeNode* node, int32 depth);
+	void insertOctree(OctreeNode* node, Model* model);
+	void removeOctree(OctreeNode* node, Model* model);
+	void updateOctree(OctreeNode* node, Model* model);
 
 	Model* findClosestModel(const Ray& ray, const std::vector<Model*>& set);
 	Model* raycast(const Ray& ray, OctreeNode* node);
