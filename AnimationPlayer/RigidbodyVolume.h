@@ -35,6 +35,7 @@ namespace pa
 
 	public :
 		float		_mass;
+		float		_restitution;
 		float		_friction;
 
 		OBB			_obb;

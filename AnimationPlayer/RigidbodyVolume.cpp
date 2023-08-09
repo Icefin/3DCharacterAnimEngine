@@ -13,8 +13,11 @@ namespace pa
 
 		glm::vec3 acceleration = _netForce * getInverseMass();
 		_linearVelocity = (_linearVelocity + acceleration * deltaTime) * damping;
-
 		_position += _linearVelocity * deltaTime;
+
+		glm::vec3 angularAcceleration = glm::vec3(getInverseInertiaTensor() * glm::vec4(_netTorque, 1.0f));
+		_angularVelocity = (_angularVelocity + angularAcceleration * deltaTime) * damping;
+		_orientation += _angularVelocity * deltaTime;
 
 		syncCollisionVolumes();
 	}
@@ -36,8 +39,10 @@ namespace pa
 
 	void	RigidbodyVolume::syncCollisionVolumes()
 	{
-		_obb.position = _position;
 		_sphere.position = _position;
+
+		_obb.position = _position;
+		//TODO
 	}
 
 	float	RigidbodyVolume::getInverseMass(void)
@@ -92,7 +97,11 @@ namespace pa
 
 	void	RigidbodyVolume::applyAngularImpulse(const Point& point, const glm::vec3& impulse)
 	{
-		__noop;
+		Point centerOfMass = _position;
+		glm::vec3 torque = glm::cross(point - centerOfMass, impulse);
+
+		glm::vec3 angularAcceleration = glm::vec3(getInverseInertiaTensor() * glm::vec4(torque, 1.0f));
+		_angularVelocity = _angularVelocity + angularAcceleration;
 	}
 }
 
@@ -102,11 +111,50 @@ namespace pa
 	{
 		resetCollisionManifold(outManifold);
 
-		__noop;
+		if (ra._bodyType == RIGIDBODY_TYPE_SPHERE)
+		{
+			if (rb._bodyType == RIGIDBODY_TYPE_SPHERE)
+				findCollisionManifold(ra._sphere, rb._sphere, outManifold);
+			else if (rb._bodyType == RIGIDBODY_TYPE_CUBE)
+			{
+				findCollisionManifold(rb._obb, ra._sphere, outManifold);
+				outManifold->normal = outManifold->normal * -1.0f;
+			}
+		}
+		else if (ra._bodyType == RIGIDBODY_TYPE_CUBE)
+		{
+			if (rb._bodyType == RIGIDBODY_TYPE_SPHERE)
+				findCollisionManifold(ra._obb, rb._sphere, outManifold);
+			else if (rb._bodyType == RIGIDBODY_TYPE_CUBE)
+				findCollisionManifold(ra._obb, rb._obb, outManifold);
+		}
 	}
 
 	void applyImpulse(RigidbodyVolume& ra, RigidbodyVolume& rb, const CollisionManifold& manifold, int32 c)
 	{
-		__noop;
+		float raInvMass = ra.getInverseMass();
+		float rbInvMass = rb.getInverseMass();
+		float invMassSum = raInvMass + rbInvMass;
+
+		if (invMassSum == 0.0f)
+			return;
+
+		glm::vec3 r1 = manifold.contacts[c] - ra._position;
+		glm::vec3 r2 = manifold.contacts[c] - rb._position;
+		glm::mat4 raInvInertia = ra.getInverseInertiaTensor();
+		glm::mat4 rbInvInertia = rb.getInverseInertiaTensor();
+
+		glm::vec3 relativeVelocity = (rb._linearVelocity + glm::cross(rb._angularVelocity, r2)) - (ra._linearVelocity + glm::cross(ra._angularVelocity, r1));
+		glm::vec3 relativeNormal = manifold.normal;
+
+		if (glm::dot(relativeVelocity, relativeNormal) > 0.0f)
+			return;
+
+		float e = fminf(ra._restitution, rb._restitution);
+
+		float numerator = (-(1.0f + e) * glm::dot(relativeVelocity, relativeNormal));
+		float d1 = invMassSum;
+		
+		//TODO
 	}
 }

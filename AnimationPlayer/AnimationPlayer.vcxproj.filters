@@ -78,6 +78,9 @@
     <ClCompile Include="Softbody.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Spring.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CharacterLoader.h">
@@ -153,6 +156,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Softbody.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Spring.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

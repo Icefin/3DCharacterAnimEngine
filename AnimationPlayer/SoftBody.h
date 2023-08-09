@@ -1,29 +1,19 @@
 #pragma once
-#include "CommonTypes.h"
+#include "Spring.h"
 #include "Particle.h"
 
 namespace pa
 {
 	class Softbody
 	{
-		enum class SpringType :uint8
-		{
-			Structural = 0,
-			Shear,
-			Flexion
-		};
+	public :
+		virtual void update(float deltaTime);
+		virtual void render();
+		virtual void applyInternalForces();
+		virtual void applyExternalForces();
+		virtual void solveConstraints(std::vector<OBB>& constraints);
 
-		struct Spring
-		{
-			SpringType	type;
-			float		restLength;
-			Particle* left;
-			Particle* right;
-		};
-
-		class SoftBody
-		{
-
-		};
+	protected :
+		glm::vec3 _gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 	};
 }

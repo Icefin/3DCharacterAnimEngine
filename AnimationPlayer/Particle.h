@@ -22,6 +22,7 @@ namespace pa
 		void setBounciness(float bounciness) { _bounciness = bounciness; }
 
 		glm::vec3	getPosition(void) { return _position; }
+		glm::vec3	getVelocity(void) { return _velocity; }
 		float		getInverseMass(void);
 		float		getBounciness(void) { return _bounciness; }
 

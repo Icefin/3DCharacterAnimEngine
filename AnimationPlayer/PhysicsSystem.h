@@ -37,5 +37,12 @@ namespace pa
 		float linearProjectionPercent = 0.45f;
 		float penetrationSlack = 0.01f;
 		int32 iterationCount = 6;
+
+	public :
+		void addSpring(const Spring& spring);
+		void clearSpring(void);
+
+	private :
+		std::vector<Spring> springs;
 	};
 }

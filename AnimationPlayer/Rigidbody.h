@@ -23,9 +23,9 @@ namespace pa
 
 		bool hasVolume(void) { return (_bodyType == RIGIDBODY_TYPE_SPHERE || _bodyType == RIGIDBODY_TYPE_CUBE); }
 
-	protected :
 		int32 _bodyType = RIGIDBODY_TYPE_BASE;
 
+	protected :
 		glm::vec3 _gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 	};
 }

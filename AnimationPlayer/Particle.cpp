@@ -11,18 +11,17 @@ namespace pa
 		_netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		_mass = 1.0f;
+		_friction = 0.9f;
 		_bounciness = 0.7f;
 	}
 
 	void Particle::update(float deltaTime)
 	{
-		glm::vec3 velocity = _position - _prevPosition;
-
-		glm::vec3 acceleration = _netForce * getInverseMass();
-		float squareDeltaTime = deltaTime * deltaTime;
-
 		_prevPosition = _position;
-		_position = _position + velocity + acceleration * squareDeltaTime;
+
+		glm::vec3 acceleration = getInverseMass() * _netForce;
+		_velocity = _friction * _velocity + acceleration * deltaTime;
+		_position = _position + _velocity * deltaTime;
 	}
 
 	void Particle::render()
@@ -64,7 +63,7 @@ namespace pa
 
 	void Particle::applyLinearImpulse(glm::vec3 impulse)
 	{
-		_velocity += _mass * impulse;
+		_velocity += getInverseMass() * impulse;
 	}
 	
 	float Particle::getInverseMass(void)

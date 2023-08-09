@@ -679,13 +679,110 @@ namespace pa
 		glm::vec3 min = getMinFromAABB(aabb);
 		glm::vec3 max = getMaxFromAABB(aabb);
 
-		__noop;
+		float t1 = (min.x - ray.origin.x) / ((ray.direction.x < EPSILON) ? 0.00001f : ray.direction.x);
+		float t2 = (max.x - ray.origin.x) / ((ray.direction.x < EPSILON) ? 0.00001f : ray.direction.x);
+		float t3 = (min.y - ray.origin.y) / ((ray.direction.y < EPSILON) ? 0.00001f : ray.direction.y);
+		float t4 = (max.y - ray.origin.y) / ((ray.direction.y < EPSILON) ? 0.00001f : ray.direction.y);
+		float t5 = (min.z - ray.origin.z) / ((ray.direction.z < EPSILON) ? 0.00001f : ray.direction.z);
+		float t6 = (max.z - ray.origin.z) / ((ray.direction.z < EPSILON) ? 0.00001f : ray.direction.z);
+
+		float tmin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
+		float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
+
+		if (tmax < 0.0f)
+			return;
+
+		if (tmin > tmax)
+			return;
+
+		float tresult = tmin;
+
+		if (tmin < 0.0f)
+			tresult = tmax;
+
+		if (outInfo != nullptr)
+		{
+			outInfo->isHit = true;
+			outInfo->rayTime = tresult;
+			outInfo->hitPoint = ray.origin + tresult * ray.direction;
+
+			glm::vec3 normals[6] = {
+				glm::vec3(-1.0f, 0.0f, 0.0f),
+				glm::vec3(1.0f, 0.0f, 0.0f),
+				glm::vec3(0.0f, -1.0f, 0.0f),
+				glm::vec3(0.0f, 1.0f, 0.0f),
+				glm::vec3(0.0f, 0.0f, -1.0f),
+				glm::vec3(0.0f, 0.0f, 1.0f)
+			};
+			float t[6] = { t1, t2, t3, t4, t5, t6 };
+
+			for (int32 i = 0; i < 6; ++i)
+			{
+				if (tresult - t[i] < EPSILON)
+					outInfo->normal = normals[i];
+			}
+		}
 	}
 	void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 	{
 		resetRaycastInfo(outInfo);
 
-		__noop;
+		glm::vec3 halfSide = obb.size;
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 basis[3] = {
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		glm::vec3 rayToOBB = obb.position - ray.origin;
+		glm::vec3 f = glm::vec3(glm::dot(basis[0], ray.direction), glm::dot(basis[1], ray.direction), glm::dot(basis[2], ray.direction));
+		glm::vec3 e = glm::vec3(glm::dot(basis[0], rayToOBB), glm::dot(basis[1], rayToOBB), glm::dot(basis[2], rayToOBB));
+
+		float t[6] = { 0, 0, 0, 0, 0, 0 };
+		for (int32 i = 0; i < 3; ++i)
+		{
+			if (f[i] < EPSILON)
+			{
+				if (-e[i] - halfSide[i] > 0.0f || -e[i] + halfSide[i] < 0.0f)
+					return;
+
+				f[i] = 0.00001f;
+			}
+
+			t[i * 2] = (e[i] + halfSide[i]) / f[i];
+			t[i * 2 + 1] = (e[i] - halfSide[i]) / f[i];
+		}
+
+		float tmin = fmaxf(fmaxf(fminf(t[0], t[1]), fminf(t[2], t[3])), fminf(t[4], t[5]));
+		float tmax = fminf(fminf(fmaxf(t[0], t[1]), fmaxf(t[2], t[3])), fmaxf(t[4], t[5]));
+
+		if (tmax < 0.0f)
+			return;
+
+		if (tmin > tmax)
+			return;
+
+		float tresult = tmin;
+		if (tmin < 0.0f)
+			tresult = tmax;
+
+		if (outInfo != nullptr)
+		{
+			outInfo->isHit = true;
+			outInfo->rayTime = tresult;
+			outInfo->hitPoint = ray.origin + tresult * ray.direction;
+
+			glm::vec3 normals[6] = {
+				basis[0], -basis[0], basis[1], -basis[1], basis[2], -basis[2]
+			};
+
+			for (int32 i = 0; i < 6; ++i)
+			{
+				if (tresult - t[i] < EPSILON)
+					outInfo->normal = glm::normalize(normals[i]);
+			}
+		}
 	}
 	//Recheck Here
 	void raycast(const Ray& ray, const Mesh& mesh, RaycastInfo* outInfo)
@@ -1120,7 +1217,10 @@ namespace pa
 			outManifold->isColliding = true;
 			outManifold->normal = glm::normalize(s2.position - s1.position);
 			outManifold->depth = glm::abs(glm::sqrt(squareDistance) - radiusSum) * 0.5f;
-			//contacts
+			
+			float distance = s1.radius - outManifold->depth;
+			Point contact = s1.position + outManifold->normal * distance;
+			outManifold->contacts.push_back(contact);
 		}
 	}
 
@@ -1128,41 +1228,259 @@ namespace pa
 	{
 		resetCollisionManifold(outManifold);
 
-		__noop;
+		Point closest = findClosestPoint(sphere.position, obb);
 
+		float squareDistance = calculateSquareLength(Line(closest, sphere.position));
+		if (squareDistance > sphere.radius * sphere.radius)
+			return;
+
+		glm::vec3 normal;
+		if (squareDistance < EPSILON)
+		{
+			if (calculateSquareLength(Line(closest, obb.position)) < EPSILON)
+				return;
+
+			normal = glm::normalize(closest - obb.position);
+		}
+		else
+			normal = glm::normalize(sphere.position - closest);
+
+		Point outsidePoint = sphere.position - normal * sphere.radius;
+
+		float distance = glm::length(closest - outsidePoint);
+
+		if (outManifold != nullptr)
+		{
+			outManifold->isColliding = true;
+			outManifold->normal = normal;
+			outManifold->depth = distance * 0.5f;
+			outManifold->contacts.push_back(closest + (outsidePoint - closest) * 0.5f);
+		}
 	}
 
 	void findCollisionManifold(const OBB& o1, const OBB& o2, CollisionManifold* outManifold)
 	{
 		resetCollisionManifold(outManifold);
 
-		__noop;
+		Sphere s1(o1.position, glm::length(o1.size));
+		Sphere s2(o2.position, glm::length(o2.size));
 
+		if (isSphereSphereCollision(s1, s2) == false)
+			return;
+
+		glm::mat3 rotation1 = glm::mat3(o1.orientation);
+		glm::vec3 basis1[3] = {
+			glm::vec3(rotation1[0][0], rotation1[0][1], rotation1[0][2]),
+			glm::vec3(rotation1[1][0], rotation1[1][1], rotation1[1][2]),
+			glm::vec3(rotation1[2][0], rotation1[2][1], rotation1[2][2])
+		};
+
+		glm::mat3 rotation2 = glm::mat3(o2.orientation);
+		glm::vec3 basis2[3] = {
+			glm::vec3(rotation2[0][0], rotation2[0][1], rotation2[0][2]),
+			glm::vec3(rotation2[1][0], rotation2[1][1], rotation2[1][2]),
+			glm::vec3(rotation2[2][0], rotation2[2][1], rotation2[2][2])
+		};
+
+		glm::vec3 axis[15] = {
+			basis1[0], basis1[1], basis1[2],
+			basis2[0], basis2[1], basis2[2]
+		};
+
+		for (int32 i = 0; i < 3; ++i)
+		{
+			axis[6 + i * 3] = glm::cross(axis[i], axis[0]);
+			axis[6 + i * 3 + 1] = glm::cross(axis[i], axis[1]);
+			axis[6 + i * 3 + 2] = glm::cross(axis[i], axis[2]);
+		}
+
+		glm::vec3* hitNormal = nullptr;
+		bool shouldFlip;
+
+		for (int32 i = 0; i < 15; ++i)
+		{
+			if (axis[i].x < 0.000001f) axis[i].x = 0.0f;
+			if (axis[i].y < 0.000001f) axis[i].y = 0.0f;
+			if (axis[i].z < 0.000001f) axis[i].z = 0.0f;
+
+			if (glm::dot(axis[i], axis[i]) < EPSILON)
+				continue;
+
+			float depth = penetrationDepth(o1, o2, axis[i], &shouldFlip);
+			if (depth <= 0.0f)
+				return;
+			else if (depth < outManifold->depth)
+			{
+				if (shouldFlip == true)
+					axis[i] = -axis[i];
+
+				outManifold->depth = depth;
+				hitNormal = &axis[i];
+			}
+		}
+
+		if (hitNormal == nullptr)
+			return;
+
+		glm::vec3 normal = glm::normalize(*hitNormal);
+
+		std::vector<Point> c1 = clipEdgesToOBB(getEdgesFromOBB(o2), o1);
+		std::vector<Point> c2 = clipEdgesToOBB(getEdgesFromOBB(o1), o2);
+
+		outManifold->contacts.reserve(c1.size() + c2.size());
+		outManifold->contacts.insert(outManifold->contacts.end(), c1.begin(), c1.end());
+		outManifold->contacts.insert(outManifold->contacts.end(), c2.begin(), c2.end());
+
+		Interval interval = findInterval(o1, normal);
+		float distance = (interval.max - interval.min) * 0.5f - outManifold->depth * 0.5f;
+		Point pointOnPlane = o1.position + normal * distance;
+
+		for (int32 i = outManifold->contacts.size() - 1; i >= 0; --i)
+		{
+			Point contact = outManifold->contacts[i];
+			outManifold->contacts[i] = contact + (normal * glm::dot(normal, pointOnPlane - contact));
+
+			for (int32 j = outManifold->contacts.size() - 1; j > i; --j)
+			{
+				if (calculateSquareLength(Line(outManifold->contacts[i], outManifold->contacts[j])) < 0.0001f)
+				{
+					outManifold->contacts.erase(outManifold->contacts.begin() + j);
+					break;
+				}
+			}
+		}
+
+		outManifold->isColliding = true;
+		outManifold->normal = normal;
 	}
 
-	static std::vector<Point> GetVertices(const OBB& obb)
+	static std::vector<Point> getVerticesFromOBB(const OBB& obb)
 	{
-		__noop;
+		std::vector<Point> vertices;
+		vertices.resize(8);
+
+		glm::vec3 center = obb.position;
+		glm::vec3 halfSide = obb.size;
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 basis[3] = {
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		vertices[0] = center + basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[1] = center + basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2];
+		vertices[2] = center + basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[3] = center + basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2];
+		vertices[4] = center - basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[5] = center - basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2];
+		vertices[6] = center - basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[7] = center - basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2];
+
+		return vertices;
 	}
-	static std::vector<Line> GetEdges(const OBB& obb)
+	static std::vector<Line> getEdgesFromOBB(const OBB& obb)
 	{
-		__noop;
+		std::vector<Line> edges;
+		edges.reserve(12);
+
+		std::vector<Point> vertices = getVerticesFromOBB(obb);
+
+		int32 indices[12][2] = {
+			{6, 1}, {6, 3}, {6, 4}, {2, 7}, {2, 5}, {2, 0},
+			{0, 1}, {0, 3}, {7, 1}, {7, 4}, {4, 5}, {5, 3}
+		};
+
+		for (int32 i = 0; i < 12; ++i)
+			edges.push_back(Line(vertices[indices[i][0]], vertices[indices[i][1]]));
+
+		return edges;
 	}
-	static std::vector<Plane> GetPlanes(const OBB& obb)
+	static std::vector<Plane> getFacesFromOBB(const OBB& obb)
 	{
-		__noop;
+		std::vector<Plane> faces;
+		faces.resize(6);
+
+		glm::vec3 center = obb.position;
+		glm::vec3 halfSide = obb.size;
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 basis[3] = {
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		faces[0] = Plane(glm::dot(basis[0], (center + basis[0] * halfSide.x)), basis[0]);
+		faces[1] = Plane(-glm::dot(basis[0], (center - basis[0] * halfSide.x)), -basis[0]);
+		faces[2] = Plane(glm::dot(basis[1], (center + basis[1] * halfSide.y)), basis[1]);
+		faces[3] = Plane(-glm::dot(basis[1], (center - basis[1] * halfSide.y)), -basis[1]);
+		faces[4] = Plane(glm::dot(basis[2], (center + basis[2] * halfSide.z)), basis[2]);
+		faces[5] = Plane(-glm::dot(basis[2], (center - basis[2] * halfSide.z)), -basis[2]);
+		
+		return faces;
 	}
-	static bool ClipToPlane(const Plane& plane, const Line& line, Point* outPoint)
+	static bool clipToPlane(const Plane& plane, const Line& line, Point* outPoint)
 	{
-		__noop;
+		glm::vec3 direction = line.p2 - line.p1;
+
+		float nA = glm::dot(plane.normal, line.p1);
+		float nAB = glm::dot(plane.normal, direction);
+
+		if (nAB < EPSILON)
+			return false;
+
+		float t = (plane.distance - nA) / nAB;
+		if (t >= 0.0f && t <= 1.0f)
+		{
+			if (outPoint != nullptr)
+				*outPoint = line.p1 + t * direction;
+			return true;
+		}
+
+		return false;
 	}
-	static std::vector<Point> ClipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb)
+	static std::vector<Point> clipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb)
 	{
-		__noop;
+		std::vector<Point> points;
+		points.reserve(edges.size() * 3);
+
+		std::vector<Plane> faces = getFacesFromOBB(obb);
+
+		Point intersection;
+		int32 numEdges = edges.size();
+
+		for (int32 i = 0; i < 6; ++i)
+		{
+			for (int32 j = 0; j < numEdges; ++j)
+			{
+				if (clipToPlane(faces[i], edges[j], &intersection) == true)
+				{
+					if (isPointInside(intersection, obb) == true)
+						points.push_back(intersection);
+				}
+			}
+		}
+
+		return points;
 	}
-	static float PenetrationDepth(const OBB& o1, const OBB& o2, const glm::vec3& axis, bool* outShouldFlip)
+	static float penetrationDepth(const OBB& o1, const OBB& o2, const glm::vec3& axis, bool* outShouldFlip)
 	{
-		__noop;
+		Interval interval1 = findInterval(o1, glm::normalize(axis));
+		Interval interval2 = findInterval(o2, glm::normalize(axis));
+
+		if (((interval2.min <= interval1.max) && (interval1.min <= interval2.max)) == false)
+			return 0.0f;
+
+		float len1 = interval1.max - interval1.min;
+		float len2 = interval2.max - interval2.min;
+		float min = fminf(interval1.min, interval2.min);
+		float max = fmaxf(interval1.max, interval2.max);
+		float length = max - min;
+
+		if (outShouldFlip != nullptr)
+			*outShouldFlip = (interval2.min < interval1.min);
+
+		return (len1 + len2) - length;
 	}
 #pragma endregion
 
