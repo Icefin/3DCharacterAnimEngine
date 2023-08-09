@@ -75,10 +75,10 @@
     <ClCompile Include="Cloth.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="SoftBody.cpp">
+    <ClCompile Include="Particle.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Particle.cpp">
+    <ClCompile Include="Softbody.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,10 +152,10 @@
     <ClInclude Include="Cloth.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="SoftBody.h">
+    <ClInclude Include="Particle.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Particle.h">
+    <ClInclude Include="Softbody.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

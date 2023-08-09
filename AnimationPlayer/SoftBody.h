@@ -4,23 +4,25 @@
 
 namespace pa
 {
-	enum class SpringType :uint8
+	class Softbody
 	{
-		Structural = 0,
-		Shear,
-		Flexion
-	};
+		enum class SpringType :uint8
+		{
+			Structural = 0,
+			Shear,
+			Flexion
+		};
 
-	struct Spring
-	{
-		SpringType	type;
-		float		restLength;
-		Particle*	left;
-		Particle*	right;
-	};
+		struct Spring
+		{
+			SpringType	type;
+			float		restLength;
+			Particle* left;
+			Particle* right;
+		};
 
-	class SoftBody
-	{
+		class SoftBody
+		{
+		};
 	};
 }
-

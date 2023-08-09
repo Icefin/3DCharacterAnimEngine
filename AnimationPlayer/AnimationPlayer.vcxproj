@@ -163,7 +163,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="CustomMath.cpp" />
-    <ClCompile Include="SoftBody.cpp" />
+    <ClCompile Include="Softbody.cpp" />
     <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -190,7 +190,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="CustomMath.h" />
-    <ClInclude Include="SoftBody.h" />
+    <ClInclude Include="Softbody.h" />
     <ClInclude Include="Sphere.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -24,11 +24,6 @@ namespace pa
 		__noop;
 	}
 
-	void RigidbodyVolume::applyInternalForces()
-	{
-		__noop;
-	}
-
 	void RigidbodyVolume::applyExternalForces()
 	{
 		netForce += glm::vec3(0.0f, -9.81f, 0.0f) * mass;

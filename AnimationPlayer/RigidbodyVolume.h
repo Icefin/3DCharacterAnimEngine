@@ -12,7 +12,6 @@ namespace pa
 
 		void update(float deltaTime) override;
 		void render() override;
-		void applyInternalForces() override;
 		void applyExternalForces() override;
 		void solveConstraints() override;
 

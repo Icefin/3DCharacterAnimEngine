@@ -7,8 +7,8 @@ namespace pa
 	class PhysicsSystem
 	{
 	protected :
-		std::vector<Rigidbody*> bodies;
-		std::vector<Cloth*>		clothes;
+		std::vector<Rigidbody*> rigidbodies;
+		std::vector<Softbody*>	softbodies;;
 		std::vector<OBB>		constraints;
 
 		std::vector<Rigidbody*> colliders1;
@@ -26,11 +26,11 @@ namespace pa
 		void render();
 
 		void addRigidbody(Rigidbody* body);
-		void addCloth(Cloth* cloth);
+		void addSoftbody(Softbody* body);
 		void addConstraint(const OBB& constraint);
 
-		void clearRigidbodys(void);
-		void clearClothes(void);
+		void clearRigidbodies(void);
+		void clearSoftbodies(void);
 		void clearConstraints(void);
 	};
 }

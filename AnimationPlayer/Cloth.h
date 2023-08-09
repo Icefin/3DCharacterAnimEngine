@@ -1,5 +1,10 @@
 #pragma once
-class Cloth
+#include "Softbody.h"
+
+namespace pa
 {
-};
+	class Cloth
+	{
+	};
+}
 

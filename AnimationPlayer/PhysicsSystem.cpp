@@ -19,7 +19,7 @@ namespace pa
 		colliders2.clear();
 		collisionManifolds.clear();
 
-		int32 numBodies = bodies.size();
+		int32 numBodies = rigidbodies.size();
 		for (int32 i = 0; i < numBodies; ++i)
 		{
 			for (int32 j = i + 1; j < numBodies; ++j)
@@ -30,16 +30,16 @@ namespace pa
 				CollisionManifold manifold;
 				resetCollisionManifold(&manifold);
 
-				if (bodies[i]->hasVolume() && bodies[j]->hasVolume())
+				if (rigidbodies[i]->hasVolume() && rigidbodies[j]->hasVolume())
 				{
-					RigidbodyVolume* m1 = (RigidbodyVolume*)bodies[i];
-					RigidbodyVolume* m2 = (RigidbodyVolume*)bodies[j];
+					RigidbodyVolume* m1 = (RigidbodyVolume*)rigidbodies[i];
+					RigidbodyVolume* m2 = (RigidbodyVolume*)rigidbodies[j];
 					manifold = findCollisionManifold(*m1, *m2);
 
 					if (manifold.isColliding == true)
 					{
-						colliders1.push_back(bodies[i]);
-						colliders2.push_back(bodies[j]);
+						colliders1.push_back(rigidbodies[i]);
+						colliders2.push_back(rigidbodies[j]);
 						collisionManifolds.push_back(manifold);
 					}
 				}
@@ -47,10 +47,7 @@ namespace pa
 		}
 
 		for (int32 i = 0; i < numBodies; ++i)
-		{
-			bodies[i]->applyInternalForces();
-			bodies[i]->applyExternalForces();
-		}
+			rigidbodies[i]->applyExternalForces();
 
 		/*int32 numClothes = clothes.size();
 		for (int32 i = 0; i < numClothes; ++i)
@@ -75,7 +72,7 @@ namespace pa
 		}
 
 		for (int32 i = 0; i < numBodies; ++i)
-			bodies[i]->update(deltaTime);
+			rigidbodies[i]->update(deltaTime);
 
 		for (int32 i = 0; i < numCollisions; ++i)
 		{
@@ -83,14 +80,14 @@ namespace pa
 		}
 
 		for (int32 i = 0; i < numBodies; ++i)
-			bodies[i]->solveConstraints();
+			rigidbodies[i]->solveConstraints();
 	}
 
 	void PhysicsSystem::render()
 	{
-		int32 n = bodies.size();
+		int32 n = rigidbodies.size();
 		for (int32 i = 0; i < n; ++i)
-			bodies[i]->render();
+			rigidbodies[i]->render();
 
 		n = constraints.size();
 		for (int32 i = 0; i < n; ++i);
@@ -99,24 +96,24 @@ namespace pa
 
 	void PhysicsSystem::addRigidbody(Rigidbody* body)
 	{
-		bodies.push_back(body);
+		rigidbodies.push_back(body);
 	}
-	void PhysicsSystem::addCloth(Cloth* cloth)
+	void PhysicsSystem::addSoftbody(Softbody* body)
 	{
-		clothes.push_back(cloth);
+		softbodies.push_back(body);
 	}
 	void PhysicsSystem::addConstraint(const OBB& constraint)
 	{
 		constraints.push_back(constraint);
 	}
 
-	void PhysicsSystem::clearRigidbodys(void)
+	void PhysicsSystem::clearRigidbodies(void)
 	{
-		bodies.clear();
+		rigidbodies.clear();
 	}
-	void PhysicsSystem::clearClothes(void)
+	void PhysicsSystem::clearSoftbodies(void)
 	{
-		clothes.clear();
+		softbodies.clear();
 	}
 	void PhysicsSystem::clearConstraints(void)
 	{
