@@ -617,9 +617,7 @@ namespace pa
 		if (outInfo->isHit == false)
 			return;
 
-		Point hitPoint = ray.origin + outInfo->rayTime * ray.direction;
-
-		glm::vec3 barycentric = findBarycentricCoordinate(hitPoint, triangle);
+		glm::vec3 barycentric = findBarycentricCoordinate(outInfo->hitPoint, triangle);
 		if (barycentric.x >= 0.0f && barycentric.x <= 1.0f &&
 			barycentric.y >= 0.0f && barycentric.y <= 1.0f &&
 			barycentric.z >= 0.0f && barycentric.z <= 1.0f)
@@ -639,10 +637,10 @@ namespace pa
 
 		float t = (plane.distance - pn) / nd;
 
-		if (t > 0.0f)
+		if (t >= 0.0f && outInfo != nullptr)
 		{
 			outInfo->hitPoint = ray.origin + t * ray.direction;
-			outInfo->normal = plane.normal;
+			outInfo->normal = glm::normalize(plane.normal);
 			outInfo->rayTime = t;
 			outInfo->isHit = true;
 		}
@@ -681,7 +679,7 @@ namespace pa
 		glm::vec3 min = getMinFromAABB(aabb);
 		glm::vec3 max = getMaxFromAABB(aabb);
 
-
+		__noop;
 	}
 	void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 	{
