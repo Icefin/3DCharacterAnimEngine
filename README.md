@@ -349,11 +349,11 @@ https://carmencincotti.com/2022-07-11/position-based-dynamics/
 - Phong Lighting Model + (Shadowing, Ambient Occlusion) -> Acceptable
 3. Simple Cloth Simulation with Collider Cube && Sphere  
 - Collision Detection && Resolution System is required
-- What's the best way to detect collision between Mesh && Primitives
+- Optimization is required from now......
   
 4. Simple Cloth Simulation with Character
 - Position Based Dynamics comes here
-- How to simplify character with collider?
+- How to simplify character with collider? -> Simplify Bones with OBB or Cylinder
 
 5. Complex Cloth Simulation with Character
 - Import .obj asset
@@ -443,10 +443,10 @@ private:
 Phong Lighting Model + (Shadowing, Ambient Occlusion)  
 ![phong](https://github.com/Icefin/AnimationPlayer/assets/76864202/bdefd196-4a8e-4dbb-8bd7-2dc179a7f335)
 
-errors...(1)
+errors...(1)  
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
 
-errors...(2)
+errors...(2)  
 
 
 #### Collision Detection && Resolution
@@ -598,13 +598,19 @@ void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 update -> physics -> render
 
 #### Result(Temp) :
-First try...  
+First step with Fixed Volume + Explicit Euler Method
+
 https://github.com/Icefin/AnimationPlayer/assets/76864202/c73974bf-4ded-408e-887c-cfa4673ea058
 
-Second try...  
+Second try with Collision Detection + Explicit Euler Method
 
-Third try...  
-https://github.com/Icefin/AnimationPlayer/assets/76864202/55156968-ac19-4329-aa87-d838cea58e84
+https://github.com/Icefin/AnimationPlayer/assets/76864202/6b94f60f-0e0a-459d-a148-ab901196c361
+
+Third try with Collision Detection + Verlet Integration
+
+https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d4-e79fb19f375a
+
+
 
 
 
