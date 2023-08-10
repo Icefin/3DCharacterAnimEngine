@@ -147,8 +147,8 @@ int main()
         phong.setUniformVec3("phongLight.diffuse", phongLight.diffuse);
         phong.setUniformVec3("phongLight.specular", phongLight.specular);
         camera->phongUpdate(phong);
-        redCloth->update(0.016f, constraints);
-        blueCloth->update(0.016f, constraints);
+        redCloth->update(1.0f / 60.0f, constraints);
+        blueCloth->update(1.0f / 60.0f, constraints);
 
         redCloth->render(phong);
         blueCloth->render(phong);
