@@ -8,6 +8,8 @@
 
 #include "CommonTypes.h"
 
+#include "Shader.h"
+
 namespace pa
 {
 	constexpr glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
@@ -217,11 +219,61 @@ namespace pa
 	{
 		OBB(void) : position(0.0f, 0.0f, 0.0f), size(1.0f, 1.0f, 1.0f), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
 		OBB(const glm::vec3& p, const glm::vec3& s) : position(p), size(s), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
-		OBB(const glm::vec3& p, const glm::vec3& s, const glm::quat& q) : position(p), size(s), orientation(q) { }
+		OBB(const glm::vec3& p, const glm::vec3& s, const glm::quat& q) : position(p), size(s), orientation(glm::normalize(q))
+		{
+			float vertices[48] = {
+				-s.x, -s.y, -s.z, 1.0f, 0.0f, 0.0f,
+				-s.x, -s.y, s.z, 1.0f, 0.0f, 0.0f,
+				s.x, -s.y, s.z, 1.0f, 0.0f, 0.0f,
+				s.x, -s.y, -s.z, 1.0f, 0.0f, 0.0f,
+
+				-s.x, s.y, -s.z, 1.0f, 0.0f, 0.0f,
+				-s.x, s.y, s.z, 1.0f, 0.0f, 0.0f,
+				s.x, s.y, s.z, 1.0f, 0.0f, 0.0f,
+				s.x, s.y, -s.z, 1.0f, 0.0f, 0.0f
+			};
+
+			uint32 indices[36] = {
+				 1,0,2,
+				 2,0,3,
+				 1,2,5,
+				 2,6,5,
+				 3,7,6,
+				 3,6,2,
+				 6,4,5,
+				 6,7,4,
+				 1,5,4,
+				 1,4,0,
+				 0,4,7,
+				 3,0,7
+			};
+
+			glGenBuffers(1, &vbo);
+			glGenVertexArrays(1, &vao);
+
+			glBindVertexArray(vao);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vbo);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+			glEnableVertexAttribArray(0);
+
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+			glEnableVertexAttribArray(1);
+
+			glGenBuffers(1, &ebo);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		}
 
 		glm::vec3 position;
 		glm::vec3 size;
 		glm::quat orientation;
+
+		GLuint vao;
+		GLuint vbo;
+		GLuint ebo;
 	};
 
 	bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle);
@@ -229,6 +281,8 @@ namespace pa
 	bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere);
 	bool isOBBAABBCollision(const OBB& obb, const AABB& aabb);
 	bool isOBBOBBCollision(const OBB& o1, const OBB& o2);
+
+	void renderOBB(const OBB& obb, Shader& shader);
 
 	//bool isOBBMeshCollision(const OBB& obb, const Mesh& mesh);
 	//bool isOBBModelCollision(const OBB& obb, const Model& model);

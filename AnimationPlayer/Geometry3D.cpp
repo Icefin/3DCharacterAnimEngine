@@ -983,6 +983,18 @@ namespace pa
 
 
 #pragma region OBB
+	void renderOBB(const OBB& obb, Shader& shader)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		glBindVertexArray(obb.vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obb.ebo);
+
+		glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), obb.position) * glm::mat4_cast(obb.orientation);
+		shader.setUniformMat4("worldMat", worldMat);
+		glLineWidth(2.0f);
+		glDrawElements(GL_LINES, 36, GL_UNSIGNED_INT, NULL);
+	}
 
 	bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle)
 	{

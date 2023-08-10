@@ -85,16 +85,9 @@ void initializeGLContext(void)
 int main()
 {
     initializeGLContext();
-
-    Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     loadCharacter();
 
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
-
-    std::vector<GameObject*> gameObjectList;
-
-    gameObjectList.push_back(ground);
-    gameObjectList.push_back(character);
 
     Shader shader("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
     PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 30, 30, 30, 30);
@@ -111,7 +104,7 @@ int main()
     constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
     constraints.push_back(pa::OBB(glm::vec3(-8.0f, -9.0f, 10.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::quat(0.34f, 0.0f, 0.146f, 0.93f)));
     constraints.push_back(pa::OBB(glm::vec3(7.0f, -13.0f, 35.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::quat(0.0f, -0.157f, -0.2098f, 0.965f)));
-    constraints.push_back(pa::OBB(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f)));
+    constraints.push_back(pa::OBB(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f)));
 
     shader.use();
     shader.setUniformVec3("phongLight.direction", phongLight.direction);
@@ -136,14 +129,14 @@ int main()
         camera->update(shader);
 
         //Object Update
-        for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
-            gameObjectList[idx]->update(deltaTime * frameRate);
+        character->update(deltaTime * frameRate);
         redCloth->update(1.0f / 60.0f, constraints);
         blueCloth->update(1.0f / 60.0f, constraints);
 
         //Object Render
-        for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
-            gameObjectList[idx]->render(shader);
+        character->render(shader);
+        for (int32 idx = 0; idx < constraints.size(); ++idx)
+            pa::renderOBB(constraints[idx], shader);
         redCloth->render(shader);
         blueCloth->render(shader);
 
