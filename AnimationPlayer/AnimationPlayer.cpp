@@ -88,28 +88,31 @@ int main()
 
     Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
 
-    Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-    Cube* cube = new Cube(glm::vec3(25.0f, -13.0f, 20.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    Sphere* sphere = new Sphere(glm::vec3(-15.0f, -13.0f, 15.0f), 5.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     loadCharacter();
 
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
     std::vector<GameObject*> gameObjectList;
     gameObjectList.push_back(ground);
-    gameObjectList.push_back(cube);
-    gameObjectList.push_back(sphere);
     gameObjectList.push_back(character);
 
     Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-    PlaneCloth* phongCube = new PlaneCloth(glm::vec3(5.0f, 0.0f, 5.0f), 30, 30, 30, 30, false);
-    PlaneCloth* phongSphere = new PlaneCloth(glm::vec3(-30.0f, 0.0f, 0.0f), 30, 30, 30, 30, true);
+    PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 20, 20);
+    PlaneCloth* blueCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 19.0f), glm::vec3(0.0f, 0.0f, 1.0f), 20, 20, 20, 20);
     DirectionalLight phongLight{
-        glm::vec3(1.0f,1.0f,1.0f),
+        glm::vec3(0.0f,1.0f,0.0f),
         glm::vec3(0.1f,0.1f,0.1f),
         glm::vec3(1.0f,1.0f,1.0f),
         glm::vec3(1.0f,1.0f,1.0f)
     };
+
+    std::vector<pa::OBB> constraints;
+    constraints.push_back(pa::OBB(glm::vec3(5.0f, -13.0f, 5.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.75f, -0.5f, -0.419f, -0.054f)));
+    constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
+    constraints.push_back(pa::OBB(glm::vec3(-8.0f, -9.0f, 10.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::quat(0.34f, 0.0f, 0.146f, 0.93f)));
+    constraints.push_back(pa::OBB(glm::vec3(7.0f, -13.0f, 35.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::quat(0.0f, -0.157f, -0.2098f, 0.965f)));
+    constraints.push_back(pa::OBB(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f)));
 
     float lastFrame = 0.0f;
     while (glfwWindowShouldClose(window) == false)
@@ -144,11 +147,11 @@ int main()
         phong.setUniformVec3("phongLight.diffuse", phongLight.diffuse);
         phong.setUniformVec3("phongLight.specular", phongLight.specular);
         camera->phongUpdate(phong);
-        phongCube->update(0.005f);
-        phongSphere->update(0.005f);
+        redCloth->update(0.016f, constraints);
+        blueCloth->update(0.016f, constraints);
 
-        phongCube->render(phong);
-        phongSphere->render(phong);
+        redCloth->render(phong);
+        blueCloth->render(phong);
 
         glfwSwapBuffers(window);
     }

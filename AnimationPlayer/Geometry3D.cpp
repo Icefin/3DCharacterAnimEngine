@@ -1,6 +1,6 @@
 #include "Geometry3D.h"
 
-#define EPSILON 0.0001f
+#define EPSILON 0.00001f
 
 namespace pa
 {
@@ -687,12 +687,12 @@ namespace pa
 		glm::vec3 min = getMinFromAABB(aabb);
 		glm::vec3 max = getMaxFromAABB(aabb);
 
-		float t1 = (min.x - ray.origin.x) / ((ray.direction.x < EPSILON) ? 0.00001f : ray.direction.x);
-		float t2 = (max.x - ray.origin.x) / ((ray.direction.x < EPSILON) ? 0.00001f : ray.direction.x);
-		float t3 = (min.y - ray.origin.y) / ((ray.direction.y < EPSILON) ? 0.00001f : ray.direction.y);
-		float t4 = (max.y - ray.origin.y) / ((ray.direction.y < EPSILON) ? 0.00001f : ray.direction.y);
-		float t5 = (min.z - ray.origin.z) / ((ray.direction.z < EPSILON) ? 0.00001f : ray.direction.z);
-		float t6 = (max.z - ray.origin.z) / ((ray.direction.z < EPSILON) ? 0.00001f : ray.direction.z);
+		float t1 = (min.x - ray.origin.x) / ((glm::abs(ray.direction.x) < EPSILON) ? EPSILON : ray.direction.x);
+		float t2 = (max.x - ray.origin.x) / ((glm::abs(ray.direction.x) < EPSILON) ? EPSILON : ray.direction.x);
+		float t3 = (min.y - ray.origin.y) / ((glm::abs(ray.direction.y) < EPSILON) ? EPSILON : ray.direction.y);
+		float t4 = (max.y - ray.origin.y) / ((glm::abs(ray.direction.y) < EPSILON) ? EPSILON : ray.direction.y);
+		float t5 = (min.z - ray.origin.z) / ((glm::abs(ray.direction.z) < EPSILON) ? EPSILON : ray.direction.z);
+		float t6 = (max.z - ray.origin.z) / ((glm::abs(ray.direction.z) < EPSILON) ? EPSILON : ray.direction.z);
 
 		float tmin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
 		float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
@@ -726,7 +726,7 @@ namespace pa
 
 			for (int32 i = 0; i < 6; ++i)
 			{
-				if (tresult - t[i] < EPSILON)
+				if (glm::abs(tresult - t[i]) < EPSILON)
 					outInfo->normal = normals[i];
 			}
 		}
@@ -750,7 +750,7 @@ namespace pa
 		float t[6] = { 0, 0, 0, 0, 0, 0 };
 		for (int32 i = 0; i < 3; ++i)
 		{
-			if (f[i] < EPSILON)
+			if (glm::abs(f[i]) < EPSILON)
 			{
 				if (-e[i] - halfSide[i] > 0.0f || -e[i] + halfSide[i] < 0.0f)
 					return;
@@ -787,7 +787,7 @@ namespace pa
 
 			for (int32 i = 0; i < 6; ++i)
 			{
-				if (tresult - t[i] < EPSILON)
+				if (glm::abs(tresult - t[i]) < EPSILON)
 					outInfo->normal = glm::normalize(normals[i]);
 			}
 		}
@@ -878,16 +878,16 @@ namespace pa
 #pragma region AABB
 	Point getMinFromAABB(const AABB& aabb)
 	{
-		glm::vec3 p1 = aabb.position + aabb.size;
-		glm::vec3 p2 = aabb.position - aabb.size;
+		Point p1 = aabb.position + aabb.size;
+		Point p2 = aabb.position - aabb.size;
 
 		return Point(fminf(p1.x, p2.x), fminf(p1.y, p2.y), fminf(p1.z, p2.z));
 	}
 
 	Point getMaxFromAABB(const AABB& aabb)
 	{
-		glm::vec3 p1 = aabb.position + aabb.size;
-		glm::vec3 p2 = aabb.position - aabb.size;
+		Point p1 = aabb.position + aabb.size;
+		Point p2 = aabb.position - aabb.size;
 
 		return Point(fmaxf(p1.x, p2.x), fmaxf(p1.y, p2.y), fmaxf(p1.z, p2.z));
 	}
@@ -983,6 +983,7 @@ namespace pa
 
 
 #pragma region OBB
+
 	bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle)
 	{
 		return isTriangleOBBCollision(triangle, obb);

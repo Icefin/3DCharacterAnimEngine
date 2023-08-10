@@ -75,5 +75,5 @@ void Cube::render(Shader& shader)
 
     glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _position);
     shader.setUniformMat4("model", modelMatrix);
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_LINES, 36, GL_UNSIGNED_INT, NULL);
 }
