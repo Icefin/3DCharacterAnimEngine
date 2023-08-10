@@ -10,12 +10,12 @@ namespace pa
 		RigidbodyVolume(int32 type) : _mass(1.0f), _friction(0.6f) { _bodyType = type; }
 		~RigidbodyVolume(void);
 
-		void update(float deltaTime) override;
-		void render(Shader& shader) override;
-		void applyExternalForces() override;
-		void solveConstraints(std::vector<OBB>& constraints) override;
+		void		update(float deltaTime) override;
+		void		render(Shader& shader) override;
+		void		applyExternalForces() override;
+		void		solveConstraints(std::vector<OBB>& constraints) override;
 
-		void	syncCollisionVolumes();
+		void		syncCollisionVolumes();
 
 	public :
 		float		getInverseMass(void);

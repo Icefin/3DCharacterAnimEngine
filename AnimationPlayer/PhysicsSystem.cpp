@@ -85,7 +85,7 @@ namespace pa
 	{
 		int32 n = rigidbodies.size();
 		for (int32 i = 0; i < n; ++i)
-			rigidbodies[i]->render();
+			//rigidbodies[i]->render();
 
 		n = constraints.size();
 		for (int32 i = 0; i < n; ++i);

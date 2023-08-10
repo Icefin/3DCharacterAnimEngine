@@ -22,14 +22,14 @@ namespace pa
 		syncCollisionVolumes();
 	}
 
-	void RigidbodyVolume::render()
+	void RigidbodyVolume::render(Shader& shader)
 	{
 		__noop;
 	}
 
 	void RigidbodyVolume::applyExternalForces()
 	{
-		_netForce += _mass * _gravity;
+		_netForce += _mass * gravity;
 	}
 
 	void RigidbodyVolume::solveConstraints(std::vector<OBB>& constraints)

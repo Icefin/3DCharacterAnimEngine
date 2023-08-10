@@ -1234,7 +1234,6 @@ namespace pa
 			outManifold->contacts.push_back(contact);
 		}
 	}
-
 	void findCollisionManifold(const OBB& obb, const Sphere& sphere, CollisionManifold* outManifold)
 	{
 		resetCollisionManifold(outManifold);
@@ -1269,6 +1268,134 @@ namespace pa
 		}
 	}
 
+	static std::vector<Point> getVerticesFromOBB(const OBB& obb)
+	{
+		std::vector<Point> vertices;
+		vertices.resize(8);
+
+		glm::vec3 center = obb.position;
+		glm::vec3 halfSide = obb.size;
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 basis[3] = {
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		vertices[0] = center + basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[1] = center + basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2];
+		vertices[2] = center + basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[3] = center + basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2];
+		vertices[4] = center - basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[5] = center - basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2];
+		vertices[6] = center - basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2];
+		vertices[7] = center - basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2];
+
+		return vertices;
+	}
+	static std::vector<Line> getEdgesFromOBB(const OBB& obb)
+	{
+		std::vector<Line> edges;
+		edges.reserve(12);
+
+		std::vector<Point> vertices = getVerticesFromOBB(obb);
+
+		int32 indices[12][2] = {
+			{6, 1}, {6, 3}, {6, 4}, {2, 7}, {2, 5}, {2, 0},
+			{0, 1}, {0, 3}, {7, 1}, {7, 4}, {4, 5}, {5, 3}
+		};
+
+		for (int32 i = 0; i < 12; ++i)
+			edges.push_back(Line(vertices[indices[i][0]], vertices[indices[i][1]]));
+
+		return edges;
+	}
+	static std::vector<Plane> getFacesFromOBB(const OBB& obb)
+	{
+		std::vector<Plane> faces;
+		faces.resize(6);
+
+		glm::vec3 center = obb.position;
+		glm::vec3 halfSide = obb.size;
+		glm::mat3 rotation = glm::mat3(obb.orientation);
+		glm::vec3 basis[3] = {
+			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+		};
+
+		faces[0] = Plane(glm::dot(basis[0], (center + basis[0] * halfSide.x)), basis[0]);
+		faces[1] = Plane(-glm::dot(basis[0], (center - basis[0] * halfSide.x)), -basis[0]);
+		faces[2] = Plane(glm::dot(basis[1], (center + basis[1] * halfSide.y)), basis[1]);
+		faces[3] = Plane(-glm::dot(basis[1], (center - basis[1] * halfSide.y)), -basis[1]);
+		faces[4] = Plane(glm::dot(basis[2], (center + basis[2] * halfSide.z)), basis[2]);
+		faces[5] = Plane(-glm::dot(basis[2], (center - basis[2] * halfSide.z)), -basis[2]);
+
+		return faces;
+	}
+	static bool clipToPlane(const Plane& plane, const Line& line, Point* outPoint)
+	{
+		glm::vec3 direction = line.p2 - line.p1;
+
+		float nA = glm::dot(plane.normal, line.p1);
+		float nAB = glm::dot(plane.normal, direction);
+
+		if (nAB < EPSILON)
+			return false;
+
+		float t = (plane.distance - nA) / nAB;
+		if (t >= 0.0f && t <= 1.0f)
+		{
+			if (outPoint != nullptr)
+				*outPoint = line.p1 + t * direction;
+			return true;
+		}
+
+		return false;
+	}
+	static std::vector<Point> clipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb)
+	{
+		std::vector<Point> points;
+		points.reserve(edges.size() * 3);
+
+		std::vector<Plane> faces = getFacesFromOBB(obb);
+
+		Point intersection;
+		int32 numEdges = edges.size();
+
+		for (int32 i = 0; i < 6; ++i)
+		{
+			for (int32 j = 0; j < numEdges; ++j)
+			{
+				if (clipToPlane(faces[i], edges[j], &intersection) == true)
+				{
+					if (isPointInside(intersection, obb) == true)
+						points.push_back(intersection);
+				}
+			}
+		}
+
+		return points;
+	}
+	static float penetrationDepth(const OBB& o1, const OBB& o2, const glm::vec3& axis, bool* outShouldFlip)
+	{
+		Interval interval1 = findInterval(o1, glm::normalize(axis));
+		Interval interval2 = findInterval(o2, glm::normalize(axis));
+
+		if (((interval2.min <= interval1.max) && (interval1.min <= interval2.max)) == false)
+			return 0.0f;
+
+		float len1 = interval1.max - interval1.min;
+		float len2 = interval2.max - interval2.min;
+		float min = fminf(interval1.min, interval2.min);
+		float max = fmaxf(interval1.max, interval2.max);
+		float length = max - min;
+
+		if (outShouldFlip != nullptr)
+			*outShouldFlip = (interval2.min < interval1.min);
+
+		return (len1 + len2) - length;
+	}
 	void findCollisionManifold(const OBB& o1, const OBB& o2, CollisionManifold* outManifold)
 	{
 		resetCollisionManifold(outManifold);
@@ -1363,135 +1490,6 @@ namespace pa
 
 		outManifold->isColliding = true;
 		outManifold->normal = normal;
-	}
-
-	static std::vector<Point> getVerticesFromOBB(const OBB& obb)
-	{
-		std::vector<Point> vertices;
-		vertices.resize(8);
-
-		glm::vec3 center = obb.position;
-		glm::vec3 halfSide = obb.size;
-		glm::mat3 rotation = glm::mat3(obb.orientation);
-		glm::vec3 basis[3] = {
-			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
-			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
-			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
-		};
-
-		vertices[0] = center + basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2];
-		vertices[1] = center + basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2];
-		vertices[2] = center + basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2];
-		vertices[3] = center + basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2];
-		vertices[4] = center - basis[0] * halfSide[0] + basis[1] * halfSide[1] + basis[2] * halfSide[2];
-		vertices[5] = center - basis[0] * halfSide[0] + basis[1] * halfSide[1] - basis[2] * halfSide[2];
-		vertices[6] = center - basis[0] * halfSide[0] - basis[1] * halfSide[1] + basis[2] * halfSide[2];
-		vertices[7] = center - basis[0] * halfSide[0] - basis[1] * halfSide[1] - basis[2] * halfSide[2];
-
-		return vertices;
-	}
-	static std::vector<Line> getEdgesFromOBB(const OBB& obb)
-	{
-		std::vector<Line> edges;
-		edges.reserve(12);
-
-		std::vector<Point> vertices = getVerticesFromOBB(obb);
-
-		int32 indices[12][2] = {
-			{6, 1}, {6, 3}, {6, 4}, {2, 7}, {2, 5}, {2, 0},
-			{0, 1}, {0, 3}, {7, 1}, {7, 4}, {4, 5}, {5, 3}
-		};
-
-		for (int32 i = 0; i < 12; ++i)
-			edges.push_back(Line(vertices[indices[i][0]], vertices[indices[i][1]]));
-
-		return edges;
-	}
-	static std::vector<Plane> getFacesFromOBB(const OBB& obb)
-	{
-		std::vector<Plane> faces;
-		faces.resize(6);
-
-		glm::vec3 center = obb.position;
-		glm::vec3 halfSide = obb.size;
-		glm::mat3 rotation = glm::mat3(obb.orientation);
-		glm::vec3 basis[3] = {
-			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
-			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
-			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
-		};
-
-		faces[0] = Plane(glm::dot(basis[0], (center + basis[0] * halfSide.x)), basis[0]);
-		faces[1] = Plane(-glm::dot(basis[0], (center - basis[0] * halfSide.x)), -basis[0]);
-		faces[2] = Plane(glm::dot(basis[1], (center + basis[1] * halfSide.y)), basis[1]);
-		faces[3] = Plane(-glm::dot(basis[1], (center - basis[1] * halfSide.y)), -basis[1]);
-		faces[4] = Plane(glm::dot(basis[2], (center + basis[2] * halfSide.z)), basis[2]);
-		faces[5] = Plane(-glm::dot(basis[2], (center - basis[2] * halfSide.z)), -basis[2]);
-		
-		return faces;
-	}
-	static bool clipToPlane(const Plane& plane, const Line& line, Point* outPoint)
-	{
-		glm::vec3 direction = line.p2 - line.p1;
-
-		float nA = glm::dot(plane.normal, line.p1);
-		float nAB = glm::dot(plane.normal, direction);
-
-		if (nAB < EPSILON)
-			return false;
-
-		float t = (plane.distance - nA) / nAB;
-		if (t >= 0.0f && t <= 1.0f)
-		{
-			if (outPoint != nullptr)
-				*outPoint = line.p1 + t * direction;
-			return true;
-		}
-
-		return false;
-	}
-	static std::vector<Point> clipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb)
-	{
-		std::vector<Point> points;
-		points.reserve(edges.size() * 3);
-
-		std::vector<Plane> faces = getFacesFromOBB(obb);
-
-		Point intersection;
-		int32 numEdges = edges.size();
-
-		for (int32 i = 0; i < 6; ++i)
-		{
-			for (int32 j = 0; j < numEdges; ++j)
-			{
-				if (clipToPlane(faces[i], edges[j], &intersection) == true)
-				{
-					if (isPointInside(intersection, obb) == true)
-						points.push_back(intersection);
-				}
-			}
-		}
-
-		return points;
-	}
-	static float penetrationDepth(const OBB& o1, const OBB& o2, const glm::vec3& axis, bool* outShouldFlip)
-	{
-		Interval interval1 = findInterval(o1, glm::normalize(axis));
-		Interval interval2 = findInterval(o2, glm::normalize(axis));
-
-		if (((interval2.min <= interval1.max) && (interval1.min <= interval2.max)) == false)
-			return 0.0f;
-
-		float len1 = interval1.max - interval1.min;
-		float len2 = interval2.max - interval2.min;
-		float min = fminf(interval1.min, interval2.min);
-		float max = fmaxf(interval1.max, interval2.max);
-		float length = max - min;
-
-		if (outShouldFlip != nullptr)
-			*outShouldFlip = (interval2.min < interval1.min);
-
-		return (len1 + len2) - length;
 	}
 #pragma endregion
 

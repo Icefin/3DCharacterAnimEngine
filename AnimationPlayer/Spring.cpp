@@ -26,7 +26,7 @@ namespace pa
 
 		glm::vec3 impulse = (springForce + dampingForce) * deltaTime;
 
-		_left->applyLinearImpulse(impulse);
-		_right->applyLinearImpulse(-impulse);
+		//_left->applyLinearImpulse(impulse);
+		//_right->applyLinearImpulse(-impulse);
 	}
 }
