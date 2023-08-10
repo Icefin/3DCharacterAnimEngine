@@ -268,8 +268,9 @@ void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
 				if (raycastInfo.isHit == true)
 				{
 					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-					//glm::vec3 vn = raycastInfo.normal * glm::dot(raycastInfo.normal, velocity);
-					//glm::vec3 vt = velocity - vn;
+					glm::vec3 vn = raycastInfo.normal * glm::dot(raycastInfo.normal, velocity);
+					glm::vec3 vt = velocity - vn;
+					massPoint.velocity = vt + vn * 0.9f;
 					//massPoint.prevPosition = massPoint.position - (vt - vn);
 				}
 			}
