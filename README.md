@@ -598,7 +598,15 @@ void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 update -> physics -> render
 
 #### Result(Temp) :
+First try...  
 https://github.com/Icefin/AnimationPlayer/assets/76864202/c73974bf-4ded-408e-887c-cfa4673ea058
+
+Second try...  
+
+Third try...  
+https://github.com/Icefin/AnimationPlayer/assets/76864202/55156968-ac19-4329-aa87-d838cea58e84
+
+
 
 ---
 ### Particle System
