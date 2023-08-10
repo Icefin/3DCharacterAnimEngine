@@ -98,8 +98,8 @@ int main()
     gameObjectList.push_back(character);
 
     Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-    PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 20, 20);
-    PlaneCloth* blueCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 19.0f), glm::vec3(0.0f, 0.0f, 1.0f), 20, 20, 20, 20);
+    PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 30, 30, 30, 30);
+    PlaneCloth* blueCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 29.0f), glm::vec3(0.0f, 0.0f, 1.0f), 30, 30, 30, 30);
     DirectionalLight phongLight{
         glm::vec3(0.0f,1.0f,0.0f),
         glm::vec3(0.1f,0.1f,0.1f),
@@ -135,8 +135,6 @@ int main()
 
         camera->update(shader);
 
-        //Physics Solve
-
         //Object Render
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->render(shader);
@@ -154,6 +152,7 @@ int main()
         blueCloth->render(phong);
 
         glfwSwapBuffers(window);
+        printf("DeltaTime : %f\n", deltaTime);
     }
 
     glfwTerminate();
