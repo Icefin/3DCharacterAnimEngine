@@ -360,58 +360,31 @@ https://carmencincotti.com/2022-07-11/position-based-dynamics/
 
 #### GameObject && Geometric Primitives
 ```c++
-class GameObject
+struct OBB
 {
-public :
-	virtual void update(float deltaTime) = 0;
-	virtual void render(Shader& shader) = 0;
+	OBB(void) : position(0.0f, 0.0f, 0.0f), size(1.0f, 1.0f, 1.0f), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
+	OBB(const glm::vec3& p, const glm::vec3& s) : position(p), size(s), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
+	OBB(const glm::vec3& p, const glm::vec3& s, const glm::quat& q) : position(p), size(s), orientation(glm::normalize(q)) { }
 
-	uint32		_objectID;
-	glm::vec3	_position = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::quat	_rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-};
-```
+	glm::vec3 position;
+	glm::vec3 size;
+	glm::quat orientation;
+}
 
-```c++
-class Cube : public GameObject
-{
-public :
-        Cube(glm::vec3 position, glm::vec3 halfSideLength, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f));
-        ~Cube(void);
-	
-	void	update(float deltaTime) override;
-	void	render(Shader& shader) override;
-
-private :
-	GLuint	_vbo;
-	GLuint	_vao;
-	GLuint	_ebo;
-};
-
-class Sphere : public GameObject
-{
-public :
-	Sphere(glm::vec3 position, float radius, glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f), uint32 stackNumber = 20, uint32 sectorNumber = 20);
-	~Sphere(void);
-
-	void	update(float deltaTime) override;
-	void	render(Shader& shader) override;
-
-private:
-	GLuint	_vbo;
-	GLuint	_vao;
-	GLuint	_ebo;
-
-	int32	_indicesNumber;
-};
+bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle);
+bool isOBBPlaneCollision(const OBB& obb, const Plane& plane);
+bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere);
+bool isOBBAABBCollision(const OBB& obb, const AABB& aabb);
+bool isOBBOBBCollision(const OBB& o1, const OBB& o2);
 ```
 
 ```c++
 struct MassPoint
 {
 	float		mass;
+	glm::vec3	prevPosition;
 	glm::vec3	position;
-        glm::vec3       normal;
+	glm::vec3	normal;
 	glm::vec3	velocity;
 	glm::vec3	netForce;
 	glm::vec3	color;
@@ -426,29 +399,30 @@ enum class SpringType :uint8
 
 struct Spring
 {
-	SpringType type;
-	float      restLength;
-	MassPoint* left;
-	MassPoint* right;
+	SpringType	type;
+	float		restLength;
+	MassPoint*	left;
+	MassPoint*	right;
 };
 
 class PlaneCloth : public GameObject
 {
-public :
-	PlaneCloth(glm::vec3 position, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
+public:
+	PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
 	~PlaneCloth(void);
-
-	void update(float deltaTime) override;
+	
+	void update(float deltaTime) { }
+	void update(float deltaTime, std::vector<pa::OBB>& constraints);
 	void render(Shader& shader) override;
 
-private :
+private:
 	void applyInternalForces(void);
 	void applyExternalForces(void);
 	void updateMassPointState(float deltaTime);
-	void solveConstraint(void);
-        void updateMassPointNormal(void);
+	void solveConstraint(std::vector<pa::OBB>& constraints);
+	void updateMassPointNormal(void);
 
-private :
+private:
 	GLuint	_vao;
 	GLuint	_vbo;
 	GLuint	_ebo;
@@ -457,7 +431,8 @@ private :
 	std::vector<uint32>	_indices;
 	std::vector<Spring>	_springList;
 
-        glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
+private:
+	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
 	glm::vec3	_materialSpecular{0.2f, 0.2f, 0.2f};
 	glm::vec3	_materialEmissive{0.0f, 0.0f, 0.0f};
 	float		_materialShininess = 5.0f;
@@ -468,11 +443,156 @@ private :
 Phong Lighting Model + (Shadowing, Ambient Occlusion)  
 ![phong](https://github.com/Icefin/AnimationPlayer/assets/76864202/bdefd196-4a8e-4dbb-8bd7-2dc179a7f335)
 
-errors...  
+errors...(1)
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
+
+errors...(2)
 
 
 #### Collision Detection && Resolution
+```c++
+void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& constraints)
+{
+	applyInternalForces();
+	applyExternalForces();
+	updateMassPointState(deltaTime);
+	solveConstraint(constraints);
+	updateMassPointNormal();
+}
+```
+
+```c++
+void PlaneCloth::updateMassPointState(float deltaTime)
+{
+	for (MassPoint& massPoint : _massPointList)
+	{
+		//Explicit Euler Method
+		/*glm::vec3 newVelocity = massPoint.velocity * 0.95f + deltaTime * massPoint.netForce / massPoint.mass;
+		glm::vec3 newPosition = massPoint.position + deltaTime * massPoint.velocity;
+
+		massPoint.velocity = newVelocity;
+		massPoint.position = newPosition;*/
+
+		//Verlet Method
+		glm::vec3 acceleration = massPoint.netForce / massPoint.mass;
+		glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
+
+		massPoint.prevPosition = massPoint.position;
+		massPoint.position = massPoint.position + velocity * 0.95f + acceleration * deltaTime * deltaTime;
+		massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
+	}
+}
+```
+
+```c++
+void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
+{
+	for (MassPoint& massPoint : _massPointList)
+	{
+		int32 n = constraints.size();
+		for (int32 i = 0; i < n; ++i)
+		{
+			pa::Line travelPath(massPoint.prevPosition, massPoint.position);
+
+			if (pa::isIntersection(travelPath, constraints[i]) == true)
+			{
+				glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
+				pa::Ray ray(massPoint.prevPosition, velocity);
+
+				pa::RaycastInfo raycastInfo;
+				pa::raycast(ray, constraints[i], &raycastInfo);
+				if (raycastInfo.isHit == true)
+				{
+					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
+					glm::vec3 vn = raycastInfo.normal * glm::dot(raycastInfo.normal, velocity);
+					glm::vec3 vt = velocity - vn;
+					massPoint.velocity = vt + vn * 0.9f;
+				}
+			}
+		}
+	}
+}
+```
+
+```c++
+bool isIntersection(const Line& line, const OBB& obb)
+{
+	Ray ray;
+	ray.origin = line.p1;
+	ray.direction = glm::normalize(line.p2 - line.p1);
+
+	RaycastInfo raycastInfo;
+	raycast(ray, obb, &raycastInfo);
+
+	float squareLength = calculateSquareLength(line);
+
+	return (raycastInfo.isHit && raycastInfo.rayTime * raycastInfo.rayTime < squareLength);
+}
+```
+
+```c++
+void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
+{
+	resetRaycastInfo(outInfo);
+
+	glm::vec3 halfSide = obb.size;
+	glm::mat3 rotation = glm::mat3(obb.orientation);
+	glm::vec3 basis[3] = {
+		glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
+		glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
+		glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+	};
+
+	glm::vec3 rayToOBB = obb.position - ray.origin;
+	glm::vec3 f = glm::vec3(glm::dot(basis[0], ray.direction), glm::dot(basis[1], ray.direction), glm::dot(basis[2], ray.direction));
+	glm::vec3 e = glm::vec3(glm::dot(basis[0], rayToOBB), glm::dot(basis[1], rayToOBB), glm::dot(basis[2], rayToOBB));
+
+	float t[6] = { 0, 0, 0, 0, 0, 0 };
+	for (int32 i = 0; i < 3; ++i)
+	{
+		if (glm::abs(f[i]) < EPSILON)
+		{
+			if (-e[i] - halfSide[i] > 0.0f || -e[i] + halfSide[i] < 0.0f)
+				return;
+
+			f[i] = 0.00001f;
+		}
+
+		t[i * 2] = (e[i] + halfSide[i]) / f[i];
+		t[i * 2 + 1] = (e[i] - halfSide[i]) / f[i];
+	}
+
+	float tmin = fmaxf(fmaxf(fminf(t[0], t[1]), fminf(t[2], t[3])), fminf(t[4], t[5]));
+	float tmax = fminf(fminf(fmaxf(t[0], t[1]), fmaxf(t[2], t[3])), fmaxf(t[4], t[5]));
+
+	if (tmax < 0.0f)
+		return;
+
+	if (tmin > tmax)
+		return;
+
+	float tresult = tmin;
+	if (tmin < 0.0f)
+		tresult = tmax;
+
+	if (outInfo != nullptr)
+	{
+		outInfo->isHit = true;
+		outInfo->rayTime = tresult;
+		outInfo->hitPoint = ray.origin + tresult * ray.direction;
+
+		glm::vec3 normals[6] = {
+			basis[0], -basis[0], basis[1], -basis[1], basis[2], -basis[2]
+		};
+
+		for (int32 i = 0; i < 6; ++i)
+		{
+			if (glm::abs(tresult - t[i]) < EPSILON)
+				outInfo->normal = glm::normalize(normals[i]);
+		}
+	}
+}
+```
 
 #### Game-Loop
 update -> physics -> render
