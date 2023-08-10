@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "Geometry3D.h"
+#include "Shader.h"
 
 #define RIGIDBODY_TYPE_BASE		0
 #define RIGIDBODY_TYPE_PARTICLE 1
@@ -17,15 +18,12 @@ namespace pa
 		virtual ~Rigidbody() { }
 
 		virtual void update(float deltaTime) { }
-		virtual void render() { }
+		virtual void render(Shader& shader) { }
 		virtual void applyExternalForces() { }
 		virtual void solveConstraints(std::vector<OBB>& constraints) { }
 
 		bool hasVolume(void) { return (_bodyType == RIGIDBODY_TYPE_SPHERE || _bodyType == RIGIDBODY_TYPE_CUBE); }
 
 		int32 _bodyType = RIGIDBODY_TYPE_BASE;
-
-	protected :
-		glm::vec3 _gravity = glm::vec3(0.0f, -9.81f, 0.0f);
 	};
 }

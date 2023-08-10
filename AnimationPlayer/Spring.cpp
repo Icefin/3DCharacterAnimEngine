@@ -14,7 +14,7 @@ namespace pa
 		_damping = damping;
 	}
 
-	void Spring::applyForce(float deltaTime)
+	void Spring::applySpringForce(float deltaTime)
 	{
 		glm::vec3 relativePosition = _left->getPosition() - _right->getPosition();
 		glm::vec3 relativeVelocity = _left->getVelocity() - _right->getVelocity();

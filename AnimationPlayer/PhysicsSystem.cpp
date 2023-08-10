@@ -77,10 +77,6 @@ namespace pa
 			//Linear Projection
 		}
 
-		int32 numSprings = springs.size();
-		for (int32 i = 0; i < numSprings; ++i)
-			springs[i].applyForce(deltaTime);
-
 		for (int32 i = 0; i < numBodies; ++i)
 			rigidbodies[i]->solveConstraints(constraints);
 	}
@@ -120,15 +116,5 @@ namespace pa
 	void PhysicsSystem::clearConstraints(void)
 	{
 		constraints.clear();
-	}
-
-	void PhysicsSystem::addSpring(const Spring& spring)
-	{
-		springs.push_back(spring);
-	}
-
-	void PhysicsSystem::clearSpring(void)
-	{
-		springs.clear();
 	}
 }

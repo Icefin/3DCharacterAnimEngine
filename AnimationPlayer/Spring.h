@@ -9,16 +9,13 @@ namespace pa
 		Spring(float stiffness, float damping, float restLength) :
 			_stiffness(stiffness), _damping(damping), _restLength(restLength) { }
 
-		Particle* getLeftParticle(void) { return _left; }
-		Particle* getRightParticle(void) { return _right; }
-
 		void	setParticles(Particle* left, Particle* right);
 		void	setConstants(float stiffness, float damping);
-		void	applyForce(float deltaTime);
+		void	applySpringForce(float deltaTime);
 
 	private :
-		Particle* _left;
-		Particle* _right;
+		Particle* _left = nullptr;
+		Particle* _right = nullptr;
 
 		float _stiffness;
 		float _damping;

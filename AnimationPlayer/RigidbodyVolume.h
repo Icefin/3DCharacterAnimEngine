@@ -11,7 +11,7 @@ namespace pa
 		~RigidbodyVolume(void);
 
 		void update(float deltaTime) override;
-		void render() override;
+		void render(Shader& shader) override;
 		void applyExternalForces() override;
 		void solveConstraints(std::vector<OBB>& constraints) override;
 

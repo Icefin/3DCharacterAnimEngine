@@ -4,14 +4,9 @@
 
 namespace pa
 {
-	class Shader;
-}
-
-namespace pa
-{
 	class PhysicsSystem
 	{
-	public :
+	public:
 		PhysicsSystem(void);
 
 		void update(float deltaTime);
@@ -25,7 +20,7 @@ namespace pa
 		void clearSoftbodies(void);
 		void clearConstraints(void);
 
-	private :
+	private:
 		std::vector<Rigidbody*>			rigidbodies;
 		std::vector<Softbody*>			softbodies;;
 		std::vector<OBB>				constraints;
@@ -37,12 +32,5 @@ namespace pa
 		float linearProjectionPercent = 0.45f;
 		float penetrationSlack = 0.01f;
 		int32 iterationCount = 6;
-
-	public :
-		void addSpring(const Spring& spring);
-		void clearSpring(void);
-
-	private :
-		std::vector<Spring> springs;
 	};
 }

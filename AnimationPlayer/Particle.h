@@ -10,11 +10,9 @@ namespace pa
 		Particle();
 
 		void update(float deltaTime) override;
-		void render() override;
+		void render(Shader& shader) override;
 		void applyExternalForces() override;
 		void solveConstraints(std::vector<OBB>& constraints) override;
-
-		void applyLinearImpulse(glm::vec3 impulse);
 
 		void setPosition(glm::vec3& position) { _position = position; }
 		void setMass(float mass) { _mass = mass; }

@@ -10,6 +10,10 @@
 
 namespace pa
 {
+	constexpr glm::vec3 gravity = glm::vec3(0.0f, -9.81f, 0.0f);
+
+	typedef glm::vec3 Point;
+
 	struct Line;
 	struct Interval;
 	struct Triangle;
@@ -18,17 +22,10 @@ namespace pa
 	struct Sphere;
 	struct AABB;
 	struct OBB;
-	struct Cylinder;
-	struct Mesh;
-
-	//struct Frustum;
-
-	class Model;
 }
 
 namespace pa
 {
-	typedef glm::vec3 Point;
 
 	bool isPointInside(const Point& point, const Line& line);
 	bool isPointInside(const Point& point, const Triangle& triangle);
@@ -37,7 +34,6 @@ namespace pa
 	bool isPointInside(const Point& point, const Sphere& sphere);
 	bool isPointInside(const Point& point, const AABB& aabb);
 	bool isPointInside(const Point& point, const OBB& obb);
-	//bool isPointInside(const Point& point, const Cylinder& cylinder);
 
 	Point findClosestPoint(const Point& point, const Line& line);
 	Point findClosestPoint(const Point& point, const Triangle& triangle);
@@ -46,7 +42,6 @@ namespace pa
 	Point findClosestPoint(const Point& point, const Sphere& sphere);
 	Point findClosestPoint(const Point& point, const AABB& aabb);
 	Point findClosestPoint(const Point& point, const OBB& obb);
-	//Point findClosestPoint(const Point& point, const Cylinder& cylinder);
 }
 
 namespace pa
@@ -67,8 +62,9 @@ namespace pa
 	bool isIntersection(const Line& line, const Sphere& sphere);
 	bool isIntersection(const Line& line, const AABB& aabb);
 	bool isIntersection(const Line& line, const OBB& obb);
-	bool isIntersection(const Line& line, const Mesh& mesh);
-	bool isIntersection(const Line& line, const Model& model);
+
+	//bool isIntersection(const Line& line, const Mesh& mesh);
+	//bool isIntersection(const Line& line, const Model& model);
 }
 
 namespace pa
@@ -107,7 +103,9 @@ namespace pa
 	bool isTriangleSphereCollision(const Triangle& triangle, const Sphere& sphere);
 	bool isTriangleAABBCollision(const Triangle& triangle, const AABB& aabb);
 	bool isTriangleOBBCollision(const Triangle& triangle, const OBB& obb);
-	bool isTriangleModelCollision(const Triangle& triangle, const Model& model);
+
+	//bool isTriangleMeshCollision(const Triangle& triangle, const Mesh& mesh);
+	//bool isTriangleModelCollision(const Triangle& triangle, const Model& model);
 }
 
 namespace pa
@@ -129,7 +127,9 @@ namespace pa
 	bool isPlaneSphereCollision(const Plane& plane, const Sphere& sphere);
 	bool isPlaneAABBCollision(const Plane& plane, const AABB& aabb);
 	bool isPlaneOBBCollision(const Plane& plane, const OBB& obb);
-	bool isPlaneModelCollision(const Plane& plane, const Model& model);
+
+	//bool isPlaneMeshCollision(const Plane& plane, const Mesh& mesh);
+	//bool isPlaneModelCollision(const Plane& plane, const Model& model);
 }
 
 namespace pa
@@ -160,8 +160,9 @@ namespace pa
 	void raycast(const Ray& ray, const Sphere& sphere, _Out_ RaycastInfo* outInfo);
 	void raycast(const Ray& ray, const AABB& aabb, _Out_ RaycastInfo* outInfo);
 	void raycast(const Ray& ray, const OBB& obb, _Out_ RaycastInfo* outInfo);
-	void raycast(const Ray& ray, const Mesh& mesh, _Out_ RaycastInfo* outInfo);
-	void raycast(const Ray& ray, const Model& model, _Out_ RaycastInfo* outInfo);
+
+	//void raycast(const Ray& ray, const Mesh& mesh, _Out_ RaycastInfo* outInfo);
+	//void raycast(const Ray& ray, const Model& model, _Out_ RaycastInfo* outInfo);
 }
 
 namespace pa
@@ -180,7 +181,9 @@ namespace pa
 	bool isSphereSphereCollision(const Sphere& s1, const Sphere& s2);
 	bool isSphereAABBCollision(const Sphere& sphere, const AABB& aabb);
 	bool isSphereOBBCollision(const Sphere& sphere, const OBB& obb);
-	bool isSphereModelCollision(const Sphere& sphere, const Model& model);
+
+	//bool isSphereMeshCollision(const Sphere& sphere, const Mesh& mesh);
+	//bool isSphereModelCollision(const Sphere& sphere, const Model& model);
 }
 
 namespace pa
@@ -203,7 +206,9 @@ namespace pa
 	bool isAABBSphereCollision(const AABB& aabb, const Sphere& sphere);
 	bool isAABBAABBCollision(const AABB& a1, const AABB& a2);
 	bool isAABBOBBCollision(const AABB& aabb, const OBB& obb);
-	bool isAABBModelCollision(const AABB& aabb, const Model& model);
+
+	//bool isAABBMeshCollision(const AABB& aabb, const Mesh& mesh);
+	//bool isAABBModelCollision(const AABB& aabb, const Model& model);
 }
 
 namespace pa
@@ -224,22 +229,12 @@ namespace pa
 	bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere);
 	bool isOBBAABBCollision(const OBB& obb, const AABB& aabb);
 	bool isOBBOBBCollision(const OBB& o1, const OBB& o2);
-	bool isOBBModelCollision(const OBB& obb, const Model& model);
+
+	//bool isOBBMeshCollision(const OBB& obb, const Mesh& mesh);
+	//bool isOBBModelCollision(const OBB& obb, const Model& model);
 }
 
-//namespace pa
-//{
-//	struct Cylinder
-//	{
-//		Cylinder(void) : position(0.0f, 0.0f, 0.0f), direction(0.0f, 0.0f, 1.0f), radius(1.0f) { }
-//		Cylinder(const glm::vec3& p, const glm::vec3& d, float r) : position(p), direction(d), radius(r) { }
-//
-//		glm::vec3	position;
-//		glm::vec3	direction;
-//		float		radius;
-//	};
-//}
-
+/*
 namespace pa
 {
 	struct Mesh
@@ -259,33 +254,7 @@ namespace pa
 	bool isMeshSphereCollision(const Mesh& mesh, const Sphere& sphere);
 	bool isMeshAABBCollision(const Mesh& mesh, const AABB& aabb);
 	bool isMeshOBBCollision(const Mesh& mesh, const OBB& obb);
-	//bool isMeshCylinderCollision(const Mesh& mesh, const Cylinder& cylinder);
 }
-
-//namespace pa
-//{
-//	struct Frustum
-//	{
-//		Frustum() { }
-//
-//		union
-//		{
-//			struct
-//			{
-//				Plane top;
-//				Plane bottom;
-//				Plane left;
-//				Plane right;
-//				Plane near;
-//				Plane far;
-//			};
-//			Plane planes[6];
-//		};
-//	};
-//
-//	Point findIntersectionPoint(const Plane& p1, const Plane& p2, const Plane& p3);
-//	void getCorners(const Frustum& frustum, glm::vec3* outCorners);
-//}
 
 namespace pa
 {
@@ -311,6 +280,7 @@ namespace pa
 		void setMesh(Mesh* mesh);
 	};
 }
+*/
 
 namespace pa
 {

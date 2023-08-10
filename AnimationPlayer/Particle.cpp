@@ -24,14 +24,14 @@ namespace pa
 		_position = _position + _velocity * deltaTime;
 	}
 
-	void Particle::render()
+	void Particle::render(Shader& shader)
 	{
-		__noop;
+		//TODO
 	}
 
 	void Particle::applyExternalForces()
 	{
-		_netForce += _mass * _gravity;
+		_netForce += _mass * gravity;
 	}
 
 	void Particle::solveConstraints(std::vector<OBB>& constraints)
@@ -59,11 +59,6 @@ namespace pa
 				}
 			}
 		}
-	}
-
-	void Particle::applyLinearImpulse(glm::vec3 impulse)
-	{
-		_velocity += getInverseMass() * impulse;
 	}
 	
 	float Particle::getInverseMass(void)

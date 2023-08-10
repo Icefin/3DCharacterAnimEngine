@@ -1,6 +1,6 @@
 #include "Geometry3D.h"
 
-#define EPSILON 0.001f
+#define EPSILON 0.0001f
 
 namespace pa
 {
@@ -242,6 +242,8 @@ namespace pa
 
 		return (raycastInfo.isHit && raycastInfo.rayTime * raycastInfo.rayTime < squareLength);
 	}
+
+	/*
 	bool isIntersection(const Line& line, const Mesh& mesh)
 	{
 		__noop;
@@ -260,6 +262,7 @@ namespace pa
 			return isIntersection(localLine, *(model.getMesh()));
 		return false;
 	}
+	*/
 #pragma endregion
 
 
@@ -484,6 +487,8 @@ namespace pa
 		}
 		return true;
 	}
+
+	/*
 	bool isTriangleModelCollision(const Triangle& triangle, const Model& model)
 	{
 		glm::mat4 worldMatrix = model.getWorldMatrix();
@@ -498,6 +503,7 @@ namespace pa
 			return isMeshTriangleCollision(*(model.getMesh()), localTriangle);
 		return false;
 	}
+	*/
 #pragma endregion
 
 
@@ -547,6 +553,7 @@ namespace pa
 		return isOBBPlaneCollision(obb, plane);
 	}
 
+	/*
 	bool isPlaneModelCollision(const Plane& plane, const Model& model)
 	{
 		glm::mat4 worldMatrix = model.getWorldMatrix();
@@ -561,6 +568,7 @@ namespace pa
 			return isMeshPlaneCollision(*(model.getMesh()), localPlane);
 		return false;
 	}
+	*/
 #pragma endregion
 
 
@@ -784,6 +792,8 @@ namespace pa
 			}
 		}
 	}
+
+	/*
 	//Recheck Here
 	void raycast(const Ray& ray, const Mesh& mesh, RaycastInfo* outInfo)
 	{
@@ -803,6 +813,7 @@ namespace pa
 
 		__noop;
 	}
+	*/
 #pragma endregion
 
 
@@ -844,6 +855,8 @@ namespace pa
 		float squareLength = calculateSquareLength(Line(sphere.position, closestPoint));
 		return (squareLength < sphere.radius * sphere.radius);
 	}
+
+	/*
 	bool isSphereModelCollision(const Sphere& sphere, const Model& model)
 	{
 		glm::mat4 worldMatrix = model.getWorldMatrix();
@@ -857,6 +870,7 @@ namespace pa
 			return isMeshSphereCollision(*(model.getMesh()), sphere);
 		return false;
 	}
+	*/
 #pragma endregion
 
 
@@ -903,6 +917,11 @@ namespace pa
 		return (fabsf(dist) <= projection);
 	}
 
+	bool isAABBSphereCollision(const AABB& aabb, const Sphere& sphere)
+	{
+		return isSphereAABBCollision(sphere, aabb);
+	}
+
 	bool isAABBAABBCollision(const AABB& a1, const AABB& a2)
 	{
 		Point a1Min = getMinFromAABB(a1);
@@ -914,11 +933,6 @@ namespace pa
 		return (a1Min.x <= a2Max.x && a1Max.x >= a2Min.x) &&
 			(a1Min.y <= a2Max.y && a1Max.y >= a2Min.y) &&
 			(a1Min.z <= a2Max.z && a1Max.z >= a2Min.z);
-	}
-
-	bool isAABBSphereCollision(const AABB& aabb, const Sphere& sphere)
-	{
-		return isSphereAABBCollision(sphere, aabb);
 	}
 
 	bool isAABBOBBCollision(const AABB& aabb, const OBB& obb)
@@ -948,7 +962,7 @@ namespace pa
 		}
 		return true;
 	}
-
+	/*
 	bool isAABBModelCollision(const AABB& aabb, const Model& model)
 	{
 		glm::mat4 worldMatrix = model.getWorldMatrix();
@@ -963,6 +977,7 @@ namespace pa
 			return isMeshOBBCollision(*(model.getMesh()), localOBB);
 		return false;
 	}
+	*/
 #pragma endregion
 
 
@@ -990,6 +1005,16 @@ namespace pa
 		float dist = dot - plane.distance;
 
 		return (fabsf(dist) <= projection);
+	}
+
+	bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere)
+	{
+		return isSphereOBBCollision(sphere, obb);
+	}
+
+	bool isOBBAABBCollision(const OBB& obb, const AABB& aabb)
+	{
+		return isAABBOBBCollision(aabb, obb);
 	}
 
 	bool isOBBOBBCollision(const OBB& o1, const OBB& o2)
@@ -1021,16 +1046,7 @@ namespace pa
 		return true;
 	}
 
-	bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere)
-	{
-		return isSphereOBBCollision(sphere, obb);
-	}
-
-	bool isOBBAABBCollision(const OBB& obb, const AABB& aabb)
-	{
-		return isAABBOBBCollision(aabb, obb);
-	}
-
+	/*
 	bool isOBBModelCollision(const OBB& obb, const Model& model)
 	{
 		glm::mat4 worldMatrix = model.getWorldMatrix();
@@ -1046,16 +1062,11 @@ namespace pa
 			return isMeshOBBCollision(*(model.getMesh()), localOBB);
 		return false;
 	}
+	*/
 #pragma endregion
 
 
-
-#pragma region Cylinder
-
-#pragma endregion
-
-
-
+/*
 #pragma region Mesh
 	bool isMeshTriangleCollision(const Mesh& mesh, const Triangle& triangle)
 	{
@@ -1187,7 +1198,7 @@ namespace pa
 		return localMatrix;
 	}
 #pragma endregion
-
+*/
 
 
 #pragma region Collision
