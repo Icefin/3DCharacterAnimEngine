@@ -86,18 +86,17 @@ int main()
 {
     initializeGLContext();
 
-    Shader shader("./shaders/vertexShader.vert", "./shaders/fragmentShader.frag");
-
     Cube* ground = new Cube(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     loadCharacter();
 
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
     std::vector<GameObject*> gameObjectList;
+
     gameObjectList.push_back(ground);
     gameObjectList.push_back(character);
 
-    Shader phong("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
+    Shader shader("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
     PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 30, 30, 30, 30);
     PlaneCloth* blueCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 29.0f), glm::vec3(0.0f, 0.0f, 1.0f), 30, 30, 30, 30);
     DirectionalLight phongLight{
@@ -114,6 +113,12 @@ int main()
     constraints.push_back(pa::OBB(glm::vec3(7.0f, -13.0f, 35.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::quat(0.0f, -0.157f, -0.2098f, 0.965f)));
     constraints.push_back(pa::OBB(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f)));
 
+    shader.use();
+    shader.setUniformVec3("phongLight.direction", phongLight.direction);
+    shader.setUniformVec3("phongLight.ambient", phongLight.ambient);
+    shader.setUniformVec3("phongLight.diffuse", phongLight.diffuse);
+    shader.setUniformVec3("phongLight.specular", phongLight.specular);
+    
     float lastFrame = 0.0f;
     while (glfwWindowShouldClose(window) == false)
     {
@@ -124,32 +129,23 @@ int main()
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        shader.use();
         //Input Process
         glfwPollEvents();
         processInput(window, deltaTime * frameRate);
 
+        camera->update(shader);
+
         //Object Update
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->update(deltaTime * frameRate);
-
-        camera->update(shader);
+        redCloth->update(1.0f / 60.0f, constraints);
+        blueCloth->update(1.0f / 60.0f, constraints);
 
         //Object Render
         for (int32 idx = 0; idx < gameObjectList.size(); ++idx)
             gameObjectList[idx]->render(shader);
-
-        phong.use();
-        phong.setUniformVec3("phongLight.direction", phongLight.direction);
-        phong.setUniformVec3("phongLight.ambient", phongLight.ambient);
-        phong.setUniformVec3("phongLight.diffuse", phongLight.diffuse);
-        phong.setUniformVec3("phongLight.specular", phongLight.specular);
-        camera->phongUpdate(phong);
-        redCloth->update(1.0f / 60.0f, constraints);
-        blueCloth->update(1.0f / 60.0f, constraints);
-
-        redCloth->render(phong);
-        blueCloth->render(phong);
+        redCloth->render(shader);
+        blueCloth->render(shader);
 
         glfwSwapBuffers(window);
         printf("DeltaTime : %f\n", deltaTime);

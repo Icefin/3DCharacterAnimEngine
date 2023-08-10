@@ -62,7 +62,7 @@ void Character::render(Shader& shader)
     renderSkeleton(shader);
 
     glBindVertexArray(axisArrayObject);
-    shader.setUniformMat4("model", _matrixPalette[0]);
+    shader.setUniformMat4("worldMat", _matrixPalette[0]);
     glLineWidth(5.0f);
     glDrawArrays(GL_LINES, 0, 36);
 }
@@ -114,19 +114,12 @@ void Character::renderSkeleton(Shader& shader)
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
-        shader.setUniformMat4("model", glm::mat4(1.0f));
+        shader.setUniformMat4("worldMat", glm::mat4(1.0f));
         glLineWidth(8.0f);
         glDrawArrays(GL_LINES, 0, 6);
         
         glDeleteVertexArrays(1, &boneArrayObject);
         glDeleteBuffers(1, &boneBufferObject);
-
-#ifdef DEBUG_JOINT
-        glBindVertexArray(axisArrayObject);
-        shader.setUniformMat4("model", _matrixPalette[index]);
-        glLineWidth(2.0f);
-        glDrawArrays(GL_LINES, 0, 12);
-#endif // DEBUG
     }
 }
 

@@ -34,17 +34,6 @@ public:
     {
         calculateCameraPosition();
 
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(_zoom), (float)_screenWidth / (float)_screenHeight, 0.1f, 1000.0f);
-        shader.setUniformMat4("projection", projectionMatrix);
-
-        glm::mat4 viewMatrix = glm::lookAt(_cameraPosition + *_targetPosition, *_targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
-        shader.setUniformMat4("view", viewMatrix);
-    }
-
-    void phongUpdate(Shader& shader)
-    {
-        calculateCameraPosition();
-
         glm::mat4 projMat = glm::perspective(glm::radians(_zoom), (float)_screenWidth / (float)_screenHeight, 0.1f, 1000.0f);
         shader.setUniformMat4("projMat", projMat);
 

@@ -73,7 +73,7 @@ void Cube::render(Shader& shader)
     glBindVertexArray(_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
 
-    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _position);
-    shader.setUniformMat4("model", modelMatrix);
+    glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), _position);
+    shader.setUniformMat4("worldMat", worldMat);
     glDrawElements(GL_LINES, 36, GL_UNSIGNED_INT, NULL);
 }
