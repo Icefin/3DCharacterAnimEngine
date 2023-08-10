@@ -49,7 +49,6 @@ void loadCharacter()
                                             "./test/jump.amc",
                                             "./test/attack.amc"
                                         };
-    //skin
   
     character = characterLoader.loadCharacter(skeleton, motions);
 }
@@ -135,10 +134,10 @@ int main()
 
         //Object Render
         character->render(shader);
-        for (int32 idx = 0; idx < constraints.size(); ++idx)
-            pa::renderOBB(constraints[idx], shader);
         redCloth->render(shader);
         blueCloth->render(shader);
+        for (int32 idx = 0; idx < constraints.size(); ++idx)
+            pa::renderOBB(constraints[idx], shader);
 
         glfwSwapBuffers(window);
         printf("DeltaTime : %f\n", deltaTime);
