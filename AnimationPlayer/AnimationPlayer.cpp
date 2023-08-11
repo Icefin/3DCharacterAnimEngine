@@ -99,8 +99,8 @@ int main()
     };
 
     std::vector<pa::OBB> constraints;
-    constraints.push_back(pa::OBB(glm::vec3(5.0f, -13.0f, 5.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.75f, -0.5f, -0.419f, -0.054f)));
-    constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
+    //constraints.push_back(pa::OBB(glm::vec3(5.0f, -13.0f, 5.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.75f, -0.5f, -0.419f, -0.054f)));
+    //constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
     constraints.push_back(pa::OBB(glm::vec3(-8.0f, -9.0f, 10.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::quat(0.34f, 0.0f, 0.146f, 0.93f)));
     constraints.push_back(pa::OBB(glm::vec3(7.0f, -13.0f, 35.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::quat(0.0f, -0.157f, -0.2098f, 0.965f)));
     constraints.push_back(pa::OBB(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f)));

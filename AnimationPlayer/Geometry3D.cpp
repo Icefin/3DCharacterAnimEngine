@@ -755,7 +755,7 @@ namespace pa
 		{
 			if (glm::abs(f[i]) < EPSILON)
 			{
-				if (-e[i] - halfSide[i] > 0.0f || -e[i] + halfSide[i] < 0.0f)
+				if (e[i] >= halfSide[i] || e[i] <= -halfSide[i])
 					return;
 
 				f[i] = 0.00001f;
@@ -768,13 +768,16 @@ namespace pa
 		float tmin = fmaxf(fmaxf(fminf(t[0], t[1]), fminf(t[2], t[3])), fminf(t[4], t[5]));
 		float tmax = fminf(fminf(fmaxf(t[0], t[1]), fmaxf(t[2], t[3])), fmaxf(t[4], t[5]));
 
+		//OBB is behind the ray
 		if (tmax < 0.0f)
 			return;
 
+		//Do not intersect
 		if (tmin > tmax)
 			return;
 
 		float tresult = tmin;
+		//Ray start inside of OBB
 		if (tmin < 0.0f)
 			tresult = tmax;
 
@@ -790,7 +793,6 @@ namespace pa
 
 			for (int32 i = 0; i < 6; ++i)
 			{
-				//recheck here
 				if (tresult == t[i])
 				{
 					outInfo->normal = glm::normalize(normals[i]);
