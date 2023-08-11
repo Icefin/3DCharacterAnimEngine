@@ -40,6 +40,9 @@ private:
     std::vector<glm::mat4>      _matrixPalette;
     AnimationState              _currentState = AnimationState::IDLE;
 
+private:
+    
+
 #ifdef DEBUG
     float       axis[36] = {
         0.0f, -17.0f, 10.0f, 1.0f, 0.0f, 0.0f,
