@@ -441,7 +441,8 @@ private:
 
 #### Lighting System
 Phong Lighting Model + (Shadowing, Ambient Occlusion)  
-![phong](https://github.com/Icefin/AnimationPlayer/assets/76864202/bdefd196-4a8e-4dbb-8bd7-2dc179a7f335)
+![temp](https://github.com/Icefin/AnimationPlayer/assets/76864202/cfb009d6-85f5-4c1b-8ee1-77c192c3f1f8)
+
 
 errors...(1)  
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
@@ -594,9 +595,6 @@ void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 }
 ```
 
-#### Game-Loop
-update -> physics -> render
-
 #### Result(Temp) :
 First step with Fixed Volume + Explicit Euler Method
 
@@ -611,7 +609,22 @@ Third try with Collision Detection + Verlet Integration
 https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d4-e79fb19f375a
 
 
+#### Optimization
+![res](https://github.com/Icefin/AnimationPlayer/assets/76864202/cba4d17a-b822-4561-ae40-b9d96c681ab5)
 
+Constraint - Vertex Number Relation
+|     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
+|:---:|:-------:|:-------:|:-------:|:-------:|
+|**1**| 0.016ms | 0.016ms | 0.027ms | 0.047ms |
+|**2**| 0.016ms | 0.016ms | 0.034ms | 0.057ms |
+|**3**| 0.016ms | 0.018ms | 0.038ms | 0.067ms |
+|**4**| 0.016ms | 0.020ms | 0.045ms | 0.077ms |
+|**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
+
+---
+### Entity-Componenet-System Architecture
+#### Requirements :
+Blah Blah...  
 
 
 ---
