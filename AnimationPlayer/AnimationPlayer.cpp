@@ -89,8 +89,8 @@ int main()
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
     Shader shader("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-    PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 20, 20);
-    PlaneCloth* blueCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 29.0f), glm::vec3(0.0f, 0.0f, 1.0f), 20, 20, 20, 20);
+    PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 30, 30);
+    PlaneCloth* blueCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 29.0f), glm::vec3(0.0f, 0.0f, 1.0f), 20, 20, 30, 30);
     DirectionalLight phongLight{
         glm::vec3(0.0f,1.0f,0.0f),
         glm::vec3(0.1f,0.1f,0.1f),

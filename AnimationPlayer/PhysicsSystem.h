@@ -1,6 +1,6 @@
 #pragma once
 #include "RigidbodyVolume.h"
-#include "Cloth.h"
+#include "Softbody.h"
 
 namespace pa
 {

@@ -253,18 +253,17 @@ void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
 {
 	for (MassPoint& massPoint : _massPointList)
 	{
-		int32 n = constraints.size();
-		for (int32 i = 0; i < n; ++i)
+		for (pa::OBB& constraint : constraints)
 		{
 			pa::Line travelPath(massPoint.prevPosition, massPoint.position);
 
-			if (pa::isIntersection(travelPath, constraints[i]) == true)
+			if (pa::isIntersection(travelPath, constraint) == true)
 			{
 				glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
 				pa::Ray ray(massPoint.prevPosition, velocity);
 
 				pa::RaycastInfo raycastInfo;
-				pa::raycast(ray, constraints[i], &raycastInfo);
+				pa::raycast(ray, constraint, &raycastInfo);
 				if (raycastInfo.isHit == true)
 				{
 					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
@@ -281,7 +280,8 @@ void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
 void PlaneCloth::updateMassPointNormal(void)
 {
 	std::vector<std::vector<glm::vec3>> normals(_massPointList.size());
-	for (int32 i = 0; i < _indices.size(); i += 6) {
+	int32 numIndices = _indices.size();
+	for (int32 i = 0; i < numIndices; i += 6) {
 
 		glm::vec3 v1 = _massPointList[_indices[i + 1]].position - _massPointList[_indices[i]].position;
 		glm::vec3 v2 = _massPointList[_indices[i + 2]].position - _massPointList[_indices[i]].position;

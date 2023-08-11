@@ -726,8 +726,11 @@ namespace pa
 
 			for (int32 i = 0; i < 6; ++i)
 			{
-				if (glm::abs(tresult - t[i]) < EPSILON)
+				if (tresult == t[i])
+				{
 					outInfo->normal = normals[i];
+					return;
+				}
 			}
 		}
 	}
@@ -747,7 +750,7 @@ namespace pa
 		glm::vec3 f = glm::vec3(glm::dot(basis[0], ray.direction), glm::dot(basis[1], ray.direction), glm::dot(basis[2], ray.direction));
 		glm::vec3 e = glm::vec3(glm::dot(basis[0], rayToOBB), glm::dot(basis[1], rayToOBB), glm::dot(basis[2], rayToOBB));
 
-		float t[6] = { 0, 0, 0, 0, 0, 0 };
+		float t[6] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 		for (int32 i = 0; i < 3; ++i)
 		{
 			if (glm::abs(f[i]) < EPSILON)
@@ -787,8 +790,12 @@ namespace pa
 
 			for (int32 i = 0; i < 6; ++i)
 			{
-				if (glm::abs(tresult - t[i]) < EPSILON)
+				//recheck here
+				if (tresult == t[i])
+				{
 					outInfo->normal = glm::normalize(normals[i]);
+					return;
+				}
 			}
 		}
 	}
