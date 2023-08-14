@@ -21,6 +21,12 @@ struct MassPoint
 //	Flexion
 //};
 
+struct CollisionConstraint
+{
+	glm::vec3	targetPosition;
+	MassPoint*	point;
+};
+
 struct DistanctConstraint
 {
 	float		restLength;
@@ -51,7 +57,9 @@ private:
 	//void applyExternalForces(void);
 	//void updateMassPointState(float deltaTime);
 	//void solveConstraint(std::vector<pa::OBB>& constraints);
+	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);
 	void solveDistantConstraint(DistanctConstraint& constraint, float deltaTime);
+	void solveCollisionConstraint(CollisionConstraint& constraint, float deltaTime);
 	void updateMassPointNormal(void);
 
 private:

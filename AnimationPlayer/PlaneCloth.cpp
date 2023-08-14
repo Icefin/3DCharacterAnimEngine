@@ -187,15 +187,18 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 	}
 
 	//Collision Detection && Generate Collision Constraint
-	//std::vector<pa::OBB> collisionConstraints;
+	//std::vector<CollisionConstraint> collisionConstraints;
 	//for (MassPoint& massPoint : _massPointList)
-	//	generateCollisionConstraint(massPoint, collisionConstraints);
+	//	generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
 
 	//Solve Constraints
 	for (int32 cnt = 0; cnt < _iterationCount; ++cnt)
 	{
 		for (DistanctConstraint& constraint : _internalConstraints)
 			solveDistantConstraint(constraint, deltaTime);
+
+		//for (CollisionConstraint& constraint : collisionConstraints)
+		//	solveCollisionConstraint(constraint, deltaTime);
 	}
 
 	for (MassPoint& massPoint : _massPointList)
@@ -221,9 +224,22 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 	updateMassPointNormal();
 }
 
-void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> constraints)
+void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints)
 {
+	for (pa::OBB& obb : colliders)
+	{
+		if (pa::isPointInside(massPoint.position, obb) == true)
+		{
+			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
+			pa::RaycastInfo raycastInfo;
+			pa::raycast(ray, obb, &raycastInfo);
 
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
+			
+			collisionConstraints->push_back({ targetPosition, &massPoint });
+			return;
+		}
+	}
 }
 
 void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint, float deltaTime)
@@ -245,6 +261,11 @@ void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint, float de
 
 	left->position += corr * left->invMass;
 	right->position -= corr * right->invMass;
+}
+
+void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint, float deltaTime)
+{
+	constraint.point->position = constraint.targetPosition;
 }
 
 void PlaneCloth::render(Shader& shader)

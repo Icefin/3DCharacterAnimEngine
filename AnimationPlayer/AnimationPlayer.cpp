@@ -163,8 +163,8 @@ int main()
 
         camera->update(shader);
 
-       // for (int32 idx = 0; idx < constraints.size() - 1; ++idx)
-       //     constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
+        //for (int32 idx = 0; idx < constraints.size() - 1; ++idx)
+        //    constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
 
         //Object Update
         character->update(deltaTime * frameRate);
