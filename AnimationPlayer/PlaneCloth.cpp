@@ -233,7 +233,8 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 {
 	for (MassPoint& massPoint : _massPointList)
 	{
-
+		if (massPoint.mass == 0.0f)
+			continue;
 		//Explicit Euler-Method
 		/*glm::vec3 newVelocity = massPoint.velocity * 0.95f + deltaTime * massPoint.netForce / massPoint.mass;
 		glm::vec3 newPosition = massPoint.position + deltaTime * massPoint.velocity;
@@ -242,15 +243,12 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 		massPoint.position = newPosition;*/
 
 		//Verlet Method
-		if (massPoint.mass != 0.0f)
-		{ 
-			glm::vec3 acceleration = massPoint.netForce / massPoint.mass;
-			glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
+		glm::vec3 acceleration = massPoint.netForce / massPoint.mass;
+		glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
 
-			massPoint.prevPosition = massPoint.position;
-			massPoint.position = massPoint.position + velocity * 0.95f + acceleration * deltaTime * deltaTime;
-			massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
-		}
+		massPoint.prevPosition = massPoint.position;
+		massPoint.position = massPoint.position + velocity * 0.95f + acceleration * deltaTime * deltaTime;
+		massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
 	}
 }
 
@@ -258,12 +256,14 @@ void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
 {
 	for (MassPoint& massPoint : _massPointList)
 	{
+		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 		for (pa::OBB& constraint : constraints)
 		{
 			pa::Line travelPath(massPoint.prevPosition, massPoint.position);
 
 			if (pa::isIntersection(travelPath, constraint) == true)
 			{
+				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 				glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
 				pa::Ray ray(massPoint.prevPosition, velocity);
 

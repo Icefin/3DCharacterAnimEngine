@@ -168,8 +168,8 @@ int main()
 
         //Object Update
         character->update(deltaTime * frameRate);
-        redCloth->update(1.0f / 60.0f, constraints);
-        blueCloth->update(1.0f / 60.0f, constraints);
+        redCloth->update(0.017f, constraints);
+        blueCloth->update(0.017f, constraints);
 
         //Object Render
         character->render(shader);
