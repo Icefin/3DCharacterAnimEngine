@@ -6,29 +6,35 @@
 
 struct MassPoint
 {
-	float		mass;
+	float		invMass;
 	glm::vec3	prevPosition;
 	glm::vec3	position;
 	glm::vec3	normal;
 	glm::vec3	velocity;
-	glm::vec3	netForce;
 	glm::vec3	color;
 };
 
-enum class SpringType :uint8
-{
-	Structural = 0,
-	Shear,
-	Flexion
-};
+//enum class SpringType :uint8
+//{
+//	Structural = 0,
+//	Shear,
+//	Flexion
+//};
 
-struct Spring
+struct Constraint
 {
-	SpringType	type;
 	float		restLength;
 	MassPoint*	left;
 	MassPoint*	right;
 };
+
+//struct Spring
+//{
+//	SpringType	type;
+//	float		restLength;
+//	MassPoint*	left;
+//	MassPoint*	right;
+//};
 
 class PlaneCloth : public GameObject
 {
@@ -41,10 +47,11 @@ public:
 	void render(Shader& shader) override;
 
 private:
-	void applyInternalForces(void);
-	void applyExternalForces(void);
-	void updateMassPointState(float deltaTime);
-	void solveConstraint(std::vector<pa::OBB>& constraints);
+	//void applyInternalForces(void);
+	//void applyExternalForces(void);
+	//void updateMassPointState(float deltaTime);
+	//void solveConstraint(std::vector<pa::OBB>& constraints);
+	void solveDistantConstraint(Constraint& constraint, float deltaTime);
 	void updateMassPointNormal(void);
 
 private:
@@ -54,7 +61,8 @@ private:
 
 	std::vector<MassPoint>	_massPointList;
 	std::vector<uint32>		_indices;
-	std::vector<Spring>		_springList;
+	std::vector<Constraint> _internalConstraints;
+	//std::vector<Spring>		_springList;
 
 private:
 	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
