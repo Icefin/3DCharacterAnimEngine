@@ -755,7 +755,7 @@ namespace pa
 		{
 			if (glm::abs(f[i]) < EPSILON)
 			{
-				if (e[i] >= halfSide[i] || e[i] <= -halfSide[i])
+				if (e[i] > halfSide[i] || e[i] < -halfSide[i])
 					return;
 
 				f[i] = 0.00001f;

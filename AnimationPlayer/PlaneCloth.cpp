@@ -231,8 +231,7 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 	for (MassPoint& massPoint : _massPointList)
 	{
 
-		//Currently using Explicit Method (Euler-method)
-		//For the stable system, need to use implicit method
+		//Explicit Euler-Method
 		/*glm::vec3 newVelocity = massPoint.velocity * 0.95f + deltaTime * massPoint.netForce / massPoint.mass;
 		glm::vec3 newPosition = massPoint.position + deltaTime * massPoint.velocity;
 
@@ -267,12 +266,28 @@ void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
 				if (raycastInfo.isHit == true)
 				{
 					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-					glm::vec3 vn = raycastInfo.normal * glm::dot(raycastInfo.normal, velocity);
-					glm::vec3 vt = velocity - vn;
-					massPoint.velocity = vt + vn * 0.1f;
+					massPoint.prevPosition = massPoint.position;
+					massPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+					//glm::vec3 vn = raycastInfo.normal * glm::dot(raycastInfo.normal, velocity);
+					//glm::vec3 vt = velocity - vn;
+					//massPoint.velocity = vt + vn * 0.1f;
 					//massPoint.prevPosition = massPoint.position - (vt - vn);
 				}
 			}
+			/*else if (pa::isPointInside(massPoint.position, constraint) == true)
+			{
+				glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
+				pa::Ray ray(massPoint.prevPosition, velocity);
+
+				pa::RaycastInfo raycastInfo;
+				pa::raycast(ray, constraint, &raycastInfo);
+				if (raycastInfo.isHit == true)
+				{
+					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
+					massPoint.prevPosition = massPoint.position;
+					massPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+				}
+			}*/
 		}
 	}
 }
