@@ -281,6 +281,7 @@ void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
 				}
 			}
 		}
+		//branch test
 	}
 }
 
