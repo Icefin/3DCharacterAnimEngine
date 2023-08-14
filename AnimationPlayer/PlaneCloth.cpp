@@ -26,6 +26,9 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 			_massPointList[w + h * widthNum] = newPoint;
 		}
 	}
+	_massPointList[0].mass = 0.0f;
+	_massPointList[widthNum - 1].mass = 0.0f;
+	//_massPointList.back().mass = 0.0f;
 
 	// StructuralSpring Initialize
 	for (int32 h = 0; h < heightNum - 1; ++h)
@@ -239,12 +242,15 @@ void PlaneCloth::updateMassPointState(float deltaTime)
 		massPoint.position = newPosition;*/
 
 		//Verlet Method
-		glm::vec3 acceleration = massPoint.netForce / massPoint.mass;
-		glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
+		if (massPoint.mass != 0.0f)
+		{ 
+			glm::vec3 acceleration = massPoint.netForce / massPoint.mass;
+			glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
 
-		massPoint.prevPosition = massPoint.position;
-		massPoint.position = massPoint.position + velocity * 0.95f + acceleration * deltaTime * deltaTime;
-		massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
+			massPoint.prevPosition = massPoint.position;
+			massPoint.position = massPoint.position + velocity * 0.95f + acceleration * deltaTime * deltaTime;
+			massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
+		}
 	}
 }
 
@@ -274,20 +280,6 @@ void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
 					//massPoint.prevPosition = massPoint.position - (vt - vn);
 				}
 			}
-			/*else if (pa::isPointInside(massPoint.position, constraint) == true)
-			{
-				glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
-				pa::Ray ray(massPoint.prevPosition, velocity);
-
-				pa::RaycastInfo raycastInfo;
-				pa::raycast(ray, constraint, &raycastInfo);
-				if (raycastInfo.isHit == true)
-				{
-					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-					massPoint.prevPosition = massPoint.position;
-					massPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-				}
-			}*/
 		}
 	}
 }
