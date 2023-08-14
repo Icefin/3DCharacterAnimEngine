@@ -21,7 +21,7 @@ struct MassPoint
 //	Flexion
 //};
 
-struct Constraint
+struct DistanctConstraint
 {
 	float		restLength;
 	MassPoint*	left;
@@ -43,7 +43,7 @@ public:
 	~PlaneCloth(void);
 	
 	void update(float deltaTime) { }
-	void update(float deltaTime, std::vector<pa::OBB>& constraints);
+	void update(float deltaTime, std::vector<pa::OBB>& colliders);
 	void render(Shader& shader) override;
 
 private:
@@ -51,7 +51,7 @@ private:
 	//void applyExternalForces(void);
 	//void updateMassPointState(float deltaTime);
 	//void solveConstraint(std::vector<pa::OBB>& constraints);
-	void solveDistantConstraint(Constraint& constraint, float deltaTime);
+	void solveDistantConstraint(DistanctConstraint& constraint, float deltaTime);
 	void updateMassPointNormal(void);
 
 private:
@@ -59,10 +59,10 @@ private:
 	GLuint	_vbo;
 	GLuint	_ebo;
 
-	std::vector<MassPoint>	_massPointList;
-	std::vector<uint32>		_indices;
-	std::vector<Constraint> _internalConstraints;
-	//std::vector<Spring>		_springList;
+	std::vector<MassPoint>			_massPointList;
+	std::vector<uint32>				_indices;
+	std::vector<DistanctConstraint> _internalConstraints;
+	//std::vector<Spring>			_springList;
 
 private:
 	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};

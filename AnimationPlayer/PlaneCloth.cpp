@@ -174,7 +174,7 @@ PlaneCloth::~PlaneCloth(void)
 	glDeleteBuffers(1, &_ebo);
 }
 
-void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& constraints)
+void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
 	static int32 _iterationCount = 5;
 
@@ -187,15 +187,31 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& constraints)
 	}
 
 	//Collision Detection && Generate Collision Constraint
-	std::vector<pa::OBB> collisionConstraints;
+	//std::vector<pa::OBB> collisionConstraints;
 	//for (MassPoint& massPoint : _massPointList)
 	//	generateCollisionConstraint(massPoint, collisionConstraints);
 
 	//Solve Constraints
 	for (int32 cnt = 0; cnt < _iterationCount; ++cnt)
 	{
-		for (Constraint& constraint : _internalConstraints)
+		for (DistanctConstraint& constraint : _internalConstraints)
 			solveDistantConstraint(constraint, deltaTime);
+	}
+
+	for (MassPoint& massPoint : _massPointList)
+	{
+		for (pa::OBB& obb : colliders)
+		{
+			if (pa::isPointInside(massPoint.position, obb) == true)
+			{
+				pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
+				pa::RaycastInfo raycastInfo;
+				pa::raycast(ray, obb, &raycastInfo);
+
+				massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
+				break;
+			}
+		}
 	}
 
 	//Velocity Update
@@ -210,7 +226,7 @@ void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> cons
 
 }
 
-void PlaneCloth::solveDistantConstraint(Constraint& constraint, float deltaTime)
+void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint, float deltaTime)
 {
 	MassPoint* left = constraint.left;
 	MassPoint* right = constraint.right;
