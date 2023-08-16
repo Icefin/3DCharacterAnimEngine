@@ -1008,7 +1008,7 @@ namespace pa
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obb.ebo);
 
 		glLineWidth(2.0f);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
+		glDrawElements(GL_LINES, 36, GL_UNSIGNED_INT, NULL);
 	}
 
 	bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle)

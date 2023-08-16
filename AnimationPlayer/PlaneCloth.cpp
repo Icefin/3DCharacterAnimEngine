@@ -184,12 +184,13 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 		massPoint.velocity = massPoint.velocity + pa::gravity * massPoint.invMass * deltaTime;
 		massPoint.prevPosition = massPoint.position;
 		massPoint.position = massPoint.position + massPoint.velocity * deltaTime;
+		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 	}
 
 	//Collision Detection && Generate Collision Constraint
-	//std::vector<CollisionConstraint> collisionConstraints;
+	std::vector<CollisionConstraint> collisionConstraints;
 	//for (MassPoint& massPoint : _massPointList)
-	//	generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
+		//generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
 
 	//Solve Constraints
 	for (int32 cnt = 0; cnt < _iterationCount; ++cnt)
@@ -198,15 +199,17 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 			solveDistantConstraint(constraint, deltaTime);
 
 		//for (CollisionConstraint& constraint : collisionConstraints)
-		//	solveCollisionConstraint(constraint, deltaTime);
+			//solveCollisionConstraint(constraint, deltaTime);
 	}
 
 	for (MassPoint& massPoint : _massPointList)
 	{
+		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 		for (pa::OBB& obb : colliders)
 		{
 			if (pa::isPointInside(massPoint.position, obb) == true)
 			{
+				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 				pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
 				pa::RaycastInfo raycastInfo;
 				pa::raycast(ray, obb, &raycastInfo);
@@ -228,9 +231,24 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 {
 	for (pa::OBB& obb : colliders)
 	{
-		if (pa::isPointInside(massPoint.position, obb) == true)
+		pa::Line travelPath(massPoint.prevPosition, massPoint.position);
+		
+		if (pa::isIntersection(travelPath, obb) == true)
 		{
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
+			pa::RaycastInfo raycastInfo;
+			pa::raycast(ray, obb, &raycastInfo);
+
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
+
+			collisionConstraints->push_back({ targetPosition, &massPoint });
+			return;
+		}
+		else if (pa::isPointInside(massPoint.position, obb) == true)
+		{
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
 			pa::RaycastInfo raycastInfo;
 			pa::raycast(ray, obb, &raycastInfo);
 
@@ -254,7 +272,7 @@ void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint, float de
 
 	glm::vec3 n = right->position - left->position;
 	float distance = glm::length(n);
-	
+
 	glm::vec3 direction = glm::normalize(n);
 
 	glm::vec3 corr = n * (distance - constraint.restLength) / invMassSum;
