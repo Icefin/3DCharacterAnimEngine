@@ -165,7 +165,7 @@ PlaneCloth::~PlaneCloth(void)
 
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
-	static int32 _iterationCount = 5;
+	static int32 _iterationCount = 10;
 
 	//Store Initial Values by using Sympletic Euler integration
 	for (MassPoint& massPoint : _massPointList)
@@ -261,7 +261,7 @@ void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint)
 
 	glm::vec3 direction = glm::normalize(n);
 
-	glm::vec3 correction = n * (distance - constraint.restLength) / invMassSum;
+	glm::vec3 correction = direction * (distance - constraint.restLength) / invMassSum;
 
 	left->position += correction * left->invMass;
 	right->position -= correction * right->invMass;

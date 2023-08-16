@@ -92,10 +92,10 @@ int main()
     PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(0.0f, 15.0f,-20.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 25, 25);
 
     DirectionalLight directionalLight{
-        glm::vec3(0.0f,1.0f,0.0f),
-        glm::vec3(0.1f,0.1f,0.1f),
-        glm::vec3(1.0f,1.0f,1.0f),
-        glm::vec3(1.0f,1.0f,1.0f)
+        glm::vec3(0.0f, 1.0f, 1.0f),
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(0.2f, 0.2f, 0.2f)
     };
 
     std::vector<pa::OBB> constraints;
@@ -166,7 +166,7 @@ int main()
 
         for (int32 idx = 0; idx < constraints.size() - 2; ++idx)
         //{
-            //constraints[idx].position += glm::vec3(0.003f, 0.0f, 0.0f);
+            constraints[idx].position += glm::vec3(0.003f, 0.0f, 0.0f);
             //constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
         //}
 
