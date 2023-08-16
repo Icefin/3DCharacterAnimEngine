@@ -39,8 +39,8 @@ public:
 
 private:
 	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);
-	void solveDistantConstraint(DistanctConstraint& constraint, float deltaTime);
-	void solveCollisionConstraint(CollisionConstraint& constraint, float deltaTime);
+	void solveDistantConstraint(DistanctConstraint& constraint);
+	void solveCollisionConstraint(CollisionConstraint& constraint);
 	void updateMassPointNormal(void);
 
 private:

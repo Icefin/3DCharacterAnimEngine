@@ -185,10 +185,10 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 	for (int32 cnt = 0; cnt < _iterationCount; ++cnt)
 	{
 		for (DistanctConstraint& constraint : _internalConstraints)
-			solveDistantConstraint(constraint, deltaTime);
+			solveDistantConstraint(constraint);
 
 		for (CollisionConstraint& constraint : collisionConstraints)
-			solveCollisionConstraint(constraint, deltaTime);
+			solveCollisionConstraint(constraint);
 	}
 
 	/*for (MassPoint& massPoint : _massPointList)
@@ -231,21 +231,7 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 {
 	for (pa::OBB& obb : colliders)
 	{
-		pa::Line travelPath(massPoint.prevPosition, massPoint.position);
-		
-		if (pa::isIntersection(travelPath, obb) == true)
-		{
-			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
-			pa::RaycastInfo raycastInfo;
-			pa::raycast(ray, obb, &raycastInfo);
-
-			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-
-			collisionConstraints->push_back({ targetPosition, &massPoint });
-			return;
-		}
-		else if (pa::isPointInside(massPoint.position, obb) == true)
+		if (pa::isPointInside(massPoint.position, obb) == true)
 		{
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 			pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
@@ -260,7 +246,7 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 	}
 }
 
-void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint, float deltaTime)
+void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint)
 {
 	MassPoint* left = constraint.left;
 	MassPoint* right = constraint.right;
@@ -281,7 +267,7 @@ void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint, float de
 	right->position -= corr * right->invMass;
 }
 
-void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint, float deltaTime)
+void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
 {
 	constraint.point->position = constraint.targetPosition;
 }

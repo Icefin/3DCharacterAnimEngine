@@ -1001,7 +1001,7 @@ namespace pa
 		glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), obb.position) * glm::mat4_cast(obb.orientation);
 		shader.setUniformMat4("worldMat", worldMat);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		glBindVertexArray(obb.vao);
 		glBindBuffer(GL_ARRAY_BUFFER, obb.vbo);
