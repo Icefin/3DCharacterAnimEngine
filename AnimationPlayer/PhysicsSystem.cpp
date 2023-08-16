@@ -47,13 +47,6 @@ namespace pa
 		for (int32 i = 0; i < numBodies; ++i)
 			rigidbodies[i]->applyExternalForces();
 
-		/*int32 numClothes = clothes.size();
-		for (int32 i = 0; i < numClothes; ++i)
-		{
-			clothes[i]->applyInternalForces();
-			clothes[i]->applyExternalForces();
-		}*/
-
 		int32 numCollisions = collisionManifolds.size();
 		for (int32 cnt = 0; cnt < iterationCount; ++cnt)
 		{

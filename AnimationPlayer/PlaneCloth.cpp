@@ -262,14 +262,13 @@ void PlaneCloth::render(Shader& shader)
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-
-	glLineWidth(1.0f);
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
 }
 
 void PlaneCloth::updateMassPointNormal(void)
 {
-	std::vector<std::vector<glm::vec3>> normals(_massPointList.size());
+	int32 numMassPoints = _massPointList.size();
+	std::vector<std::vector<glm::vec3>> normals(numMassPoints, std::vector<glm::vec3>(6));
 	int32 numIndices = _indices.size();
 	for (int32 i = 0; i < numIndices; i += 6) {
 
@@ -293,10 +292,10 @@ void PlaneCloth::updateMassPointNormal(void)
 		normals[_indices[i + 5]].push_back(normal2);
 	}
 
-	for (int32 i = 0; i < normals.size(); i++) {
+	for (int32 i = 0; i < numMassPoints; ++i) {
 		glm::vec3 avg{ 0.0f, 0.0f, 0.0f };
 
-		for (int32 j = 0; j < normals[i].size(); j++)
+		for (int32 j = 0; j < normals[i].size(); ++j)
 			avg += normals[i][j];
 
 		avg = glm::normalize(avg);
