@@ -165,7 +165,7 @@ PlaneCloth::~PlaneCloth(void)
 
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
-	static int32 _iterationCount = 10;
+	static int32 kIterationCount = 5;
 
 	//Store Initial Values by using Sympletic Euler integration
 	for (MassPoint& massPoint : _massPointList)
@@ -178,11 +178,12 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 
 	//Collision Detection && Generate Collision Constraint
 	std::vector<CollisionConstraint> collisionConstraints;
+	collisionConstraints.reserve(_massPointList.size());
 	for (MassPoint& massPoint : _massPointList)
 		generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
 
 	//Solve Constraints
-	for (int32 cnt = 0; cnt < _iterationCount; ++cnt)
+	for (int32 cnt = 0; cnt < kIterationCount; ++cnt)
 	{
 		for (DistanctConstraint& constraint : _internalConstraints)
 			solveDistantConstraint(constraint);
@@ -190,35 +191,6 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 		for (CollisionConstraint& constraint : collisionConstraints)
 			solveCollisionConstraint(constraint);
 	}
-
-	/*for (MassPoint& massPoint : _massPointList)
-	{
-		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
-		for (pa::OBB& obb : colliders)
-		{
-			pa::Line travelPath(massPoint.prevPosition, massPoint.position);
-			if (pa::isIntersection(travelPath, obb) == true)
-			{
-				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-				pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
-				pa::RaycastInfo raycastInfo;
-				pa::raycast(ray, obb, &raycastInfo);
-
-				massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-				break;
-			}
-			else if (pa::isPointInside(massPoint.position, obb) == true)
-			{
-				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-				pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
-				pa::RaycastInfo raycastInfo;
-				pa::raycast(ray, obb, &raycastInfo);
-
-				massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-				break;
-			}
-		}
-	}*/
 
 	//Velocity Update
 	for (MassPoint& massPoint : _massPointList)

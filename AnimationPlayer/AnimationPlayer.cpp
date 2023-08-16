@@ -89,8 +89,6 @@ int main()
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
     Shader shader("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-    PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(0.0f, 15.0f,-20.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 25, 25);
-
     DirectionalLight directionalLight{
         glm::vec3(0.0f, 1.0f, 1.0f),
         glm::vec3(0.1f, 0.1f, 0.1f),
@@ -98,6 +96,7 @@ int main()
         glm::vec3(0.2f, 0.2f, 0.2f)
     };
 
+    PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(0.0f, 15.0f,-20.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 25, 25);
     std::vector<pa::OBB> constraints;
     //constraints.push_back(pa::OBB(glm::vec3(5.0f, -13.0f, 5.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.75f, -0.5f, -0.419f, -0.054f)));
     //constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
@@ -164,9 +163,9 @@ int main()
 
         camera->update(shader);
 
-        for (int32 idx = 0; idx < constraints.size() - 2; ++idx)
+        //for (int32 idx = 0; idx < constraints.size() - 2; ++idx)
         //{
-            constraints[idx].position += glm::vec3(0.003f, 0.0f, 0.0f);
+            //constraints[idx].position += glm::vec3(0.006f, 0.0f, 0.0f);
             //constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
         //}
 
