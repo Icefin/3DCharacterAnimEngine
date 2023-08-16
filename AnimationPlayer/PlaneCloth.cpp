@@ -176,7 +176,7 @@ PlaneCloth::~PlaneCloth(void)
 
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
-	static int32 _iterationCount = 5;
+	static int32 _iterationCount = 10;
 
 	//Store Initial Values by using Sympletic Euler integration
 	for (MassPoint& massPoint : _massPointList)
@@ -189,8 +189,8 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 
 	//Collision Detection && Generate Collision Constraint
 	std::vector<CollisionConstraint> collisionConstraints;
-	//for (MassPoint& massPoint : _massPointList)
-		//generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
+	for (MassPoint& massPoint : _massPointList)
+		generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
 
 	//Solve Constraints
 	for (int32 cnt = 0; cnt < _iterationCount; ++cnt)
@@ -198,16 +198,27 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 		for (DistanctConstraint& constraint : _internalConstraints)
 			solveDistantConstraint(constraint, deltaTime);
 
-		//for (CollisionConstraint& constraint : collisionConstraints)
-			//solveCollisionConstraint(constraint, deltaTime);
+		for (CollisionConstraint& constraint : collisionConstraints)
+			solveCollisionConstraint(constraint, deltaTime);
 	}
 
-	for (MassPoint& massPoint : _massPointList)
+	/*for (MassPoint& massPoint : _massPointList)
 	{
 		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 		for (pa::OBB& obb : colliders)
 		{
-			if (pa::isPointInside(massPoint.position, obb) == true)
+			pa::Line travelPath(massPoint.prevPosition, massPoint.position);
+			if (pa::isIntersection(travelPath, obb) == true)
+			{
+				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+				pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
+				pa::RaycastInfo raycastInfo;
+				pa::raycast(ray, obb, &raycastInfo);
+
+				massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
+				break;
+			}
+			else if (pa::isPointInside(massPoint.position, obb) == true)
 			{
 				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 				pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
@@ -218,7 +229,7 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 				break;
 			}
 		}
-	}
+	}*/
 
 	//Velocity Update
 	for (MassPoint& massPoint : _massPointList)
