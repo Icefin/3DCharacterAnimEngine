@@ -68,7 +68,7 @@ namespace pa
 		for (int32 i = 0; i < 3; i++)
 		{
 			//Recheck Here
-			glm::vec3 basis = glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]);
+			glm::vec3 basis = glm::normalize(glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]));
 			float distance = glm::dot(obbToPoint, basis);
 
 			if (distance > obb.size[i])
@@ -741,9 +741,9 @@ namespace pa
 		glm::vec3 halfSide = obb.size;
 		glm::mat3 rotation = glm::mat3(obb.orientation);
 		glm::vec3 basis[3] = {
-			glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
-			glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
-			glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
+			glm::normalize(glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2])),
+			glm::normalize(glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2])),
+			glm::normalize(glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2]))
 		};
 
 		glm::vec3 rayToOBB = obb.position - ray.origin;
@@ -795,7 +795,7 @@ namespace pa
 			{
 				if (tresult == t[i])
 				{
-					outInfo->normal = glm::normalize(normals[i]);
+					outInfo->normal = normals[i];
 					return;
 				}
 			}
@@ -1001,7 +1001,7 @@ namespace pa
 		glm::mat4 worldMat = glm::translate(glm::mat4(1.0f), obb.position) * glm::mat4_cast(obb.orientation);
 		shader.setUniformMat4("worldMat", worldMat);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		glBindVertexArray(obb.vao);
 		glBindBuffer(GL_ARRAY_BUFFER, obb.vbo);

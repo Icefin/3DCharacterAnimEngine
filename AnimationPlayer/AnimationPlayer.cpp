@@ -89,21 +89,21 @@ int main()
     camera = new Camera3D(SCR_WIDTH, SCR_HEIGHT, &character->_position);
 
     Shader shader("./shaders/phongVertShader.vert", "./shaders/phongFragShader.frag");
-    PlaneCloth* redCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 30, 30);
-    PlaneCloth* blueCloth = new PlaneCloth(glm::vec3(-10.0f, 0.0f, 29.0f), glm::vec3(0.0f, 0.0f, 1.0f), 20, 20, 30, 30);
     DirectionalLight directionalLight{
-        glm::vec3(0.0f,1.0f,0.0f),
-        glm::vec3(0.1f,0.1f,0.1f),
-        glm::vec3(1.0f,1.0f,1.0f),
-        glm::vec3(1.0f,1.0f,1.0f)
+        glm::vec3(0.0f, 1.0f, 1.0f),
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(0.2f, 0.2f, 0.2f)
     };
 
+    PlaneCloth* planeCloth = new PlaneCloth(glm::vec3(0.0f, 15.0f,-20.0f), glm::vec3(1.0f, 0.0f, 0.0f), 20, 20, 25, 25);
     std::vector<pa::OBB> constraints;
-    //constraints.push_back(pa::OBB(glm::vec3(5.0f, -13.0f, 5.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.75f, -0.5f, -0.419f, -0.054f)));
-    //constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
-    constraints.push_back(pa::OBB(glm::vec3(-8.0f, -9.0f, 10.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::quat(0.34f, 0.0f, 0.146f, 0.93f)));
-    constraints.push_back(pa::OBB(glm::vec3(7.0f, -13.0f, 35.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::quat(0.0f, -0.157f, -0.2098f, 0.965f)));
+    constraints.push_back(pa::OBB(character->_position + glm::vec3(0.0f, -2.0f, 0.0f), glm::vec3(2.5f, 11.0f, 2.5f), character->_rotation));
     constraints.push_back(pa::OBB(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f)));
+    constraints.push_back(pa::OBB(glm::vec3(3.0f, 0.0f, -15.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::quat(0.34f, 0.0f, 0.146f, 0.93f)));
+    //constraints.push_back(pa::OBB(glm::vec3(7.0f, -13.0f, 35.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::quat(0.0f, -0.157f, -0.2098f, 0.965f)));
+    //constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
+    //constraints.push_back(pa::OBB(glm::vec3(5.0f, -13.0f, 5.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.75f, -0.5f, -0.419f, -0.054f)));
 
     //Constraint Load Test :
     //---------------------------------------------------------------------------------------------------------------------------------
@@ -163,18 +163,22 @@ int main()
 
         camera->update(shader);
 
-        //for (int32 idx = 0; idx < constraints.size() - 1; ++idx)
-       //     constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
+        //for (int32 idx = 2; idx < constraints.size(); ++idx)
+        {
+            //constraints[idx].position += glm::vec3(0.0f, 0.0f, -0.1f);
+            //constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
+        }
 
         //Object Update
         character->update(deltaTime * frameRate);
-        redCloth->update(0.017f, constraints);
-        blueCloth->update(0.017f, constraints);
+        constraints[0].position = character->_position + glm::vec3(0.0f, -2.0f, 0.0f);
+        constraints[0].orientation = glm::quat_cast(glm::rotate(glm::mat4(1.0f), glm::radians(-character->_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)));
+
+        planeCloth->update(0.02f, constraints);
 
         //Object Render
         character->render(shader);
-        redCloth->render(shader);
-        blueCloth->render(shader);
+        planeCloth->render(shader);
         for (int32 idx = 0; idx < constraints.size(); ++idx)
             pa::renderOBB(constraints[idx], shader);
 

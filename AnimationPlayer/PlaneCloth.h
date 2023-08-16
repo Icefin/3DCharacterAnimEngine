@@ -6,25 +6,22 @@
 
 struct MassPoint
 {
-	float		mass;
+	float		invMass;
 	glm::vec3	prevPosition;
 	glm::vec3	position;
 	glm::vec3	normal;
 	glm::vec3	velocity;
-	glm::vec3	netForce;
 	glm::vec3	color;
 };
 
-enum class SpringType :uint8
+struct CollisionConstraint
 {
-	Structural = 0,
-	Shear,
-	Flexion
+	glm::vec3	targetPosition;
+	MassPoint*	point;
 };
 
-struct Spring
+struct DistanctConstraint
 {
-	SpringType	type;
 	float		restLength;
 	MassPoint*	left;
 	MassPoint*	right;
@@ -35,16 +32,14 @@ class PlaneCloth : public GameObject
 public:
 	PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
 	~PlaneCloth(void);
-	
-	void update(float deltaTime) { }
-	void update(float deltaTime, std::vector<pa::OBB>& constraints);
-	void render(Shader& shader) override;
+
+	void update(float deltaTime, std::vector<pa::OBB>& colliders);
+	void render(Shader& shader);
 
 private:
-	void applyInternalForces(void);
-	void applyExternalForces(void);
-	void updateMassPointState(float deltaTime);
-	void solveConstraint(std::vector<pa::OBB>& constraints);
+	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);
+	void solveDistantConstraint(DistanctConstraint& constraint);
+	void solveCollisionConstraint(CollisionConstraint& constraint);
 	void updateMassPointNormal(void);
 
 private:
@@ -52,9 +47,9 @@ private:
 	GLuint	_vbo;
 	GLuint	_ebo;
 
-	std::vector<MassPoint>	_massPointList;
-	std::vector<uint32>		_indices;
-	std::vector<Spring>		_springList;
+	std::vector<MassPoint>			_massPointList;
+	std::vector<uint32>				_indices;
+	std::vector<DistanctConstraint> _internalConstraints;
 
 private:
 	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};

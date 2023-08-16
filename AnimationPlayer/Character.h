@@ -20,8 +20,8 @@ class Character : public GameObject
 public:
                                 Character(Skeleton* skeleton, std::vector<Motion*>& motionList);
 	                            ~Character(void);
-    void                        update(float deltaTime) override;
-    void                        render(Shader& shader) override;
+    void                        update(float deltaTime);
+    void                        render(Shader& shader);
 
     void                        move(bool isForward, float deltaTime);
     void                        rotate(bool isClockwise, float deltaTime);

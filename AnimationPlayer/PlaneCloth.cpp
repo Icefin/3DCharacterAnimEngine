@@ -16,19 +16,17 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 		for (int32 w = 0; w < widthNum; ++w)
 		{
 			MassPoint newPoint;
-			newPoint.mass = 1.0f;
+			newPoint.invMass = 1.0f;
 			newPoint.prevPosition = glm::vec3(position.x + w * dw, position.y, position.z + h * dh);
 			newPoint.position = glm::vec3(position.x + w * dw, position.y, position.z + h * dh);
-			newPoint.velocity = glm::vec3(0.0f, -10.0f, 0.0f);
-			newPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
+			newPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 			newPoint.color = color;
 
 			_massPointList[w + h * widthNum] = newPoint;
 		}
 	}
-	_massPointList[0].mass = 0.0f;
-	_massPointList[widthNum - 1].mass = 0.0f;
-	//_massPointList.back().mass = 0.0f;
+	_massPointList[0].invMass = 0.0f;
+	_massPointList[widthNum - 1].invMass = 0.0f;
 
 	// StructuralSpring Initialize
 	for (int32 h = 0; h < heightNum - 1; ++h)
@@ -42,8 +40,8 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 			float restLengthRightward = glm::distance(origin->position, right->position);
 			float restLengthDownward = glm::distance(origin->position, lower->position);
 
-			_springList.push_back({ SpringType::Structural, restLengthRightward, origin, right });
-			_springList.push_back({ SpringType::Structural, restLengthDownward, origin, lower });
+			_internalConstraints.push_back({ restLengthRightward, origin, right });
+			_internalConstraints.push_back({ restLengthDownward, origin, lower });
 		}
 	}
 
@@ -54,7 +52,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 
 		float restLengthRightward = glm::distance(origin->position, right->position);
 
-		_springList.push_back({ SpringType::Structural, restLengthRightward, origin, right });
+		_internalConstraints.push_back({ restLengthRightward, origin, right });
 	}
 
 	for (int32 h = 0; h < heightNum - 1; ++h)
@@ -64,7 +62,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 
 		float restLengthDownward = glm::distance(origin->position, lower->position);
 
-		_springList.push_back({ SpringType::Structural, restLengthDownward, origin, lower });
+		_internalConstraints.push_back({ restLengthDownward, origin, lower });
 	}
 
 	// ShearSpring Initialize
@@ -77,7 +75,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 
 			float restLengthLowerRight = glm::distance(origin->position, lowerRight->position);
 
-			_springList.push_back({ SpringType::Shear, restLengthLowerRight, origin, lowerRight });
+			_internalConstraints.push_back({ restLengthLowerRight, origin, lowerRight });
 		}
 	}
 
@@ -90,7 +88,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 
 			float restLengthLowerLeft = glm::distance(origin->position, lowerLeft->position);
 
-			_springList.push_back({ SpringType::Shear, restLengthLowerLeft, origin, lowerLeft });
+			_internalConstraints.push_back({ restLengthLowerLeft, origin, lowerLeft });
 		}
 	}
 
@@ -104,7 +102,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 
 			float restLengthDistRight = glm::distance(origin->position, distRight->position);
 
-			_springList.push_back({ SpringType::Flexion, restLengthDistRight, origin, distRight });
+			_internalConstraints.push_back({ restLengthDistRight, origin, distRight });
 		}
 	}
 
@@ -117,7 +115,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 
 			float restLengthDistRight = glm::distance(origin->position, distLower->position);
 
-			_springList.push_back({ SpringType::Flexion, restLengthDistRight, origin, distLower });
+			_internalConstraints.push_back({ restLengthDistRight, origin, distLower });
 		}
 	}
 
@@ -165,13 +163,102 @@ PlaneCloth::~PlaneCloth(void)
 	glDeleteBuffers(1, &_ebo);
 }
 
-void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& constraints)
+void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
-	applyInternalForces();
-	applyExternalForces();
-	updateMassPointState(deltaTime);
-	solveConstraint(constraints);
+	static int32 kIterationCount = 5;
+
+	//Store Initial Values by using Sympletic Euler integration
+	for (MassPoint& massPoint : _massPointList)
+	{
+		massPoint.velocity = massPoint.velocity + pa::gravity * massPoint.invMass * deltaTime;
+		massPoint.prevPosition = massPoint.position;
+		massPoint.position = massPoint.position + massPoint.velocity * deltaTime;
+		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
+	}
+
+	//Collision Detection && Generate Collision Constraint
+	std::vector<CollisionConstraint> collisionConstraints;
+	collisionConstraints.reserve(_massPointList.size());
+	for (MassPoint& massPoint : _massPointList)
+		generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
+
+	//Solve Constraints
+	for (int32 cnt = 0; cnt < kIterationCount; ++cnt)
+	{
+		for (DistanctConstraint& constraint : _internalConstraints)
+			solveDistantConstraint(constraint);
+
+		for (CollisionConstraint& constraint : collisionConstraints)
+			solveCollisionConstraint(constraint);
+	}
+
+	//Velocity Update
+	for (MassPoint& massPoint : _massPointList)
+		massPoint.velocity = (massPoint.position - massPoint.prevPosition) / deltaTime;
+
 	updateMassPointNormal();
+}
+
+void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints)
+{
+	for (pa::OBB& obb : colliders)
+	{
+		pa::Line travelPath(massPoint.prevPosition, massPoint.position);
+
+		if (pa::isIntersection(travelPath, obb) == true)
+		{
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
+			pa::RaycastInfo raycastInfo;
+			pa::raycast(ray, obb, &raycastInfo);
+
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
+
+			collisionConstraints->push_back({ targetPosition, &massPoint });
+			return;
+		}
+		else if (pa::isPointInside(massPoint.position, obb) == true)
+		{
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
+			pa::RaycastInfo raycastInfo;
+			pa::raycast(ray, obb, &raycastInfo);
+
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
+			
+			collisionConstraints->push_back({ targetPosition, &massPoint });
+			return;
+		}
+	}
+}
+
+void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint)
+{
+	MassPoint* left = constraint.left;
+	MassPoint* right = constraint.right;
+
+	float invMassSum = left->invMass + right->invMass;
+
+	if (invMassSum == 0.0f)
+		return;
+
+	glm::vec3 n = right->position - left->position;
+	float distance = glm::length(n);
+
+	glm::vec3 direction = glm::normalize(n);
+
+	glm::vec3 correction = direction * (distance - constraint.restLength) / invMassSum;
+
+	left->position += correction * left->invMass;
+	right->position -= correction * right->invMass;
+}
+
+void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
+{
+	if (constraint.point->invMass == 0.0f)
+		return;
+
+	constraint.point->position = constraint.targetPosition;
 }
 
 void PlaneCloth::render(Shader& shader)
@@ -189,104 +276,13 @@ void PlaneCloth::render(Shader& shader)
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-
-	glLineWidth(1.0f);
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
-}
-
-void PlaneCloth::applyInternalForces(void)
-{
-	static const float stiffnessList[3] = {
-		1000.0f, 
-		1000.0f,
-		1500.0f
-	};
-
-	static const float dampingCoefficient = 1.0f;
-
-	for (Spring& spring : _springList)
-	{
-		MassPoint* left = spring.left;
-		MassPoint* right = spring.right;
-
-		glm::vec3 posDifference = left->position - right->position;
-		glm::vec3 velDfference = left->velocity - right->velocity;
-
-		float stiffness = stiffnessList[static_cast<uint32>(spring.type)];
-		float dist = glm::length(posDifference);
-
-		glm::vec3 springForce = -stiffness * (dist - spring.restLength) * glm::normalize(posDifference);
-		glm::vec3 dampingForce = -dampingCoefficient * velDfference;
-
-		left->netForce += (springForce + dampingForce);
-		right->netForce -= (springForce + dampingForce);
-	}
-}
-
-void PlaneCloth::applyExternalForces(void)
-{
-	for (MassPoint& massPoint : _massPointList)
-		massPoint.netForce += glm::vec3(0.0f, -9.81f, 0.0f) * massPoint.mass;
-}
-
-void PlaneCloth::updateMassPointState(float deltaTime)
-{
-	for (MassPoint& massPoint : _massPointList)
-	{
-		if (massPoint.mass == 0.0f)
-			continue;
-		//Explicit Euler-Method
-		/*glm::vec3 newVelocity = massPoint.velocity * 0.95f + deltaTime * massPoint.netForce / massPoint.mass;
-		glm::vec3 newPosition = massPoint.position + deltaTime * massPoint.velocity;
-
-		massPoint.velocity = newVelocity;
-		massPoint.position = newPosition;*/
-
-		//Verlet Method
-		glm::vec3 acceleration = massPoint.netForce / massPoint.mass;
-		glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
-
-		massPoint.prevPosition = massPoint.position;
-		massPoint.position = massPoint.position + velocity * 0.95f + acceleration * deltaTime * deltaTime;
-		massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
-	}
-}
-
-void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
-{
-	for (MassPoint& massPoint : _massPointList)
-	{
-		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
-		for (pa::OBB& constraint : constraints)
-		{
-			pa::Line travelPath(massPoint.prevPosition, massPoint.position);
-
-			if (pa::isIntersection(travelPath, constraint) == true)
-			{
-				massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-				glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
-				pa::Ray ray(massPoint.prevPosition, velocity);
-
-				pa::RaycastInfo raycastInfo;
-				pa::raycast(ray, constraint, &raycastInfo);
-				if (raycastInfo.isHit == true)
-				{
-					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-					massPoint.prevPosition = massPoint.position;
-					massPoint.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-					//glm::vec3 vn = raycastInfo.normal * glm::dot(raycastInfo.normal, velocity);
-					//glm::vec3 vt = velocity - vn;
-					//massPoint.velocity = vt + vn * 0.1f;
-					//massPoint.prevPosition = massPoint.position - (vt - vn);
-				}
-			}
-		}
-	}
 }
 
 void PlaneCloth::updateMassPointNormal(void)
 {
-	std::vector<std::vector<glm::vec3>> normals(_massPointList.size());
+	int32 numMassPoints = _massPointList.size();
+	std::vector<std::vector<glm::vec3>> normals(numMassPoints, std::vector<glm::vec3>(6));
 	int32 numIndices = _indices.size();
 	for (int32 i = 0; i < numIndices; i += 6) {
 
@@ -310,10 +306,10 @@ void PlaneCloth::updateMassPointNormal(void)
 		normals[_indices[i + 5]].push_back(normal2);
 	}
 
-	for (int32 i = 0; i < normals.size(); i++) {
+	for (int32 i = 0; i < numMassPoints; ++i) {
 		glm::vec3 avg{ 0.0f, 0.0f, 0.0f };
 
-		for (int32 j = 0; j < normals[i].size(); j++)
+		for (int32 j = 0; j < normals[i].size(); ++j)
 			avg += normals[i][j];
 
 		avg = glm::normalize(avg);
