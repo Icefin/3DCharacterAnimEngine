@@ -1,9 +1,5 @@
 # AnimationPlayer
- Simple Character Animator
-
----
-### Project Architecture
-
+Simple Character Animation Player
 
 ---
 ### Parsing ASF / AMC Data
@@ -381,25 +377,22 @@ bool isOBBOBBCollision(const OBB& o1, const OBB& o2);
 ```c++
 struct MassPoint
 {
-	float		mass;
+	float		invMass;
 	glm::vec3	prevPosition;
 	glm::vec3	position;
 	glm::vec3	normal;
 	glm::vec3	velocity;
-	glm::vec3	netForce;
 	glm::vec3	color;
 };
 
-enum class SpringType :uint8
+struct CollisionConstraint
 {
-	Structural = 0,
-	Shear,
-	Flexion
+	glm::vec3	targetPosition;
+	MassPoint*	point;
 };
 
-struct Spring
+struct DistanctConstraint
 {
-	SpringType	type;
 	float		restLength;
 	MassPoint*	left;
 	MassPoint*	right;
@@ -410,16 +403,14 @@ class PlaneCloth : public GameObject
 public:
 	PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
 	~PlaneCloth(void);
-	
-	void update(float deltaTime) { }
-	void update(float deltaTime, std::vector<pa::OBB>& constraints);
-	void render(Shader& shader) override;
+
+	void update(float deltaTime, std::vector<pa::OBB>& colliders);
+	void render(Shader& shader);
 
 private:
-	void applyInternalForces(void);
-	void applyExternalForces(void);
-	void updateMassPointState(float deltaTime);
-	void solveConstraint(std::vector<pa::OBB>& constraints);
+	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);
+	void solveDistantConstraint(DistanctConstraint& constraint);
+	void solveCollisionConstraint(CollisionConstraint& constraint);
 	void updateMassPointNormal(void);
 
 private:
@@ -427,9 +418,9 @@ private:
 	GLuint	_vbo;
 	GLuint	_ebo;
 
-	std::vector<MassPoint>	_massPointList;
-	std::vector<uint32>	_indices;
-	std::vector<Spring>	_springList;
+	std::vector<MassPoint>		_massPointList;
+	std::vector<uint32>		_indices;
+	std::vector<DistanctConstraint> _internalConstraints;
 
 private:
 	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
@@ -439,79 +430,108 @@ private:
 };
 ```
 
-#### Lighting System
-Phong Lighting Model + (Shadowing, Ambient Occlusion)  
-![temp](https://github.com/Icefin/AnimationPlayer/assets/76864202/cfb009d6-85f5-4c1b-8ee1-77c192c3f1f8)
-
-
-errors...(1)  
-![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
-
-errors...(2)  
-
-
 #### Collision Detection && Resolution
 ```c++
-void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& constraints)
+void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
-	applyInternalForces();
-	applyExternalForces();
-	updateMassPointState(deltaTime);
-	solveConstraint(constraints);
+	static int32 kIterationCount = 5;
+
+	//Store Initial Values by using Sympletic Euler integration
+	for (MassPoint& massPoint : _massPointList)
+	{
+		massPoint.velocity = massPoint.velocity + pa::gravity * massPoint.invMass * deltaTime;
+		massPoint.prevPosition = massPoint.position;
+		massPoint.position = massPoint.position + massPoint.velocity * deltaTime;
+		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
+	}
+
+	//Collision Detection && Generate Collision Constraint
+	std::vector<CollisionConstraint> collisionConstraints;
+	collisionConstraints.reserve(_massPointList.size());
+	for (MassPoint& massPoint : _massPointList)
+		generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
+
+	//Solve Constraints
+	for (int32 cnt = 0; cnt < kIterationCount; ++cnt)
+	{
+		for (DistanctConstraint& constraint : _internalConstraints)
+			solveDistantConstraint(constraint);
+
+		for (CollisionConstraint& constraint : collisionConstraints)
+			solveCollisionConstraint(constraint);
+	}
+
+	//Velocity Update
+	for (MassPoint& massPoint : _massPointList)
+		massPoint.velocity = (massPoint.position - massPoint.prevPosition) / deltaTime;
+
 	updateMassPointNormal();
 }
 ```
 
 ```c++
-void PlaneCloth::updateMassPointState(float deltaTime)
+void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints)
 {
-	for (MassPoint& massPoint : _massPointList)
+	for (pa::OBB& obb : colliders)
 	{
-		//Explicit Euler Method
-		/*glm::vec3 newVelocity = massPoint.velocity * 0.95f + deltaTime * massPoint.netForce / massPoint.mass;
-		glm::vec3 newPosition = massPoint.position + deltaTime * massPoint.velocity;
+		pa::Line travelPath(massPoint.prevPosition, massPoint.position);
 
-		massPoint.velocity = newVelocity;
-		massPoint.position = newPosition;*/
+		if (pa::isIntersection(travelPath, obb) == true)
+		{
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
+			pa::RaycastInfo raycastInfo;
+			pa::raycast(ray, obb, &raycastInfo);
 
-		//Verlet Method
-		glm::vec3 acceleration = massPoint.netForce / massPoint.mass;
-		glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
 
-		massPoint.prevPosition = massPoint.position;
-		massPoint.position = massPoint.position + velocity * 0.95f + acceleration * deltaTime * deltaTime;
-		massPoint.netForce = glm::vec3(0.0f, 0.0f, 0.0f);
+			collisionConstraints->push_back({ targetPosition, &massPoint });
+			return;
+		}
+		else if (pa::isPointInside(massPoint.position, obb) == true)
+		{
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
+			pa::RaycastInfo raycastInfo;
+			pa::raycast(ray, obb, &raycastInfo);
+
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
+			
+			collisionConstraints->push_back({ targetPosition, &massPoint });
+			return;
+		}
 	}
 }
 ```
 
 ```c++
-void PlaneCloth::solveConstraint(std::vector<pa::OBB>& constraints)
+void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint)
 {
-	for (MassPoint& massPoint : _massPointList)
-	{
-		int32 n = constraints.size();
-		for (int32 i = 0; i < n; ++i)
-		{
-			pa::Line travelPath(massPoint.prevPosition, massPoint.position);
+	MassPoint* left = constraint.left;
+	MassPoint* right = constraint.right;
 
-			if (pa::isIntersection(travelPath, constraints[i]) == true)
-			{
-				glm::vec3 velocity = massPoint.position - massPoint.prevPosition;
-				pa::Ray ray(massPoint.prevPosition, velocity);
+	float invMassSum = left->invMass + right->invMass;
 
-				pa::RaycastInfo raycastInfo;
-				pa::raycast(ray, constraints[i], &raycastInfo);
-				if (raycastInfo.isHit == true)
-				{
-					massPoint.position = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
-					glm::vec3 vn = raycastInfo.normal * glm::dot(raycastInfo.normal, velocity);
-					glm::vec3 vt = velocity - vn;
-					massPoint.velocity = vt + vn * 0.9f;
-				}
-			}
-		}
-	}
+	if (invMassSum == 0.0f)
+		return;
+
+	glm::vec3 n = right->position - left->position;
+	float distance = glm::length(n);
+
+	glm::vec3 direction = glm::normalize(n);
+
+	glm::vec3 correction = direction * (distance - constraint.restLength) / invMassSum;
+
+	left->position += correction * left->invMass;
+	right->position -= correction * right->invMass;
+}
+
+void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
+{
+	if (constraint.point->invMass == 0.0f)
+		return;
+
+	constraint.point->position = constraint.targetPosition;
 }
 ```
 
@@ -529,9 +549,7 @@ bool isIntersection(const Line& line, const OBB& obb)
 
 	return (raycastInfo.isHit && raycastInfo.rayTime * raycastInfo.rayTime < squareLength);
 }
-```
 
-```c++
 void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 {
 	resetRaycastInfo(outInfo);
@@ -595,7 +613,11 @@ void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 }
 ```
 
-#### Result(Temp) :
+#### Result :
+![res](https://github.com/Icefin/AnimationPlayer/assets/76864202/cba4d17a-b822-4561-ae40-b9d96c681ab5)
+![temp](https://github.com/Icefin/AnimationPlayer/assets/76864202/cfb009d6-85f5-4c1b-8ee1-77c192c3f1f8)
+![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/90ea8cc9-f978-487f-a1b6-02c09e042c1e)
+
 First step with Fixed Volume + Explicit Euler Method
 
 https://github.com/Icefin/AnimationPlayer/assets/76864202/c73974bf-4ded-408e-887c-cfa4673ea058
@@ -610,12 +632,12 @@ https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d
 
 Forth try with PBD
 
+https://github.com/Icefin/AnimationPlayer/assets/76864202/78efec86-4454-4287-b4c5-90723416f04e
+
 
 
 #### Optimization
-![res](https://github.com/Icefin/AnimationPlayer/assets/76864202/cba4d17a-b822-4561-ae40-b9d96c681ab5)
-
-Constraint - Vertex Number Relation
+Constraint - Vertex Number Relation (Force based Simulation)
 |     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
 |:---:|:-------:|:-------:|:-------:|:-------:|
 |**1**| 0.016ms | 0.016ms | 0.027ms | 0.047ms |
@@ -624,14 +646,36 @@ Constraint - Vertex Number Relation
 |**4**| 0.016ms | 0.020ms | 0.045ms | 0.077ms |
 |**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
 
+Iteration Count - Vertex Number Relation (Position based Simulation)
+|     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
+|:---:|:-------:|:-------:|:-------:|:-------:|
+|**1**| 0.016ms | 0.028ms | 0.061ms | 0.110ms |
+|**2**| 0.016ms | 0.030ms | 0.067ms | 0.120ms |
+|**3**| 0.017ms | 0.033ms | 0.073ms | 0.130ms |
+|**4**| 0.017ms | 0.035ms | 0.080ms | 0.143ms |
+|**5**| 0.017ms | 0.039ms | 0.086ms | 0.155ms |
+
 - BVH for character bones
-- Spatial Hashing for cloth particles
+- Jacobi rather than Newton-Raphson Method
+- Parallelize Normal Calculation
+
+#### Errors
+![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
+![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/a5b32d76-ee24-4b11-b26e-9b13327b5841)
+
+- Shadowing
+- Thickness or Spherical Collider to Particles to prevent folding (Spatial Hashing for cloth particle)
 
 
 ---
 ### Entity-Componenet-System Architecture
 #### Requirements :
 Blah Blah...  
+
+---
+### OBJ Importer && Skinning
+#### Requirements :
+Blah Blah...
 
 
 ---
