@@ -5,36 +5,6 @@
 #include "CharacterLoader.h"
 #include "CustomMath.h"
 
-#ifdef DEBUG_INFO
-/*
-static void		TEST_PRINT_BONE_INFO(ASFData* asfData)
-{
-	std::unordered_map<std::string, ASFBone>& boneMap = asfData->boneMap;
-
-	for (auto& elem : boneMap)
-	{
-		printf("Bone Name : %s\n", elem.first.c_str());
-		printf("Bone direction : %f %f %f\n",elem.second.direction.x, elem.second.direction.y, elem.second.direction.z);
-		printf("Bone length : %f\n", elem.second.length);
-		printf("Bone Axis : %f %f %f\n", elem.second.orientation.x, elem.second.orientation.y, elem.second.orientation.z);
-		printf("\n");
-	}
-}
-static void		TEST_PRINT_POSTURE_INFO(AMCData* amcData)
-{
-	std::vector<std::vector<AMCPosture>>& boneMotions = amcData->boneMotions;
-
-	for (int32 i = 18; i < 19; i++)
-	{
-		for (int32 j = 0; j < 500; j++)
-		{
-			printf("Rotation of (ID : %d, frame : %d) : %f %f %f\n", i, j, glm::degrees(boneMotions[i][j].frameRotation.x), glm::degrees(boneMotions[i][j].frameRotation.y), glm::degrees(boneMotions[i][j].frameRotation.z));
-		}
-	}
-}
-*/
-#endif
-
 Character* CharacterLoader::loadCharacter(std::string& asf, std::vector<std::string>& amcList)
 {
 	ASFData* asfData = _asfParser.readASF(asf);

@@ -165,7 +165,7 @@ PlaneCloth::~PlaneCloth(void)
 
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
-	static int32 kIterationCount = 5;
+	static int32 kIterationCount = 10;
 
 	//Store Initial Values by using Sympletic Euler integration
 	for (MassPoint& massPoint : _massPointList)
@@ -203,14 +203,28 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 {
 	for (pa::OBB& obb : colliders)
 	{
-		if (pa::isPointInside(massPoint.position, obb) == true)
+		pa::Line travelPath(massPoint.prevPosition, massPoint.position);
+
+		if (pa::isIntersection(travelPath, obb) == true)
+		{
+			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
+			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
+			pa::RaycastInfo raycastInfo;
+			pa::raycast(ray, obb, &raycastInfo);
+
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
+
+			collisionConstraints->push_back({ targetPosition, &massPoint });
+			return;
+		}
+		else if (pa::isPointInside(massPoint.position, obb) == true)
 		{
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 			pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
 			pa::RaycastInfo raycastInfo;
 			pa::raycast(ray, obb, &raycastInfo);
 
-			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.03f;
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
 			
 			collisionConstraints->push_back({ targetPosition, &massPoint });
 			return;
