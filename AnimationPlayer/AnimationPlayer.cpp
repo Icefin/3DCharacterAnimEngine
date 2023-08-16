@@ -166,7 +166,7 @@ int main()
 
         for (int32 idx = 0; idx < constraints.size() - 2; ++idx)
         //{
-            //constraints[idx].position += glm::vec3(0.002f, 0.0f, 0.0f);
+            //constraints[idx].position += glm::vec3(0.003f, 0.0f, 0.0f);
             //constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
         //}
 
@@ -175,7 +175,7 @@ int main()
         constraints.back().position = character->_position + glm::vec3(0.0f, -2.0f, 0.0f);
         constraints.back().orientation = glm::quat_cast(glm::rotate(glm::mat4(1.0f), glm::radians(-character->_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        planeCloth->update(0.016f, constraints);
+        planeCloth->update(0.017f, constraints);
 
         //Object Render
         character->render(shader);
