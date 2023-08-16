@@ -14,13 +14,6 @@ struct MassPoint
 	glm::vec3	color;
 };
 
-//enum class SpringType :uint8
-//{
-//	Structural = 0,
-//	Shear,
-//	Flexion
-//};
-
 struct CollisionConstraint
 {
 	glm::vec3	targetPosition;
@@ -34,14 +27,6 @@ struct DistanctConstraint
 	MassPoint*	right;
 };
 
-//struct Spring
-//{
-//	SpringType	type;
-//	float		restLength;
-//	MassPoint*	left;
-//	MassPoint*	right;
-//};
-
 class PlaneCloth : public GameObject
 {
 public:
@@ -53,10 +38,6 @@ public:
 	void render(Shader& shader) override;
 
 private:
-	//void applyInternalForces(void);
-	//void applyExternalForces(void);
-	//void updateMassPointState(float deltaTime);
-	//void solveConstraint(std::vector<pa::OBB>& constraints);
 	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);
 	void solveDistantConstraint(DistanctConstraint& constraint, float deltaTime);
 	void solveCollisionConstraint(CollisionConstraint& constraint, float deltaTime);
@@ -70,7 +51,6 @@ private:
 	std::vector<MassPoint>			_massPointList;
 	std::vector<uint32>				_indices;
 	std::vector<DistanctConstraint> _internalConstraints;
-	//std::vector<Spring>			_springList;
 
 private:
 	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
