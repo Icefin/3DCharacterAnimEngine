@@ -174,7 +174,7 @@ int main()
         constraints[0].position = character->_position + glm::vec3(0.0f, -2.0f, 0.0f);
         constraints[0].orientation = glm::quat_cast(glm::rotate(glm::mat4(1.0f), glm::radians(-character->_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        planeCloth->update(0.017f, constraints);
+        planeCloth->update(0.02f, constraints);
 
         //Object Render
         character->render(shader);
