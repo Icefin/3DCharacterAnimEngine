@@ -32,10 +32,9 @@ class PlaneCloth : public GameObject
 public:
 	PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32 height, uint32 widthNum, uint32 heightNum);
 	~PlaneCloth(void);
-	
-	void update(float deltaTime) { }
+
 	void update(float deltaTime, std::vector<pa::OBB>& colliders);
-	void render(Shader& shader) override;
+	void render(Shader& shader);
 
 private:
 	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);

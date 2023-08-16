@@ -210,7 +210,7 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 			pa::RaycastInfo raycastInfo;
 			pa::raycast(ray, obb, &raycastInfo);
 
-			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.003f;
+			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.03f;
 			
 			collisionConstraints->push_back({ targetPosition, &massPoint });
 			return;
