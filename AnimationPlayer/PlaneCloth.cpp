@@ -165,7 +165,7 @@ PlaneCloth::~PlaneCloth(void)
 
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
-	static int32 kIterationCount = 10;
+	static int32 kIterationCount = 5;
 
 	//Store Initial Values by using Sympletic Euler integration
 	for (MassPoint& massPoint : _massPointList)

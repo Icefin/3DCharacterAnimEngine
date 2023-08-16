@@ -100,7 +100,7 @@ int main()
     std::vector<pa::OBB> constraints;
     constraints.push_back(pa::OBB(character->_position + glm::vec3(0.0f, -2.0f, 0.0f), glm::vec3(2.5f, 11.0f, 2.5f), character->_rotation));
     constraints.push_back(pa::OBB(glm::vec3(0.0f, -18.0f, 0.0f), glm::vec3(100.0f, 0.2f, 100.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f)));
-    constraints.push_back(pa::OBB(glm::vec3(10.0f, 0.0f, 5.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::quat(1.0f, 0.0f, 0.0f, 0.0f)));
+    constraints.push_back(pa::OBB(glm::vec3(3.0f, 0.0f, -15.0f), glm::vec3(4.0f, 4.0f, 4.0f), glm::quat(0.34f, 0.0f, 0.146f, 0.93f)));
     //constraints.push_back(pa::OBB(glm::vec3(7.0f, -13.0f, 35.0f), glm::vec3(5.0f, 5.0f, 5.0f), glm::quat(0.0f, -0.157f, -0.2098f, 0.965f)));
     //constraints.push_back(pa::OBB(glm::vec3(0.0f, -13.0f, 25.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.0745f, -0.2235f, -0.149f, 0.96f)));
     //constraints.push_back(pa::OBB(glm::vec3(5.0f, -13.0f, 5.0f), glm::vec3(7.0f, 7.0f, 7.0f), glm::quat(-0.75f, -0.5f, -0.419f, -0.054f)));
@@ -163,9 +163,9 @@ int main()
 
         camera->update(shader);
 
-        for (int32 idx = 2; idx < constraints.size(); ++idx)
+        //for (int32 idx = 2; idx < constraints.size(); ++idx)
         {
-            constraints[idx].position += glm::vec3(0.0f, 0.0f, -0.1f);
+            //constraints[idx].position += glm::vec3(0.0f, 0.0f, -0.1f);
             //constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
         }
 
