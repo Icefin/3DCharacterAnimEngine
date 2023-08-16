@@ -608,6 +608,9 @@ Third try with Collision Detection + Verlet Integration
 
 https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d4-e79fb19f375a
 
+Forth try with PBD
+
+
 
 #### Optimization
 ![res](https://github.com/Icefin/AnimationPlayer/assets/76864202/cba4d17a-b822-4561-ae40-b9d96c681ab5)
@@ -620,6 +623,10 @@ Constraint - Vertex Number Relation
 |**3**| 0.016ms | 0.018ms | 0.038ms | 0.067ms |
 |**4**| 0.016ms | 0.020ms | 0.045ms | 0.077ms |
 |**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
+
+- BVH for character bones
+- Spatial Hashing for cloth particles
+
 
 ---
 ### Entity-Componenet-System Architecture
