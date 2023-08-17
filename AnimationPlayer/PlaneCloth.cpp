@@ -220,13 +220,33 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 		else if (pa::isPointInside(massPoint.position, obb) == true)
 		{
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-			pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
-			pa::RaycastInfo raycastInfo;
-			pa::raycast(ray, obb, &raycastInfo);
 
-			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
+			glm::vec3 obbToPoint = massPoint.position - obb.position;
+			glm::mat3 rotation = glm::mat3(obb.orientation);
+			glm::vec3 basis[3] = {
+				{rotation[0][0], rotation[0][1], rotation[0][2]},
+				{rotation[1][0], rotation[1][1], rotation[1][2]},
+				{rotation[2][0], rotation[2][1], rotation[2][2]}
+			};
+
+			pa::Point targetPoint;
+			float minDistance = FLT_MAX;
+			for (int32 i = 0; i < 3; ++i)
+			{
+				float distance = glm::dot(obbToPoint, basis[i]);
+				if (distance > 0.0f && obb.size[i] - distance < minDistance)
+				{
+					minDistance = obb.size[i] - distance;
+					targetPoint = massPoint.position + (minDistance + 0.01f) * basis[i];
+				}
+				else if (distance < 0.0f && obb.size[i] + distance < minDistance)
+				{
+					minDistance = obb.size[i] + distance;
+					targetPoint = massPoint.position - (minDistance + 0.01f) * basis[i];
+				}
+			}
 			
-			collisionConstraints->push_back({ targetPosition, &massPoint });
+			collisionConstraints->push_back({ targetPoint, &massPoint });
 			return;
 		}
 	}
