@@ -354,26 +354,7 @@ https://carmencincotti.com/2022-07-11/position-based-dynamics/
 5. Complex Cloth Simulation with Character
 - Import .obj asset
 
-#### GameObject && Geometric Primitives
-```c++
-struct OBB
-{
-	OBB(void) : position(0.0f, 0.0f, 0.0f), size(1.0f, 1.0f, 1.0f), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
-	OBB(const glm::vec3& p, const glm::vec3& s) : position(p), size(s), orientation(1.0f, 0.0f, 0.0f, 0.0f) { }
-	OBB(const glm::vec3& p, const glm::vec3& s, const glm::quat& q) : position(p), size(s), orientation(glm::normalize(q)) { }
-
-	glm::vec3 position;
-	glm::vec3 size;
-	glm::quat orientation;
-}
-
-bool isOBBTriangleCollision(const OBB& obb, const Triangle& triangle);
-bool isOBBPlaneCollision(const OBB& obb, const Plane& plane);
-bool isOBBSphereCollision(const OBB& obb, const Sphere& sphere);
-bool isOBBAABBCollision(const OBB& obb, const AABB& aabb);
-bool isOBBOBBCollision(const OBB& o1, const OBB& o2);
-```
-
+#### PlaneCloth Class with Constraint
 ```c++
 struct MassPoint
 {
@@ -430,7 +411,7 @@ private:
 };
 ```
 
-#### Collision Detection && Resolution
+#### Position Based Dynamics with Collision
 ```c++
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
@@ -474,21 +455,7 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 {
 	for (pa::OBB& obb : colliders)
 	{
-		pa::Line travelPath(massPoint.prevPosition, massPoint.position);
-
-		if (pa::isIntersection(travelPath, obb) == true)
-		{
-			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
-			pa::RaycastInfo raycastInfo;
-			pa::raycast(ray, obb, &raycastInfo);
-
-			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
-
-			collisionConstraints->push_back({ targetPosition, &massPoint });
-			return;
-		}
-		else if (pa::isPointInside(massPoint.position, obb) == true)
+		if (pa::isPointInside(massPoint.position, obb) == true)
 		{
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 
@@ -556,80 +523,22 @@ void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
 ```
 
 ```c++
-bool isIntersection(const Line& line, const OBB& obb)
+bool isPointInside(const Point& point, const OBB& obb)
 {
-	Ray ray;
-	ray.origin = line.p1;
-	ray.direction = glm::normalize(line.p2 - line.p1);
+	glm::vec3 obbToPoint = point - obb.position;
 
-	RaycastInfo raycastInfo;
-	raycast(ray, obb, &raycastInfo);
-
-	float squareLength = calculateSquareLength(line);
-
-	return (raycastInfo.isHit && raycastInfo.rayTime * raycastInfo.rayTime < squareLength);
-}
-
-void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
-{
-	resetRaycastInfo(outInfo);
-
-	glm::vec3 halfSide = obb.size;
 	glm::mat3 rotation = glm::mat3(obb.orientation);
-	glm::vec3 basis[3] = {
-		glm::vec3(rotation[0][0], rotation[0][1], rotation[0][2]),
-		glm::vec3(rotation[1][0], rotation[1][1], rotation[1][2]),
-		glm::vec3(rotation[2][0], rotation[2][1], rotation[2][2])
-	};
-
-	glm::vec3 rayToOBB = obb.position - ray.origin;
-	glm::vec3 f = glm::vec3(glm::dot(basis[0], ray.direction), glm::dot(basis[1], ray.direction), glm::dot(basis[2], ray.direction));
-	glm::vec3 e = glm::vec3(glm::dot(basis[0], rayToOBB), glm::dot(basis[1], rayToOBB), glm::dot(basis[2], rayToOBB));
-
-	float t[6] = { 0, 0, 0, 0, 0, 0 };
-	for (int32 i = 0; i < 3; ++i)
+	for (int32 i = 0; i < 3; i++)
 	{
-		if (glm::abs(f[i]) < EPSILON)
-		{
-			if (-e[i] - halfSide[i] > 0.0f || -e[i] + halfSide[i] < 0.0f)
-				return;
+		glm::vec3 basis = glm::normalize(glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]));
+		float distance = glm::dot(obbToPoint, basis);
 
-			f[i] = 0.00001f;
-		}
-
-		t[i * 2] = (e[i] + halfSide[i]) / f[i];
-		t[i * 2 + 1] = (e[i] - halfSide[i]) / f[i];
+		if (distance > obb.size[i])
+			return false;
+		if (distance < -obb.size[i])
+			return false;
 	}
-
-	float tmin = fmaxf(fmaxf(fminf(t[0], t[1]), fminf(t[2], t[3])), fminf(t[4], t[5]));
-	float tmax = fminf(fminf(fmaxf(t[0], t[1]), fmaxf(t[2], t[3])), fmaxf(t[4], t[5]));
-
-	if (tmax < 0.0f)
-		return;
-
-	if (tmin > tmax)
-		return;
-
-	float tresult = tmin;
-	if (tmin < 0.0f)
-		tresult = tmax;
-
-	if (outInfo != nullptr)
-	{
-		outInfo->isHit = true;
-		outInfo->rayTime = tresult;
-		outInfo->hitPoint = ray.origin + tresult * ray.direction;
-
-		glm::vec3 normals[6] = {
-			basis[0], -basis[0], basis[1], -basis[1], basis[2], -basis[2]
-		};
-
-		for (int32 i = 0; i < 6; ++i)
-		{
-			if (glm::abs(tresult - t[i]) < EPSILON)
-				outInfo->normal = glm::normalize(normals[i]);
-		}
-	}
+	return true;
 }
 ```
 
@@ -666,18 +575,19 @@ Constraint - Vertex Number Relation (Force based Simulation)
 |**4**| 0.016ms | 0.020ms | 0.045ms | 0.077ms |
 |**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
 
-Iteration Count - Vertex Number Relation (Position based Simulation)
+Iteration Count - Vertex Number Relation (Position based Simulation, 3 constraints)
 |     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
 |:---:|:-------:|:-------:|:-------:|:-------:|
-|**1**| 0.016ms | 0.028ms | 0.061ms | 0.110ms |
-|**2**| 0.016ms | 0.030ms | 0.067ms | 0.120ms |
-|**3**| 0.017ms | 0.033ms | 0.073ms | 0.130ms |
-|**4**| 0.017ms | 0.035ms | 0.080ms | 0.143ms |
-|**5**| 0.017ms | 0.039ms | 0.086ms | 0.155ms |
+|**1**| 0.016ms | 0.016ms | 0.031ms | 0.055ms |
+|**2**| 0.016ms | 0.017ms | 0.036ms | 0.063ms |
+|**3**| 0.016ms | 0.019ms | 0.040ms | 0.071ms |
+|**4**| 0.016ms | 0.021ms | 0.045ms | 0.080ms |
+|**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
 
 - Jacobi rather than Gauss-Seidel
 - Parallelize Normal Calculation
 - BVH for character mesh
+- XPBD?
 
 #### Errors
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
