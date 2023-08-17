@@ -663,6 +663,7 @@ Iteration Count - Vertex Number Relation (Position based Simulation)
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/a5b32d76-ee24-4b11-b26e-9b13327b5841)
 
+- Subdivision cloth surface
 - Shadowing
 - Thickness or Spherical Collider to Particles to prevent folding (Spatial Hashing for cloth particle)
 
