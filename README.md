@@ -655,8 +655,8 @@ Iteration Count - Vertex Number Relation (Position based Simulation)
 |**4**| 0.017ms | 0.035ms | 0.080ms | 0.143ms |
 |**5**| 0.017ms | 0.039ms | 0.086ms | 0.155ms |
 
-- BVH for character bones
-- Jacobi rather than Newton-Raphson Method
+- BVH for character mesh
+- Jacobi rather than Gauss-Seidel
 - Parallelize Normal Calculation
 
 #### Errors
