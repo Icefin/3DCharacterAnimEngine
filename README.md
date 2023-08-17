@@ -584,9 +584,12 @@ Iteration Count - Vertex Number Relation (Position based Simulation, 3 constrain
 |**4**| 0.016ms | 0.021ms | 0.045ms | 0.080ms |
 |**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
 
-- Jacobi rather than Gauss-Seidel
+1. Vertex Number Effect
+- Jacobi-Iteration rather than Gauss-Seidel Method
 - Parallelize Normal Calculation
+2. Constraint Number Effect
 - BVH for character mesh
+3. Iteration Count Effect
 - XPBD?
 
 #### Errors
