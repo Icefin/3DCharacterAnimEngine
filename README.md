@@ -561,7 +561,9 @@ https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d
 
 Fourth try with Collision Detection + Position Based Dynamics
 
-https://github.com/Icefin/AnimationPlayer/assets/76864202/d39f36a8-6533-431d-9705-df296fe17a73
+https://github.com/Icefin/AnimationPlayer/assets/76864202/60e1c5f7-78cd-4718-8524-30af5c86a66b
+
+
 
 
 
@@ -597,7 +599,8 @@ Iteration Count - Vertex Number Relation (Position based Simulation, 3 constrain
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/a5b32d76-ee24-4b11-b26e-9b13327b5841)
 
 - Subdivision cloth surface
-- Thickness or Spherical Collider to Particles to prevent folding (Spatial Hashing for cloth particle)
+- Thinkness for realistic rendering
+- Spherical Collider or Spatial-Hashing Particles to prevent folding
 - Shadowing
 
 
