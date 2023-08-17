@@ -270,19 +270,23 @@ void PlaneCloth::render(Shader& shader)
 	shader.setUniformFloat("material.shininess", _materialShininess);
 	shader.setUniformMat4("worldMat", worldMat);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glBindVertexArray(_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, _massPointList.size() * sizeof(MassPoint), _massPointList.data());
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, NULL);
 }
 
 void PlaneCloth::updateMassPointNormal(void)
 {
 	int32 numMassPoints = _massPointList.size();
-	std::vector<std::vector<glm::vec3>> normals(numMassPoints, std::vector<glm::vec3>(6));
+	std::vector<std::vector<glm::vec3>> normals(numMassPoints);
 	int32 numIndices = _indices.size();
 	for (int32 i = 0; i < numIndices; i += 6) {
 
