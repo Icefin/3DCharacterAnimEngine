@@ -185,8 +185,8 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 	//Solve Constraints
 	for (int32 cnt = 0; cnt < kIterationCount; ++cnt)
 	{
-		for (DistanctConstraint& constraint : _internalConstraints)
-			solveDistantConstraint(constraint);
+		for (DistanceConstraint& constraint : _internalConstraints)
+			solveDistanceConstraint(constraint);
 
 		for (CollisionConstraint& constraint : collisionConstraints)
 			solveCollisionConstraint(constraint);
@@ -252,7 +252,7 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 	}
 }
 
-void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint)
+void PlaneCloth::solveDistanceConstraint(DistanceConstraint& constraint)
 {
 	MassPoint* left = constraint.left;
 	MassPoint* right = constraint.right;
@@ -289,7 +289,6 @@ void PlaneCloth::render(Shader& shader)
 	shader.setUniformVec3("material.specular", _materialSpecular);
 	shader.setUniformFloat("material.shininess", _materialShininess);
 	shader.setUniformMat4("worldMat", worldMat);
-
 
 	glBindVertexArray(_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);

@@ -20,7 +20,7 @@ struct CollisionConstraint
 	MassPoint*	point;
 };
 
-struct DistanctConstraint
+struct DistanceConstraint
 {
 	float		restLength;
 	MassPoint*	left;
@@ -38,7 +38,7 @@ public:
 
 private:
 	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);
-	void solveDistantConstraint(DistanctConstraint& constraint);
+	void solveDistanceConstraint(DistanceConstraint& constraint);
 	void solveCollisionConstraint(CollisionConstraint& constraint);
 	void updateMassPointNormal(void);
 
@@ -49,7 +49,7 @@ private:
 
 	std::vector<MassPoint>			_massPointList;
 	std::vector<uint32>				_indices;
-	std::vector<DistanctConstraint> _internalConstraints;
+	std::vector<DistanceConstraint> _internalConstraints;
 
 private:
 	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
