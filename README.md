@@ -391,7 +391,7 @@ struct CollisionConstraint
 	MassPoint*	point;
 };
 
-struct DistanctConstraint
+struct DistanceConstraint
 {
 	float		restLength;
 	MassPoint*	left;
@@ -409,7 +409,7 @@ public:
 
 private:
 	void generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints);
-	void solveDistantConstraint(DistanctConstraint& constraint);
+	void solveDistanceConstraint(DistanceConstraint& constraint);
 	void solveCollisionConstraint(CollisionConstraint& constraint);
 	void updateMassPointNormal(void);
 
@@ -420,7 +420,7 @@ private:
 
 	std::vector<MassPoint>		_massPointList;
 	std::vector<uint32>		_indices;
-	std::vector<DistanctConstraint> _internalConstraints;
+	std::vector<DistanceConstraint> _internalConstraints;
 
 private:
 	glm::vec3	_materialAmbient{0.1f, 0.1f, 0.1f};
@@ -454,8 +454,8 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 	//Solve Constraints
 	for (int32 cnt = 0; cnt < kIterationCount; ++cnt)
 	{
-		for (DistanctConstraint& constraint : _internalConstraints)
-			solveDistantConstraint(constraint);
+		for (DistanceConstraint& constraint : _internalConstraints)
+			solveDistanceConstraint(constraint);
 
 		for (CollisionConstraint& constraint : collisionConstraints)
 			solveCollisionConstraint(constraint);
@@ -491,13 +491,33 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 		else if (pa::isPointInside(massPoint.position, obb) == true)
 		{
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-			pa::Ray ray(massPoint.position, massPoint.prevPosition - massPoint.position);
-			pa::RaycastInfo raycastInfo;
-			pa::raycast(ray, obb, &raycastInfo);
 
-			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
+			glm::vec3 obbToPoint = massPoint.position - obb.position;
+			glm::mat3 rotation = glm::mat3(obb.orientation);
+			glm::vec3 basis[3] = {
+				{rotation[0][0], rotation[0][1], rotation[0][2]},
+				{rotation[1][0], rotation[1][1], rotation[1][2]},
+				{rotation[2][0], rotation[2][1], rotation[2][2]}
+			};
+
+			pa::Point targetPoint;
+			float minDistance = FLT_MAX;
+			for (int32 i = 0; i < 3; ++i)
+			{
+				float distance = glm::dot(obbToPoint, basis[i]);
+				if (distance > 0.0f && obb.size[i] - distance < minDistance)
+				{
+					minDistance = obb.size[i] - distance;
+					targetPoint = massPoint.position + (minDistance + 0.01f) * basis[i];
+				}
+				else if (distance < 0.0f && obb.size[i] + distance < minDistance)
+				{
+					minDistance = obb.size[i] + distance;
+					targetPoint = massPoint.position - (minDistance + 0.01f) * basis[i];
+				}
+			}
 			
-			collisionConstraints->push_back({ targetPosition, &massPoint });
+			collisionConstraints->push_back({ targetPoint, &massPoint });
 			return;
 		}
 	}
@@ -505,7 +525,7 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 ```
 
 ```c++
-void PlaneCloth::solveDistantConstraint(DistanctConstraint& constraint)
+void PlaneCloth::solveDistanceConstraint(DistanceConstraint& constraint)
 {
 	MassPoint* left = constraint.left;
 	MassPoint* right = constraint.right;
@@ -618,19 +638,19 @@ void raycast(const Ray& ray, const OBB& obb, RaycastInfo* outInfo)
 ![temp](https://github.com/Icefin/AnimationPlayer/assets/76864202/cfb009d6-85f5-4c1b-8ee1-77c192c3f1f8)
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/90ea8cc9-f978-487f-a1b6-02c09e042c1e)
 
-First step with Fixed Volume + Explicit Euler Method
+First try with Fixed Volume + Force based Explicit Euler Method
 
 https://github.com/Icefin/AnimationPlayer/assets/76864202/c73974bf-4ded-408e-887c-cfa4673ea058
 
-Second try with Collision Detection + Explicit Euler Method
+Second try with Collision Detection + Force based Explicit Euler Method
 
 https://github.com/Icefin/AnimationPlayer/assets/76864202/6b94f60f-0e0a-459d-a148-ab901196c361
 
-Third try with Collision Detection + Verlet Integration
+Third try with Collision Detection + Force based Verlet Integration
 
 https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d4-e79fb19f375a
 
-Forth try with PBD
+Fourth try with Collision Detection + Position Based Dynamics
 
 https://github.com/Icefin/AnimationPlayer/assets/76864202/cce5fe7e-9ea0-463f-9039-21ae3fc9e2a8
 
@@ -656,17 +676,17 @@ Iteration Count - Vertex Number Relation (Position based Simulation)
 |**4**| 0.017ms | 0.035ms | 0.080ms | 0.143ms |
 |**5**| 0.017ms | 0.039ms | 0.086ms | 0.155ms |
 
-- BVH for character mesh
 - Jacobi rather than Gauss-Seidel
 - Parallelize Normal Calculation
+- BVH for character mesh
 
 #### Errors
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
 ![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/a5b32d76-ee24-4b11-b26e-9b13327b5841)
 
 - Subdivision cloth surface
-- Shadowing
 - Thickness or Spherical Collider to Particles to prevent folding (Spatial Hashing for cloth particle)
+- Shadowing
 
 
 ---
