@@ -632,7 +632,8 @@ https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d
 
 Forth try with PBD
 
-https://github.com/Icefin/AnimationPlayer/assets/76864202/78efec86-4454-4287-b4c5-90723416f04e
+https://github.com/Icefin/AnimationPlayer/assets/76864202/cce5fe7e-9ea0-463f-9039-21ae3fc9e2a8
+
 
 
 
