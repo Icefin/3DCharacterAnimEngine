@@ -67,7 +67,6 @@ namespace pa
 		glm::mat3 rotation = glm::mat3(obb.orientation);
 		for (int32 i = 0; i < 3; i++)
 		{
-			//Recheck Here
 			glm::vec3 basis = glm::normalize(glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]));
 			float distance = glm::dot(obbToPoint, basis);
 

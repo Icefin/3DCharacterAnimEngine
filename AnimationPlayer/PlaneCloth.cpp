@@ -28,7 +28,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 	_massPointList[0].invMass = 0.0f;
 	_massPointList[widthNum - 1].invMass = 0.0f;
 
-	// StructuralSpring Initialize
+	// StructuralConstraint Initialize
 	for (int32 h = 0; h < heightNum - 1; ++h)
 	{
 		for (int32 w = 0; w < widthNum - 1; ++w)
@@ -65,7 +65,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 		_internalConstraints.push_back({ restLengthDownward, origin, lower });
 	}
 
-	// ShearSpring Initialize
+	// ShearConstraint Initialize
 	for (int32 h = 0; h < heightNum - 1; ++h)
 	{
 		for (int32 w = 0; w < widthNum - 1; ++w)
@@ -92,7 +92,7 @@ PlaneCloth::PlaneCloth(glm::vec3 position, glm::vec3 color, uint32 width, uint32
 		}
 	}
 
-	// BendSpring Initialize
+	// BendConstraint Initialize
 	for (int32 h = 0; h < heightNum; ++h)
 	{
 		for (int32 w = 0; w < widthNum - 2; ++w)
@@ -203,21 +203,7 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 {
 	for (pa::OBB& obb : colliders)
 	{
-		pa::Line travelPath(massPoint.prevPosition, massPoint.position);
-
-		if (pa::isIntersection(travelPath, obb) == true)
-		{
-			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
-			pa::Ray ray(massPoint.prevPosition, massPoint.position - massPoint.prevPosition);
-			pa::RaycastInfo raycastInfo;
-			pa::raycast(ray, obb, &raycastInfo);
-
-			glm::vec3 targetPosition = raycastInfo.hitPoint + raycastInfo.normal * 0.05f;
-
-			collisionConstraints->push_back({ targetPosition, &massPoint });
-			return;
-		}
-		else if (pa::isPointInside(massPoint.position, obb) == true)
+		if (pa::isPointInside(massPoint.position, obb) == true)
 		{
 			massPoint.color = glm::vec3(1.0f, 0.0f, 0.0f);
 

@@ -160,14 +160,7 @@ int main()
         //Input Process
         glfwPollEvents();
         processInput(window, deltaTime * frameRate);
-
         camera->update(shader);
-
-        //for (int32 idx = 2; idx < constraints.size(); ++idx)
-        {
-            //constraints[idx].position += glm::vec3(0.0f, 0.0f, -0.1f);
-            //constraints[idx].orientation = glm::quat(0.99996f, 0.0f, 0.008727f, 0.0f) * constraints[idx].orientation;
-        }
 
         //Object Update
         character->update(deltaTime * frameRate);
