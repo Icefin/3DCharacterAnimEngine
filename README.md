@@ -652,8 +652,7 @@ https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d
 
 Fourth try with Collision Detection + Position Based Dynamics
 
-https://github.com/Icefin/AnimationPlayer/assets/76864202/cce5fe7e-9ea0-463f-9039-21ae3fc9e2a8
-
+https://github.com/Icefin/AnimationPlayer/assets/76864202/d39f36a8-6533-431d-9705-df296fe17a73
 
 
 
