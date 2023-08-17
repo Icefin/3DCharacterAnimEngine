@@ -194,7 +194,7 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 
 	//Velocity Update
 	for (MassPoint& massPoint : _massPointList)
-		massPoint.velocity = (massPoint.position - massPoint.prevPosition) / deltaTime;
+		massPoint.velocity = 0.99f * (massPoint.position - massPoint.prevPosition) / deltaTime;
 
 	updateMassPointNormal();
 }
