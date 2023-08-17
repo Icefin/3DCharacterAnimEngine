@@ -412,6 +412,8 @@ private:
 ```
 
 #### Position Based Dynamics with Collision
+![pbd_algo](https://github.com/Icefin/AnimationPlayer/assets/76864202/06ab9fcc-0f3d-4644-b137-3e3ffbd594f0)
+
 ```c++
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
@@ -444,7 +446,7 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 
 	//Velocity Update
 	for (MassPoint& massPoint : _massPointList)
-		massPoint.velocity = (massPoint.position - massPoint.prevPosition) / deltaTime;
+		massPoint.velocity = 0.99f * (massPoint.position - massPoint.prevPosition) / deltaTime;
 
 	updateMassPointNormal();
 }
@@ -492,6 +494,26 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 ```
 
 ```c++
+bool isPointInside(const Point& point, const OBB& obb)
+{
+	glm::vec3 obbToPoint = point - obb.position;
+
+	glm::mat3 rotation = glm::mat3(obb.orientation);
+	for (int32 i = 0; i < 3; i++)
+	{
+		glm::vec3 basis = glm::normalize(glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]));
+		float distance = glm::dot(obbToPoint, basis);
+
+		if (distance > obb.size[i])
+			return false;
+		if (distance < -obb.size[i])
+			return false;
+	}
+	return true;
+}
+```
+
+```c++
 void PlaneCloth::solveDistanceConstraint(DistanceConstraint& constraint)
 {
 	MassPoint* left = constraint.left;
@@ -522,26 +544,6 @@ void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
 }
 ```
 
-```c++
-bool isPointInside(const Point& point, const OBB& obb)
-{
-	glm::vec3 obbToPoint = point - obb.position;
-
-	glm::mat3 rotation = glm::mat3(obb.orientation);
-	for (int32 i = 0; i < 3; i++)
-	{
-		glm::vec3 basis = glm::normalize(glm::vec3(rotation[i][0], rotation[i][1], rotation[i][2]));
-		float distance = glm::dot(obbToPoint, basis);
-
-		if (distance > obb.size[i])
-			return false;
-		if (distance < -obb.size[i])
-			return false;
-	}
-	return true;
-}
-```
-
 #### Result :
 ![res](https://github.com/Icefin/AnimationPlayer/assets/76864202/cba4d17a-b822-4561-ae40-b9d96c681ab5)
 ![temp](https://github.com/Icefin/AnimationPlayer/assets/76864202/cfb009d6-85f5-4c1b-8ee1-77c192c3f1f8)
@@ -562,9 +564,6 @@ https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d
 Fourth try with Collision Detection + Position Based Dynamics
 
 https://github.com/Icefin/AnimationPlayer/assets/76864202/60e1c5f7-78cd-4718-8524-30af5c86a66b
-
-
-
 
 
 #### Optimization
