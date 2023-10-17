@@ -387,7 +387,7 @@ Cloth 객체는 생성 시 widthNum * heightNum의 grid형태의 massPoint로 �
 Mass-Spring System에서는 각각의 spring의 stiffness를 설정해야 하지만, 현재 프로젝트에서는 모두 distance constraint의 형태로 _internalConstraints에 저장합니다.  
 ![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/953dcac3-c839-48cd-a488-9a9c2d4c086c)
 
-이후 update함수 호출 시, Position Based Dynamics의 알고리즘을 따라 상태를 갱신합니다.  
+이후 매 프레임 update함수를 호출하며, Position Based Dynamics의 알고리즘을 따라 상태를 갱신합니다.  
 1) massPoint의 초기값을 설정.
 2) 충돌을 검사하고, 충돌이 발생 시 collision constraint를 생성.
 3) 생성된 constraint을 해소하며 massPoint의 위치를 갱신.
