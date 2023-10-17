@@ -9,19 +9,21 @@ Character Skeleton Data로 .asf 형식을 사용하며
 Character Animation Data로 .amc 형식을 사용합니다.  
 [.asf/.amc file format](#asf-amc-file-format)
 
-프로젝트는 크게 세 단계로 개발되어,
-1) Animation Data Compression
+개발 언어로 C/C++을 사용하였으며, OpenGL/GLSL을 사용하였습니다.  
+
+프로젝트는
+1) Animation Compression
 2) Motion Blending
 3) Cloth Simulation
 
-의 세 파트로 구성되어 있습니다.
+의 세 파트로 구성되어 있습니다.  
 
 각 파트에서 구현한 내용과 목차는 아래와 같습니다.  
 
 ##### [Animation Compression](#animation-compression)  
 1. Quaternion -> Quantized Quaternion으로 자료형을 압축.  
- -> 128bit (x, y, z, w의 4float) -> 48bit으로 압축되며, 0.375의 압축률
-2. Catmull-Rom Spline을 사용하여 모션 데이터를 압축.  
+ -> 128bit (x, y, z, w의 4 float) -> 48bit으로 압축되며, 0.375의 압축률
+2. Curve Fitting을 통해 모션 데이터를 압축.  
  -> Threshold 0.01을 기준으로 약 1000 프레임의 애니메이션이 460프레임으로 압축되어, 0.46의 압축률
    
 ##### [Motion Blending](#motion-blending)  
@@ -100,10 +102,9 @@ QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion)
 }
 ```
   
-#### Animation Data Compression (Curve Fitting )
-Curve Fitting을 위해 Catmull-Rom Spline을 사용합니다.
-Catmull-Rom Spline은 보간 시 곡선이 control point에 얼마나 강하게 결합되는지 결정하는 tension값 (0 ~ 1) 에 따라 곡선의 형태가 달라지는데,
-현재 프로젝트에서는 0.5의 값을 사용합니다.  
+#### Curve Fitting
+Curve Fitting을 위해 Catmull-Rom Spline을 사용합니다.  
+Catmull-Rom Spline은 보간 시 곡선이 control point에 얼마나 강하게 결합되는지 결정하는 tension값 (0 ~ 1) 에 따라 곡선의 형태가 달라지는데, 현재 프로젝트에서는 0.5의 값을 사용합니다.  
 ![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/d566c16d-8d97-41b4-931f-5b018963d896)
 
 ```c++
@@ -118,9 +119,9 @@ float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float 
 }
 ```
 
-이제 Keyframe을 4개씩 뽑아서 Catmull-Rom Spline을 계산하고 보간된 데이터와 원본 데이터를 비교하여,
-1) Spline이 threshold 이하로 근사되지 않는다면 오차 범위가 가장 컸던 범위에서 새로운 keyframe을 설정 후 압축을 다시 진행합니다.
-2) Spline이 threshold 이하로 근사된다면 압축을 멈추고, 선별된 keyframe데이터들을 Quantization 후 반환합니다.
+이제 Keyframe을 4개씩 뽑아서 Catmull-Rom Spline을 계산하고 보간된 데이터와 원본 데이터를 비교하여,  
+1) Spline이 threshold 이하로 근사되지 않는다면 오차 범위가 가장 컸던 범위에서 새로운 keyframe을 설정 후 압축을 다시 진행합니다.  
+2) Spline이 threshold 이하로 근사된다면 압축을 멈추고, 선별된 keyframe데이터들을 Quantization 후 반환합니다.  
 
 ![curve_fitting](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/b3730a20-ec71-4cc3-8547-14442c0535e3)
 
@@ -223,8 +224,7 @@ https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.htm
 
 Animation Transition을 통해 하나의 모션에서 다른 모션으로 자연스럽게 전환되도록 구현합니다.  
 Animator가 Animation들의 상태를 관리하며, 현재 진행되고 있는 Animation의 weight factor는 1의 값을 가지게 됩니다.  
-이후 사용자의 입력을 통해 Animation의 상태가 전환되면 30ms에 걸쳐 현재 진행되고 있는 Animation의 weight factor는 0으로,  
-새로 진행해야 하는 Animation의 weight factor 는 1의 값으로 갱신됩니다.  
+이후 사용자의 입력을 통해 Animation의 상태가 전환되면 30ms에 걸쳐 현재 진행되고 있는 Animation의 weight factor는 0으로, 새로 진행해야 하는 Animation의 weight factor 는 1의 값으로 갱신됩니다.  
 Animator는 joint의 Animation 반환 시 각 Animation들의 weight factor값으로 선형 보간하여 최종 결과물을 반환합니다.  
 
 ```c++
@@ -267,8 +267,7 @@ https://github.com/Icefin/CharacterEngine/assets/76864202/68c6a325-3091-4e15-932
 #### Animation Layering
 
 Animation Layering을 통해 상체와 하체의 애니메이션을 분리합니다.  
-이를 통해 걷기/뛰기 모션 도중 공격이 입력되어도 하체는 걷는 모션을 지속하고  
-상체만 공격 모션이 나갈 수 있도록 개선하였습니다.  
+이를 통해 걷기/뛰기 모션 도중 공격이 입력되어도 하체는 걷는 모션을 지속하고, 상체만 공격 모션이 나갈 수 있도록 개선하였습니다.  
 
 ```c++
 struct LayerInfo
@@ -292,8 +291,7 @@ struct LayerInfo
 
 Full Body Animation이 가장 기본값 이므로 _animationLayerList[0]에 전신 Animation LayerInfo가 위치합니다.  
 현재 프로젝트에서는 상체와 하체만 분리하므로 _animationLayerList[1]에 상체 Animation LayerInfo가 위치하게 됩니다.  
-_animationLayerList[0]의 animationRootBoneIndex = 0, _animationLayerList[1]의 animationRootBoneIndex = 10의 값을 가지게 되는데,  
-이는 각각 character skeleton의 구조 상, 전신의 root bone index = 1, 상체의 root bone index = 10이기 때문입니다.  
+_animationLayerList[0]의 animationRootBoneIndex = 0, _animationLayerList[1]의 animationRootBoneIndex = 10의 값을 가지게 되는데, 이는 각각 character skeleton의 구조 상, 전신의 root bone index = 1, 상체의 root bone index = 10이기 때문입니다.  
 
 Child Layer는 Parent Layer보다 높은 우선순위를 가지며, 동시에 입력될 경우 child의 animation을 반환하도록 합니다.  
 현재 프로젝트에서는 상체의 animation state이 ATTACK인 경우에만 상/하체를 분리할 지 결정합니다.  
@@ -357,8 +355,7 @@ http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
 
 #### Object Setting
 
-Cloth Simulation을 위해 Cloth를 grid 형태의 질점으로 분할하고,  
-해당 질점들의 위치를 제한하기 위한 constraint를 다음과 같이 설정합니다.  
+Cloth Simulation을 위해 Cloth를 grid 형태의 질점으로 분할하고, 해당 질점들의 위치를 제한하기 위한 constraint를 다음과 같이 설정합니다.  
 현재 프로젝트에서는 distance, collision constraint만을 사용합니다.  
 
 ```c++
@@ -386,9 +383,8 @@ struct DistanceConstraint
 };
 ```
 
-Cloth 객체는 생성자가 호출되며 widthNum * heightNum의 grid형태의 massPoint로 분할되며, 이 때 각 massPoint는  
-Structural, Shear, Bend constraint로 연결됩니다. Mass-Spring System에서는 각각의 spring의 stiffness를 설정해야 하지만,  
-현재 프로젝트에서는 모두 distance constraint의 형태로 _internalConstraints에 저장합니다.  
+Cloth 객체는 생성 시 widthNum * heightNum의 grid형태의 massPoint로 분할되며, 이 때 각 massPoint는 Structural, Shear, Bend constraint로 연결됩니다.  
+Mass-Spring System에서는 각각의 spring의 stiffness를 설정해야 하지만, 현재 프로젝트에서는 모두 distance constraint의 형태로 _internalConstraints에 저장합니다.  
 ![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/953dcac3-c839-48cd-a488-9a9c2d4c086c)
 
 이후 update함수 호출 시, Position Based Dynamics의 알고리즘을 따라 상태를 갱신합니다.  
@@ -471,8 +467,7 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 ```
 
 generateCollisionConstraint함수에서는 Scene에 존재하는 모든 OBB와 massPoint의 충돌을 검사합니다.
-massPoint가 OBB의 내부에 존재하면 충돌이 발생한 상황 이므로
-충돌을 해소할 수 있는 위치로 massPoint를 밀어내는 constraint를 생성합니다.
+massPoint가 OBB의 내부에 존재하면 충돌이 발생한 상황 이므로 충돌을 해소할 수 있는 위치로 massPoint를 밀어내는 constraint를 생성합니다.  
 ```c++
 void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints)
 {
@@ -514,8 +509,8 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 }
 ```
 
-Point가 OBB내부에 위치하는지 확인하는 함수는 아래와 같습니다.
-OBB의 중심점과 변의 길이를 사용하여 Point가 OBB의 내부에 위치하는지 검사합니다.
+Point가 OBB내부에 위치하는지 확인하는 함수는 아래와 같습니다.  
+OBB의 중심점과 변의 길이를 사용하여 Point가 OBB의 내부에 위치하는지 검사합니다.  
 ```c++
 bool isPointInside(const Point& point, const OBB& obb)
 {
@@ -603,8 +598,8 @@ Iteration Count - Vertex Number Relation (per frame)
 |**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
 
 #### Reference :
+https://ics.uci.edu/~shz/courses/cs114/docs/proj3/index.html  
 https://graphics.stanford.edu/~mdfisher/cloth.html  
-https://learnopengl.com/Lighting/Basic-Lighting  
 https://carmencincotti.com/2022-07-11/position-based-dynamics/
 
 
