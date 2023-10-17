@@ -4,7 +4,19 @@
 
 https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc19-8b3b037336ec
 
-//전체 프로젝트 설명
+3D Character Animation을 위한 프로젝트입니다.  
+Character Skeleton Data로 .asf 형식을 사용하며  
+Character Animation Data로 .amc 형식을 사용합니다.  
+[.asf/.amc file format](#asf-amc-file-format)
+
+프로젝트는 크게 세 단계로 개발되어,
+1) Animation Data Compression
+2) Motion Blending
+3) Cloth Simulation
+
+의 세 파트로 구성되어 있습니다.
+
+각 파트에서 구현한 내용과 목차는 아래와 같습니다.  
 
 ##### [Animation Compression](#animation-compression)  
 1. Quaternion -> Quantized Quaternion으로 자료형을 압축.  
@@ -18,15 +30,14 @@ https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc1
 
 ##### [Cloth Simulation](#cloth-simulation)
 1. Collision Detection을 위해 Sphere/OBB/AABB의 Collider 구현
-2. 옷감의 음영을 확인하기 위해 Phong Light Model을 사용하여 Lighting
-3. Position Based Dynamics를 사용하여 보다 안정적인 Cloth Simulation 구현 
+2. Position Based Dynamics를 사용하여 보다 안정적인 Cloth Simulation 구현 
 
 
 ---
 ## Animation Compression
 
 #### Quaternion Quantization
-Riot Games의 Compressing Skeletal Animation Data문서를 참고하여 QuantizedQuaternion 자료형을 만들었다.
+Riot Games의 Compressing Skeletal Animation Data문서를 참고하여 QuantizedQuaternion 자료형을 설정합니다.  
 ![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/12976b8b-c167-4952-8acd-1c34ad815409)
 ```c++
 struct QuantizedQuaternion
@@ -41,7 +52,7 @@ struct QuantizedQuaternion
     uint16 c          : 14;
 };
 ```
-glm::quat을 위의 자료형으로 압축하는 방법은 아래와 같다.
+glm::quat을 위의 자료형으로 압축하는 방법은 아래와 같습니다.
 1. glm::quat에서 몇 번째 원소의 절댓값이 가장 큰지 확인
 2. 해당 원소의 index를 largest에 저장 (0 ~ 3이므로 2bit로 저장 가능), 부호를 sign에 저장
 3. 가장 큰 원소를 제외한 나머지 원소들을 14bit범위의 양의 정수형태로 변환하여 a, b, c 에 저장
@@ -66,7 +77,7 @@ QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion)
 	quantizedQuaternion.sign = static_cast<uint16>(quat[maxIndex] < 0.f ? 1 : 0);
 
 	//가장 큰 원소를 제외한 나머지 원소들에서 sqrt(2)보다 큰 값은 나올 수 없으므로
-	//정밀도를 높이기 위해 16383에 sqrt(2)를 곱한 값을 사용하여 변환한다.
+	//정밀도를 높이기 위해 16383에 sqrt(2)를 곱한 값을 사용하여 변환.
 	const static float Float2Int = 16383.f * sqrtf(2);
 	const int permutation[4][3] = { {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2} };
 	const int* map = permutation[maxIndex];
@@ -90,9 +101,9 @@ QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion)
 ```
   
 #### Animation Data Compression (Curve Fitting )
-Curve Fitting을 위해 Catmull-Rom Spline을 사용한다.
+Curve Fitting을 위해 Catmull-Rom Spline을 사용합니다.
 Catmull-Rom Spline은 보간 시 곡선이 control point에 얼마나 강하게 결합되는지 결정하는 tension값 (0 ~ 1) 에 따라 곡선의 형태가 달라지는데,
-현재 프로젝트에서는 0.5의 값을 사용하였다.
+현재 프로젝트에서는 0.5의 값을 사용합니다.  
 ![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/d566c16d-8d97-41b4-931f-5b018963d896)
 
 ```c++
@@ -108,8 +119,8 @@ float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float 
 ```
 
 이제 Keyframe을 4개씩 뽑아서 Catmull-Rom Spline을 계산하고 보간된 데이터와 원본 데이터를 비교하여,
-1) Spline이 threshold 이하로 근사되지 않는다면 오차 범위가 가장 컸던 범위에서 새로운 keyframe을 설정 후 압축을 다시 진행하고
-2) Spline이 threshold 이하로 근사된다면 압축을 종료한다.
+1) Spline이 threshold 이하로 근사되지 않는다면 오차 범위가 가장 컸던 범위에서 새로운 keyframe을 설정 후 압축을 다시 진행합니다.
+2) Spline이 threshold 이하로 근사된다면 압축을 멈추고, 선별된 keyframe데이터들을 Quantization 후 반환합니다.
 
 ![curve_fitting](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/b3730a20-ec71-4cc3-8547-14442c0535e3)
 
@@ -122,7 +133,7 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 	std::vector<std::pair<int32, glm::quat>> keyFrameRotation(dataSize);
 
 	//Catmull-Rom Spline을 그리기 위해 keypoint가 최소 4개 필요하므로
-	//데이터의 초기값과 마지막값을 더미데이터로 삽입한다.
+	//데이터의 초기값과 마지막값을 더미데이터로 삽입.
 	keyFrameRotation[0] = { 0, data[0].rotation };
 	keyFrameRotation[1] = { 0, data[0].rotation };
 	keyFrameRotation[2] = { dataSize / 2, data[dataSize / 2].rotation };
@@ -130,7 +141,7 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 	keyFrameRotation[4] = { dataSize - 1, data[dataSize - 1].rotation };
 	int32 keyFrameSize = 5;
 
-	//모든 구간에서 오차가 threshold보다 작아질 때 까지 압축을 진행한다.
+	//모든 구간에서 오차가 threshold보다 작아질 때 까지 압축을 진행.
 	bool isCompressed = false;
 	while (isCompressed == false)
 	{
@@ -149,7 +160,7 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 			int32 endFrame = keyFrameRotation[i + 2].first;
 			int32 frameRange = endFrame - startFrame;
 
-			// 원본 데이터와 오차를 비교한다.
+			// 원본 데이터와 오차를 비교.
 			for (int32 t = startFrame + 1; t < endFrame; ++t)
 			{
 				glm::quat frameQuat = data[t].rotation;
@@ -168,21 +179,21 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 			}
 		}
 
-		//모든 구간에서 가장 큰 오차가 threshold보다 작으면 압축이 완료된다.
+		//모든 구간에서 가장 큰 오차가 threshold보다 작으면 압축을 완료.
 		if (maxOffset < kThreshold)
 		{
 			isCompressed = true;
 			continue;
 		}
 
-		//압축이 완료되지 않았다면, 오차가 가장 컸던 범위에서 새로운 keyframe을 설정한다.
+		//압축이 완료되지 않았다면, 오차가 가장 컸던 범위에서 새로운 keyframe을 설정.
 		int32 targetFrame = (keyFrameRotation[maxRangeIndex + 1].first + keyFrameRotation[maxRangeIndex + 2].first) / 2;
 		std::pair<int32, glm::quat> newFrame = { targetFrame, data[targetFrame].rotation };
 		keyFrameRotation.insert(keyFrameRotation.begin() + maxRangeIndex + 2, newFrame);
 		keyFrameSize++;
 	}
 
-	//압축된 keyframe 데이터를 Quantization하여 최종적으로 저장한다.
+	//압축된 keyframe 데이터를 Quantization하여 최종적으로 저장.
 	std::vector<CompressedAnimationData> compressedAnimation(keyFrameSize);
 	for (int32 i = 0; i < keyFrameSize; ++i)
 	{
@@ -210,9 +221,11 @@ https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.htm
 
 #### Animation Transition
 
-A transition involves two motions and a weight function that
-starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according
-to a constant weight function.
+Animation Transition을 통해 하나의 모션에서 다른 모션으로 자연스럽게 전환되도록 구현합니다.  
+Animator가 Animation들의 상태를 관리하며, 현재 진행되고 있는 Animation의 weight factor는 1의 값을 가지게 됩니다.  
+이후 사용자의 입력을 통해 Animation의 상태가 전환되면 30ms에 걸쳐 현재 진행되고 있는 Animation의 weight factor는 0으로,  
+새로 진행해야 하는 Animation의 weight factor 는 1의 값으로 갱신됩니다.  
+Animator는 joint의 Animation 반환 시 각 Animation들의 weight factor값으로 선형 보간하여 최종 결과물을 반환합니다.  
 
 ```c++
 constexpr float kBlendTime = 30.0f;
@@ -253,7 +266,9 @@ https://github.com/Icefin/CharacterEngine/assets/76864202/68c6a325-3091-4e15-932
 
 #### Animation Layering
 
-//animation layering 설명
+Animation Layering을 통해 상체와 하체의 애니메이션을 분리합니다.  
+이를 통해 걷기/뛰기 모션 도중 공격이 입력되어도 하체는 걷는 모션을 지속하고  
+상체만 공격 모션이 나갈 수 있도록 개선하였습니다.  
 
 ```c++
 struct LayerInfo
@@ -275,20 +290,77 @@ struct LayerInfo
 };
 ```
 
+Full Body Animation이 가장 기본값 이므로 _animationLayerList[0]에 전신 Animation LayerInfo가 위치합니다.  
+현재 프로젝트에서는 상체와 하체만 분리하므로 _animationLayerList[1]에 상체 Animation LayerInfo가 위치하게 됩니다.  
+_animationLayerList[0]의 animationRootBoneIndex = 0, _animationLayerList[1]의 animationRootBoneIndex = 10의 값을 가지게 되는데,  
+이는 각각 character skeleton의 구조 상, 전신의 root bone index = 1, 상체의 root bone index = 10이기 때문입니다.  
+
+Child Layer는 Parent Layer보다 높은 우선순위를 가지며, 동시에 입력될 경우 child의 animation을 반환하도록 합니다.  
+현재 프로젝트에서는 상체의 animation state이 ATTACK인 경우에만 상/하체를 분리할 지 결정합니다.  
+또한 상체 모션이 끝난 후, 전신의 모션과 blending 하여 원래 모션으로 돌아오도록 하여 자연스럽게 연결될 수 있도록 하였습니다.
+
+```c++
+glm::quat Animator::getJointAnimation(int32 jointIndex)
+{
+	glm::quat jointAnimation;
+
+	//상체 모션이 ATTACK인 경우
+	if (jointIndex >= LOWER_BACK && _animationLayerList[1].currentState == AnimationState::ATTACK)
+	{
+		int32 motionIndex = static_cast<int32>(_animationLayerList[1].currentState);
+		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[1].currentMotionTime);
+		if (_animationLayerList[1].crossFadeBlendWeight < kBlendTime)
+		{
+			int32 prevMotionIndex = static_cast<int32>(_animationLayerList[1].prevState);
+			glm::quat prevJointAnimation = _motionList[prevMotionIndex]->getJointPose(jointIndex, _animationLayerList[1].prevMotionTime);
+			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[1].crossFadeBlendWeight / kBlendTime);
+		}
+	}
+	//상체 모션이 ATTACK은 아니지만, layer motion blending을 해야하는 경우
+	else if (jointIndex >= LOWER_BACK && _animationLayerList[1].layerBlendWeight > 0.0f)
+	{
+		int32 motionIndex = static_cast<int32>(_animationLayerList[0].currentState);
+		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[0].currentMotionTime);
+
+		int32 prevMotionIndex = static_cast<int32>(_animationLayerList[1].prevState);
+		glm::quat prevJointAnimation = _motionList[prevMotionIndex]->getJointPose(jointIndex, _animationLayerList[1].prevMotionTime);
+		jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, 1.0f - _animationLayerList[1].layerBlendWeight / kBlendTime);
+	}
+	//이외에 Full body animation 진행
+	else
+	{
+		int32 motionIndex = static_cast<int32>(_animationLayerList[0].currentState);
+		jointAnimation = _motionList[motionIndex]->getJointPose(jointIndex, _animationLayerList[0].currentMotionTime);
+		if (_animationLayerList[0].crossFadeBlendWeight < kBlendTime)
+		{
+			int32 prevMotionIndex = static_cast<int32>(_animationLayerList[0].prevState);
+			glm::quat prevJointAnimation = _motionList[prevMotionIndex]->getJointPose(jointIndex, _animationLayerList[0].prevMotionTime);
+			jointAnimation = glm::slerp(prevJointAnimation, jointAnimation, _animationLayerList[0].crossFadeBlendWeight / kBlendTime);
+		}
+	}
+
+	return glm::normalize(jointAnimation);
+}
+
+```
+
 ##### After Animation Layering
 https://github.com/Icefin/CharacterEngine/assets/76864202/5a8f4fbf-35e1-449a-a95d-4300f9d409c1
 
 #### References :
 https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
-https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games   
+https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games  
 http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/   
 
 ---
 ## Cloth Simulation
 
-#### Cloth class with Constraint
+#### Object Setting
 
-//MassPoint, Constraint Setting
+Cloth Simulation을 위해 Cloth를 grid 형태의 질점으로 분할하고,  
+해당 질점들의 위치를 제한하기 위한 constraint를 다음과 같이 설정합니다.  
+현재 프로젝트에서는 distance, collision constraint만을 사용합니다.  
+
 ```c++
 struct MassPoint
 {
@@ -314,7 +386,17 @@ struct DistanceConstraint
 };
 ```
 
-//Cloth Class 설명
+Cloth 객체는 생성자가 호출되며 widthNum * heightNum의 grid형태의 massPoint로 분할되며, 이 때 각 massPoint는  
+Structural, Shear, Bend constraint로 연결됩니다. Mass-Spring System에서는 각각의 spring의 stiffness를 설정해야 하지만,  
+현재 프로젝트에서는 모두 distance constraint의 형태로 _internalConstraints에 저장합니다.  
+![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/953dcac3-c839-48cd-a488-9a9c2d4c086c)
+
+이후 update함수 호출 시, Position Based Dynamics의 알고리즘을 따라 상태를 갱신합니다.  
+1) massPoint의 초기값을 설정.
+2) 충돌을 검사하고, 충돌이 발생 시 collision constraint를 생성.
+3) 생성된 constraint을 해소하며 massPoint의 위치를 갱신.
+4) 최종적으로 결정된 massPoint의 위치를 이용하여 속도를 갱신.
+
 ```c++
 class PlaneCloth : public GameObject
 {
@@ -348,7 +430,7 @@ private:
 };
 ```
 
-#### Position Based Dynamics with Collision
+#### Position Based Dynamics
 
 ```c++
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
@@ -364,13 +446,13 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 	}
 
-	//충돌을 확인하고, 충돌이 발생하면 collisionConstraint를 생성한다.
+	//충돌을 확인하고, 충돌이 발생하면 collisionConstraint를 생성.
 	std::vector<CollisionConstraint> collisionConstraints;
 	collisionConstraints.reserve(_massPointList.size());
 	for (MassPoint& massPoint : _massPointList)
 		generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
 
-	//생성된 모든 constraint를 iterationCount만큼 반복하며 massPoint의 위치를 결정한다.
+	//생성된 모든 constraint를 iterationCount만큼 반복하며 massPoint의 위치를 결정.
 	for (int32 cnt = 0; cnt < kIterationCount; ++cnt)
 	{
 		for (DistanceConstraint& constraint : _internalConstraints)
@@ -380,7 +462,7 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 			solveCollisionConstraint(constraint);
 	}
 
-	//최종적으로 결정된 위치를 이용하여 massPoint의 속도를 결정한다.
+	//최종적으로 결정된 위치를 이용하여 massPoint의 속도를 결정.
 	for (MassPoint& massPoint : _massPointList)
 		massPoint.velocity = 0.99f * (massPoint.position - massPoint.prevPosition) / deltaTime;
 
@@ -388,9 +470,9 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 }
 ```
 
-generateCollisionConstraint함수에서는 Scene에 존재하는 모든 OBB와 massPoint의 충돌을 검사한다.
+generateCollisionConstraint함수에서는 Scene에 존재하는 모든 OBB와 massPoint의 충돌을 검사합니다.
 massPoint가 OBB의 내부에 존재하면 충돌이 발생한 상황 이므로
-충돌을 해소할 수 있는 위치로 massPoint를 밀어내는 constraint를 생성한다.
+충돌을 해소할 수 있는 위치로 massPoint를 밀어내는 constraint를 생성합니다.
 ```c++
 void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints)
 {
@@ -432,8 +514,8 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 }
 ```
 
-Point가 OBB내부에 위치하는지 확인하는 함수는 아래와 같다.
-OBB의 중심점과 변의 길이를 사용하여 Point가 OBB의 내부에 위치하는지 검사한다.
+Point가 OBB내부에 위치하는지 확인하는 함수는 아래와 같습니다.
+OBB의 중심점과 변의 길이를 사용하여 Point가 OBB의 내부에 위치하는지 검사합니다.
 ```c++
 bool isPointInside(const Point& point, const OBB& obb)
 {
@@ -454,7 +536,7 @@ bool isPointInside(const Point& point, const OBB& obb)
 }
 ```
 
-Distance Constraint와 Collision Constraint를 해소하는데 사용한 함수는 아래와 같다.
+Distance Constraint와 Collision Constraint를 해소하는데 사용한 함수는 아래와 같습니다.
 ```c++
 void PlaneCloth::solveDistanceConstraint(DistanceConstraint& constraint)
 {
@@ -524,3 +606,74 @@ Iteration Count - Vertex Number Relation (per frame)
 https://graphics.stanford.edu/~mdfisher/cloth.html  
 https://learnopengl.com/Lighting/Basic-Lighting  
 https://carmencincotti.com/2022-07-11/position-based-dynamics/
+
+
+---
+#### ASF AMC File Format
+##### Acclaim Skeleton File (a.k.a ASF)
+Important properties : units, root, bonedata, hierarchy  
+```
+:units     # multiplier (optional.)
+mass 1.0   # float unit system
+length 1.0 # float
+angle deg  # token (rad or deg)
+```
+The units are interpreted by multiplying the relevant data directly on reading. Ex)if the length unit s 2.54, then all incoming translation or length values should be multiplied by 2.54. This is also the case for the .amc file. Any translations or length values must be multiplied by 2.54. This allows direct scaling of the skeleton and it’s motion.  
+
+```
+:root
+axis xyz                # token (rot. order for orientation offset)
+order tx ty tz rz ry rx # tokens (order of transformation for root)
+position 0.0 0.0 0.0.   # float (translation offset for root node)
+orientation 0.0 0.0 0.0 # float (rotation offset)
+```
+This defines the base location and orientation of the entire skeleton. All motion is relative to this point. Typically the root is located at the origin and oriented along the z-axis.  
+
+```
+:bonedata # definition data for all the bones
+begin
+id 1                    # int (optional. unique numeric id)
+name h_waist            # string (uses the body naming convention)
+direction 0.0 1.0 0.0   # float (direction vector of bone in global space)
+length 3.0              # float (length of bone)
+axis 0.0 90.0 0.0 zyx   # float (global orientation of the axis specifies order of rotation)
+dof tx ty tz rx ry rz l # tokens (only include tokens required)
+limits (-inf inf)       # float/token 
+bodymass 10.0           # float (optional. mass of skinbody assoc. with bone)
+cofmass 1.0             # (optional. position of center of mass along bone)
+end
+begin
+id 2
+name l_waist
+direction
+…
+```
+This section holds all the data for each bone in global space. The data for a bone is delimited by begin/end tokens. Each tokens needs to appear in the following order. Dof specification allows for xyz translation and rotation as well as movement along the bone (”l”). This movement is translation, not scaling data and corresponds to stretching the skin. The limit information should not be used to clip data from the .amc file. The data in the .amc file has been precliped. Limits are there to aid the animator and help to define the range of motion of individual bones
+
+```
+:hierarchy
+begin
+root h_waist h_R_hip h_L_hip
+…
+```
+This section defines the hierarchical relationships between the bones. The motion in the .amc file is defined in terms of this hierarchy. The data is delimited by begin/end tokens. The first entry in a line is the parent. Subsequent bones are the direct inferiors of that parent.
+
+##### Acclaim Motion Captured Data (a.k.a AMC)
+```
+#Comments
+...
+:fully-specified
+1
+root 12.0 33.0 45.0 0.0 90.0 45.0
+h_torso_l 0.0 0.0 0.0
+h_torso_2 0.0 0.0 0.0
+...
+...
+2
+root ...
+h_torso_l ...
+h_torso_2 ...
+...
+...
+```
+This motion data is tied to a particular skeleton or .asf file. The format is very simple. Comments at the top followed by the format identifier. Then the data is grouped by frame. First the frame number and then each bone name followed by the values associated with each dof token in the corresponding dof line in the .asf file. The bones are in the same order for every frame.
