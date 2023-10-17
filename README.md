@@ -4,25 +4,24 @@
 
 https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc19-8b3b037336ec
 
-3D Character Animation을 위한 프로젝트입니다.  
+3D Character Animation을 위한 C++/OpenGL 프로젝트입니다.  
 Character Skeleton Data로 .asf 형식을 사용하며  
 Character Animation Data로 .amc 형식을 사용합니다.  
-[.asf/.amc file format](#asf-amc-file-format)
+[.asf/.amc file format](http://graphics.cs.cmu.edu/nsp/course/cs229/info/Acclaim_Skeleton_Format.html)
 
-개발 언어로 C/C++을 사용하였으며, OpenGL/GLSL을 사용하였습니다.  
-
-프로젝트는
+프로젝트의 기능은
 1) Animation Compression
 2) Motion Blending
 3) Cloth Simulation
 
 의 세 파트로 구성되어 있습니다.  
 
-각 파트에서 구현한 내용과 목차는 아래와 같습니다.  
+각 파트의 요약과 목차는 아래와 같습니다.  
+링크를 통해 해당 내용으로 이동할 수 있습니다.  
 
 ##### [Animation_Compression](#animation-compression)  
 1. Quaternion -> Quantized Quaternion으로 자료형을 압축.  
- -> 128bit (x, y, z, w의 4 float) -> 48bit으로 압축되며, 0.375의 압축률
+ -> 128bit의 자료형이 48bit으로 압축되어, 0.375의 압축률
 2. Curve Fitting을 통해 모션 데이터를 압축.  
  -> Threshold 0.01을 기준으로 약 1000 프레임의 애니메이션이 460프레임으로 압축되어, 0.46의 압축률
    
@@ -39,7 +38,7 @@ Character Animation Data로 .amc 형식을 사용합니다.
 ## Animation Compression
 
 #### Quaternion Quantization
-Riot Games의 Compressing Skeletal Animation Data문서를 참고하여 QuantizedQuaternion 자료형을 설정합니다.  
+Riot Games의 Compressing Skeletal Animation Data 문서를 참고하여 QuantizedQuaternion 자료형을 결정하였습니다. 
 ![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/12976b8b-c167-4952-8acd-1c34ad815409)
 ```c++
 struct QuantizedQuaternion
@@ -101,6 +100,8 @@ QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion)
 	return quantizedQuaternion;
 }
 ```
+이를 통해 기존에 x, y, z, w 4개의 float을 사용하던 glm::quat 자료형을 48bit의 새로운 자료형으로 변환합니다.  
+이는 128bit 크기의 자료형을 48bit의 자료형으로 압축하므로, 0.375의 압축률을 가집니다.  
   
 #### Curve Fitting
 Curve Fitting을 위해 Catmull-Rom Spline을 사용합니다.  
@@ -225,7 +226,7 @@ https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.htm
 Animation Transition을 통해 하나의 모션에서 다른 모션으로 자연스럽게 전환되도록 구현합니다.  
 Animator가 Animation들의 상태를 관리하며, 현재 진행되고 있는 Animation의 weight factor는 1의 값을 가지게 됩니다.  
 이후 사용자의 입력을 통해 Animation의 상태가 전환되면 30ms에 걸쳐 현재 진행되고 있는 Animation의 weight factor는 0으로, 새로 진행해야 하는 Animation의 weight factor 는 1의 값으로 갱신됩니다.  
-Animator는 joint의 Animation 반환 시 각 Animation들의 weight factor값으로 선형 보간하여 최종 결과물을 반환합니다.  
+Animator는 각 joint의 Animation 데이터 반환 시 각 Animation들의 weight factor값으로 데이터를 선형 보간하여 최종 결과물을 반환합니다.  
 
 ```c++
 constexpr float kBlendTime = 30.0f;
@@ -295,7 +296,7 @@ _animationLayerList[0]의 animationRootBoneIndex = 0, _animationLayerList[1]의 
 
 Child Layer는 Parent Layer보다 높은 우선순위를 가지며, 동시에 입력될 경우 child의 animation을 반환하도록 합니다.  
 현재 프로젝트에서는 상체의 animation state이 ATTACK인 경우에만 상/하체를 분리할 지 결정합니다.  
-또한 상체 모션이 끝난 후, 전신의 모션과 blending 하여 원래 모션으로 돌아오도록 하여 자연스럽게 연결될 수 있도록 하였습니다.
+또한 상체 모션이 끝난 후, 전신의 모션과 blending 하는 것으로 기존 모션과 자연스럽게 연결될 수 있도록 하였습니다.
 
 ```c++
 glm::quat Animator::getJointAnimation(int32 jointIndex)
@@ -602,73 +603,4 @@ https://ics.uci.edu/~shz/courses/cs114/docs/proj3/index.html
 https://graphics.stanford.edu/~mdfisher/cloth.html  
 https://carmencincotti.com/2022-07-11/position-based-dynamics/
 
-
 ---
-#### ASF AMC File Format
-##### Acclaim Skeleton File (a.k.a ASF)
-Important properties : units, root, bonedata, hierarchy  
-```
-:units     # multiplier (optional.)
-mass 1.0   # float unit system
-length 1.0 # float
-angle deg  # token (rad or deg)
-```
-The units are interpreted by multiplying the relevant data directly on reading. Ex)if the length unit s 2.54, then all incoming translation or length values should be multiplied by 2.54. This is also the case for the .amc file. Any translations or length values must be multiplied by 2.54. This allows direct scaling of the skeleton and it’s motion.  
-
-```
-:root
-axis xyz                # token (rot. order for orientation offset)
-order tx ty tz rz ry rx # tokens (order of transformation for root)
-position 0.0 0.0 0.0.   # float (translation offset for root node)
-orientation 0.0 0.0 0.0 # float (rotation offset)
-```
-This defines the base location and orientation of the entire skeleton. All motion is relative to this point. Typically the root is located at the origin and oriented along the z-axis.  
-
-```
-:bonedata # definition data for all the bones
-begin
-id 1                    # int (optional. unique numeric id)
-name h_waist            # string (uses the body naming convention)
-direction 0.0 1.0 0.0   # float (direction vector of bone in global space)
-length 3.0              # float (length of bone)
-axis 0.0 90.0 0.0 zyx   # float (global orientation of the axis specifies order of rotation)
-dof tx ty tz rx ry rz l # tokens (only include tokens required)
-limits (-inf inf)       # float/token 
-bodymass 10.0           # float (optional. mass of skinbody assoc. with bone)
-cofmass 1.0             # (optional. position of center of mass along bone)
-end
-begin
-id 2
-name l_waist
-direction
-…
-```
-This section holds all the data for each bone in global space. The data for a bone is delimited by begin/end tokens. Each tokens needs to appear in the following order. Dof specification allows for xyz translation and rotation as well as movement along the bone (”l”). This movement is translation, not scaling data and corresponds to stretching the skin. The limit information should not be used to clip data from the .amc file. The data in the .amc file has been precliped. Limits are there to aid the animator and help to define the range of motion of individual bones
-
-```
-:hierarchy
-begin
-root h_waist h_R_hip h_L_hip
-…
-```
-This section defines the hierarchical relationships between the bones. The motion in the .amc file is defined in terms of this hierarchy. The data is delimited by begin/end tokens. The first entry in a line is the parent. Subsequent bones are the direct inferiors of that parent.
-
-##### Acclaim Motion Captured Data (a.k.a AMC)
-```
-#Comments
-...
-:fully-specified
-1
-root 12.0 33.0 45.0 0.0 90.0 45.0
-h_torso_l 0.0 0.0 0.0
-h_torso_2 0.0 0.0 0.0
-...
-...
-2
-root ...
-h_torso_l ...
-h_torso_2 ...
-...
-...
-```
-This motion data is tied to a particular skeleton or .asf file. The format is very simple. Comments at the top followed by the format identifier. Then the data is grouped by frame. First the frame number and then each bone name followed by the values associated with each dof token in the corresponding dof line in the .asf file. The bones are in the same order for every frame.
