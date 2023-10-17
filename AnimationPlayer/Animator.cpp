@@ -1,5 +1,8 @@
 #include "Animator.h"
 
+#define ROOT		0	
+#define LOWER_BACK	10
+
 Animator::Animator(std::vector<Motion*>& motionList)
 {
 	int32 motionNumber = motionList.size();
@@ -10,11 +13,11 @@ Animator::Animator(std::vector<Motion*>& motionList)
 	_animationLayerList.resize(2);
 
 	_animationLayerList[0].parentLayerIndex = -1;
-	_animationLayerList[0].animationRootBoneIndex = 0;
+	_animationLayerList[0].animationRootBoneIndex = ROOT;
 	_animationLayerList[0].maxFrameTime = _motionList[0]->getMaxFrameTime();
 
 	_animationLayerList[1].parentLayerIndex = 0;
-	_animationLayerList[1].animationRootBoneIndex = 11;
+	_animationLayerList[1].animationRootBoneIndex = LOWER_BACK;
 	_animationLayerList[1].maxFrameTime = _motionList[0]->getMaxFrameTime();
 
 	//Replace anywhere...
@@ -92,7 +95,6 @@ void	Animator::updateAnimationLayerListState(AnimationState state, float deltaTi
 		convertLayerState(_animationLayerList[0], state, _motionList[static_cast<int32>(state)]);
 }
 
-#define LOWER_BACK 10
 glm::quat Animator::getJointAnimation(int32 jointIndex)
 {
 	glm::quat jointAnimation;
