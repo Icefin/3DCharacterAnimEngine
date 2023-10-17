@@ -20,17 +20,17 @@ Character Animation Data로 .amc 형식을 사용합니다.
 
 각 파트에서 구현한 내용과 목차는 아래와 같습니다.  
 
-##### [Animation Compression](#animation-compression)  
+##### [Animation_Compression](#animation-compression)  
 1. Quaternion -> Quantized Quaternion으로 자료형을 압축.  
  -> 128bit (x, y, z, w의 4 float) -> 48bit으로 압축되며, 0.375의 압축률
 2. Curve Fitting을 통해 모션 데이터를 압축.  
  -> Threshold 0.01을 기준으로 약 1000 프레임의 애니메이션이 460프레임으로 압축되어, 0.46의 압축률
    
-##### [Motion Blending](#motion-blending)  
+##### [Motion_Blending](#motion-blending)  
 1. Animation Transition을 통해 부드러운 모션 전환 구현
 2. Animation Layering을 통해 상/하체가 분리된 모션 구현
 
-##### [Cloth Simulation](#cloth-simulation)
+##### [Cloth_Simulation](#cloth-simulation)
 1. Collision Detection을 위해 Sphere/OBB/AABB의 Collider 구현
 2. Position Based Dynamics를 사용하여 보다 안정적인 Cloth Simulation 구현 
 
