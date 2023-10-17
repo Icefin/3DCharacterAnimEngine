@@ -1,12 +1,10 @@
 # AnimationPlayer
-Simple Character Animation Player
 
----
-### Parsing ASF / AMC Data
-#### Reference :
-https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/ASF-AMC.html  
-http://www.cs.cmu.edu/~kiranb/animation/StartupCodeDescription.htm  
-http://graphics.cs.cmu.edu/nsp/course/cs229/info/Acclaim_Skeleton_Format.html  
+![temp](https://github.com/Icefin/CharacterEngine/assets/76864202/73a4a525-380e-4221-b38f-687b38c4e773)
+
+https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc19-8b3b037336ec
+
+This project use .asf file for skeleton data and .amc file for motion data.
 
 #### Acclaim Skeleton File (a.k.a ASF)
 Important properties : units, root, bonedata, hierarchy  
@@ -76,32 +74,28 @@ h_torso_2 ...
 ```
 This motion data is tied to a particular skeleton or .asf file. The format is very simple. Comments at the top followed by the format identifier. Then the data is grouped by frame. First the frame number and then each bone name followed by the values associated with each dof token in the corresponding dof line in the .asf file. The bones are in the same order for every frame.
 
+Simple Character Animation Player
+
+[Animation Compression](#animation-compression)  
+[Motion Blending](#motion-blending)  
+[Cloth Simulation](#cloth-simulation)
+
+
 ---
-### Animation Compression
+### Parsing ASF / AMC Data
+#### Reference :
+https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/ASF-AMC.html  
+http://www.cs.cmu.edu/~kiranb/animation/StartupCodeDescription.htm  
+http://graphics.cs.cmu.edu/nsp/course/cs229/info/Acclaim_Skeleton_Format.html  
+
+
+
+---
+## Animation Compression
 #### Reference :  
 https://technology.riotgames.com/news/compressing-skeletal-animation-data  
 https://www.cs.cmu.edu/~fp/courses/graphics/asst5/catmullRom.pdf  
 https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.html  
-  
-#### Requirements:  
-1. Interpolate each Quaternion elements vs {Interpolate whole together} ?  
-	Interpolating whole together is much easy and compact.  
-  
-2. Which data structure to use ?  
-vector<pair<frame, glm::quat>> ControlPoints (circular vector lol) -> Useless....  
-vector<pair<frame, glm::quat>> keyFrames (List (insertion!) vs Vector (search!))  
-				List : Search : O(n), Insertion : O(1)  
-				Vector : Search : O(logn), Insertion : O(n)  
-   
-3. Final foramt of Compressed Animation  
-struct CompressedAnimation  
-{  
-	uint16 keyFrame;  
-	QuantizedQuaternion rotation;  
-}  
-  
-4. Do we need a new Compressor Class ?  
-	I think not.... yet...?  
   
 #### Final format :  
 Transform.h  
@@ -255,29 +249,32 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 }
 ```
 #### Results:
-#### Threshold = 0.01f / Average 1086 frames per joint-> 457 frames per joint
-![Animation-Player-2023-07-12-23-04-36](https://github.com/Icefin/AnimationPlayer/assets/76864202/4c3d9d69-38cb-4ba1-94f5-6236793b4b67)
+#### Threshold 0.01f :: Average 1086 frames per joint -> 457 frames per joint (0.42 compression ratio)
+https://github.com/Icefin/CharacterEngine/assets/76864202/f53cf788-5df6-495c-bfa5-d5ccb894ec4a
 
-#### Threshold = 0.1f  / Average 1086 frames per joint -> 105 frames per joint
-![Animation-Player-2023-07-12-23-12-56](https://github.com/Icefin/AnimationPlayer/assets/76864202/716ee92f-183e-47c4-9aeb-eeff8374eb25)
+
+#### Threshold 0.1f  :: Average 1086 frames per joint -> 105 frames per joint (0.1 compression ratio)
+https://github.com/Icefin/CharacterEngine/assets/76864202/50d63c9d-025d-4fbc-8035-72719ec1158b
+
 
 ---
-### Motion Blending
+## Motion Blending
 https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
 https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games   
 http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/   
 
 #### Full Body Animation
 
-#### Before Motion Blending
-![Animation-Player-2023-07-13-22-50-38](https://github.com/Icefin/AnimationPlayer/assets/76864202/572a67e5-f720-4135-90ea-effe198f6ee3)
-
-#### After Motion Blending
-![Animation-Player-2023-07-13-22-34-50-_online-video-cutter com_](https://github.com/Icefin/AnimationPlayer/assets/76864202/3b1e8f33-2762-486e-91e3-9bcc932f6603)
-
 A transition involves two motions and a weight function that
 starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according
 to a constant weight function.
+
+##### Before Motion Blending
+https://github.com/Icefin/CharacterEngine/assets/76864202/f7bba69e-c020-42fe-94aa-38eb51a85f8c
+
+##### After Motion Blending
+https://github.com/Icefin/CharacterEngine/assets/76864202/68c6a325-3091-4e15-932c-9c320aeeba17
+
 
 #### Animation Layering
 ```c++
@@ -327,34 +324,18 @@ private :
 	std::vector<LayerInfo>	_animationLayerList;
 };
 ```
+##### After Animation Layering
+https://github.com/Icefin/CharacterEngine/assets/76864202/5a8f4fbf-35e1-449a-a95d-4300f9d409c1
 
-![Animation-Player-2023-07-31-21-29-59](https://github.com/Icefin/AnimationPlayer/assets/76864202/a4c5eb7c-b083-471f-a654-25bf4e100500)
 
 ---
-### Collision Detection System & Cloth Simulation
+## Cloth Simulation
 #### Reference :
 https://graphics.stanford.edu/~mdfisher/cloth.html
 https://learnopengl.com/Lighting/Basic-Lighting  
 https://carmencincotti.com/2022-07-11/position-based-dynamics/
-#### Requirements :
-1. Simple Cloth Simulation with Hard-Coded Cube && Sphere
-- Cloth simulation using Spring-MassPoint Model
-2. Choose Lighting Model
-- Phong Lighting Model : Not Enough for Multiple Objects || Single Concave Object
-- Global Illmuination : Not Appropriate for Real-Time Rendering
-- Phong Lighting Model + (Shadowing, Ambient Occlusion) -> Acceptable
-3. Simple Cloth Simulation with Collider Cube && Sphere  
-- Collision Detection && Resolution System is required
-- Optimization is required from now......
-  
-4. Simple Cloth Simulation with Character
-- Position Based Dynamics comes here
-- How to simplify character with collider? -> Simplify Bones with OBB or Cylinder
 
-5. Complex Cloth Simulation with Character
-- Import .obj asset
-
-#### PlaneCloth Class with Constraint
+#### Cloth class with Constraint
 ```c++
 struct MassPoint
 {
@@ -412,7 +393,8 @@ private:
 ```
 
 #### Position Based Dynamics with Collision
-![pbd_algo](https://github.com/Icefin/AnimationPlayer/assets/76864202/06ab9fcc-0f3d-4644-b137-3e3ffbd594f0)
+![pbd_algo](https://github.com/Icefin/CharacterEngine/assets/76864202/7dad8ab8-3eaf-453b-ba90-9fe850963a9b)
+
 
 ```c++
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
@@ -545,28 +527,22 @@ void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
 ```
 
 #### Result :
-![res](https://github.com/Icefin/AnimationPlayer/assets/76864202/cba4d17a-b822-4561-ae40-b9d96c681ab5)
-![temp](https://github.com/Icefin/AnimationPlayer/assets/76864202/cfb009d6-85f5-4c1b-8ee1-77c192c3f1f8)
-![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/90ea8cc9-f978-487f-a1b6-02c09e042c1e)
+##### First try with Fixed Volume + Force based Explicit Euler Method
 
-First try with Fixed Volume + Force based Explicit Euler Method
+https://github.com/Icefin/CharacterEngine/assets/76864202/b2d7e7f4-0658-4454-9d6f-6fc19bdacc7d
 
-https://github.com/Icefin/AnimationPlayer/assets/76864202/c73974bf-4ded-408e-887c-cfa4673ea058
+##### Second try with Collision Detection + Force based Verlet Integration
 
-Second try with Collision Detection + Force based Explicit Euler Method
+https://github.com/Icefin/CharacterEngine/assets/76864202/79cca57a-cb96-4bd2-86e4-e4db2ce76b0a
 
-https://github.com/Icefin/AnimationPlayer/assets/76864202/6b94f60f-0e0a-459d-a148-ab901196c361
+##### Third try with Collision Detection + Position Based Dynamics
 
-Third try with Collision Detection + Force based Verlet Integration
-
-https://github.com/Icefin/AnimationPlayer/assets/76864202/2ed6625b-3beb-4a9a-83d4-e79fb19f375a
-
-Fourth try with Collision Detection + Position Based Dynamics
-
-https://github.com/Icefin/AnimationPlayer/assets/76864202/60e1c5f7-78cd-4718-8524-30af5c86a66b
+https://github.com/Icefin/CharacterEngine/assets/76864202/b6a18c6c-c777-4bf8-a5d4-6b92fca674ff
 
 
 #### Optimization
+![res](https://github.com/Icefin/CharacterEngine/assets/76864202/8b91ed6b-2270-44bc-8cf5-fb3d95caf2bd)
+
 Constraint - Vertex Number Relation (Force based Simulation)
 |     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
 |:---:|:-------:|:-------:|:-------:|:-------:|
@@ -592,29 +568,3 @@ Iteration Count - Vertex Number Relation (Position based Simulation, 3 constrain
 - BVH for character mesh
 3. Iteration Count Effect
 - XPBD?
-
-#### Errors
-![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/278cdc7d-738e-4ddb-abf3-69a79eeb8c79)
-![image](https://github.com/Icefin/AnimationPlayer/assets/76864202/a5b32d76-ee24-4b11-b26e-9b13327b5841)
-
-- Subdivision cloth surface
-- Thinkness for realistic rendering
-- Spherical Collider or Spatial-Hashing Particles to prevent folding
-- Shadowing
-
-
----
-### Entity-Componenet-System Architecture
-#### Requirements :
-Blah Blah...  
-
----
-### OBJ Importer && Skinning
-#### Requirements :
-Blah Blah...
-
-
----
-### Particle System
-#### Requirements :
-1. Spatial Partitioning... Blah Blah...
