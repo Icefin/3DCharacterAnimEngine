@@ -8,7 +8,7 @@ https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc1
 
 ##### [Animation Compression](#animation-compression)  
 1. Quaternion -> Quantized Quaternion으로 자료형을 압축.  
- -> 128bit (x, y, z, w의 4float) -> 48bit으로 변경되며, 0.375의 압축률
+ -> 128bit (x, y, z, w의 4float) -> 48bit으로 압축되며, 0.375의 압축률
 2. Catmull-Rom Spline을 사용하여 모션 데이터를 압축.  
  -> Threshold 0.01을 기준으로 약 1000 프레임의 애니메이션이 460프레임으로 압축되어, 0.46의 압축률
    
@@ -26,11 +26,77 @@ https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc1
 ## Animation Compression
 
 #### Quaternion Quantization
-// Quantization 설명
-  
-#### Catmull-Rom Interpolation with u = 0.5
-//catmull-rom spline을 어떻게 적용하는지 설명
+Riot Games의 Compressing Skeletal Animation Data문서를 참고하여 QuantizedQuaternion 자료형을 만들었다.
+![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/12976b8b-c167-4952-8acd-1c34ad815409)
 ```c++
+struct QuantizedQuaternion
+{
+    uint16 largest    : 2;  // The largest component of the quaternion.
+    uint16 a          : 14;
+    uint16 sign_a     : 1;
+    uint16 sign_b     : 1;
+    uint16 b          : 14;
+    uint16 sign_c     : 1;
+    uint16 sign       : 1;  // The sign of the largest component. 1 for negative.
+    uint16 c          : 14;
+};
+```
+glm::quat을 위의 자료형으로 압축하는 방법은 아래와 같다.
+1. glm::quat에서 몇 번째 원소의 절댓값이 가장 큰지 확인
+2. 해당 원소의 index를 largest에 저장 (0 ~ 3이므로 2bit로 저장 가능), 부호를 sign에 저장
+3. 가장 큰 원소를 제외한 나머지 원소들을 14bit범위의 양의 정수형태로 변환하여 a, b, c 에 저장
+4. 나머지 원소들의 부호를 각각 sign_a, sign_b, sign_c 변수에 저장
+```c++
+QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion)
+{
+	QuantizedQuaternion quantizedQuaternion;
+    	float quat[4] = { quaternion.w, quaternion.x, quaternion.y, quaternion.z };
+
+    	//가장 큰 원소 탐색
+	for (uint8 idx = 1; idx < 4; ++idx)
+    	{
+        	if (std::abs(quat[idx]) > maxValue)
+        	{
+			maxValue = std::abs(quat[idx]);
+            		maxIndex = idx;
+        	}
+    	}
+	//가장 큰 원소의 index와 부호를 3bit에 저장
+	quantizedQuaternion.largest = maxIndex;
+	quantizedQuaternion.sign = static_cast<uint16>(quat[maxIndex] < 0.f ? 1 : 0);
+
+	//가장 큰 원소를 제외한 나머지 원소들에서 sqrt(2)보다 큰 값은 나올 수 없으므로
+	//정밀도를 높이기 위해 16383에 sqrt(2)를 곱한 값을 사용하여 변환한다.
+	const static float Float2Int = 16383.f * sqrtf(2);
+	const int permutation[4][3] = { {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2} };
+	const int* map = permutation[maxIndex];
+
+	//가장 큰 원소를 제외한 나머지 원소들을 14bit 범위의 정수로 변환
+	const int16 a = static_cast<int16>(quat[map[0]] * Float2Int);
+	const int16 b = static_cast<int16>(quat[map[1]] * Float2Int);
+	const int16 c = static_cast<int16>(quat[map[2]] * Float2Int);
+
+	//가장 큰 원소를 제외한 나머지 원소들의 부호를 1bit에 저장
+	quantizedQuaternion.sign_a = static_cast<uint16>(a & 0x8000 ? 1 : 0);
+	quantizedQuaternion.sign_b = static_cast<uint16>(b & 0x8000 ? 1 : 0);
+	quantizedQuaternion.sign_c = static_cast<uint16>(c & 0x8000 ? 1 : 0);
+
+	quantizedQuaternion.a = (quantizedQuaternion.sign_a == 0) ? static_cast<uint16>(a & 0x3FFF) : static_cast<uint16>(-a & 0x3FFF);
+	quantizedQuaternion.b = (quantizedQuaternion.sign_b == 0) ? static_cast<uint16>(b & 0x3FFF) : static_cast<uint16>(-b & 0x3FFF);
+	quantizedQuaternion.c = (quantizedQuaternion.sign_c == 0) ? static_cast<uint16>(c & 0x3FFF) : static_cast<uint16>(-c & 0x3FFF);
+
+	return quantizedQuaternion;
+}
+```
+  
+#### Animation Data Compression (Curve Fitting )
+Curve Fitting을 위해 Catmull-Rom Spline을 사용한다.
+Catmull-Rom Spline은 보간 시 곡선이 control point에 얼마나 강하게 결합되는지 결정하는 tension값 (0 ~ 1) 에 따라 곡선의 형태가 달라지는데,
+현재 프로젝트에서는 0.5의 값을 사용하였다.
+![image](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/d566c16d-8d97-41b4-931f-5b018963d896)
+
+```c++
+//catmull-rom spline with tension = 0.5
 float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float t)
 {
 	float c0 = 0.5f * 2 * p1;
@@ -41,18 +107,22 @@ float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float 
 }
 ```
 
-#### Animation Data Compression
-//데이터 압축되는 로직 설명
+이제 Keyframe을 4개씩 뽑아서 Catmull-Rom Spline을 계산하고 보간된 데이터와 원본 데이터를 비교하여,
+1) Spline이 threshold 이하로 근사되지 않는다면 오차 범위가 가장 컸던 범위에서 새로운 keyframe을 설정 후 압축을 다시 진행하고
+2) Spline이 threshold 이하로 근사된다면 압축을 종료한다.
+
+![curve_fitting](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/b3730a20-ec71-4cc3-8547-14442c0535e3)
+
 ```c++
 std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vector<AnimationData>& data)
 {
 	static constexpr float kThreshold = 0.01f;
 
-	//Already know maximum size
 	int32 dataSize = data.size();
 	std::vector<std::pair<int32, glm::quat>> keyFrameRotation(dataSize);
 
-	//Insert Dummy Data to both ends
+	//Catmull-Rom Spline을 그리기 위해 keypoint가 최소 4개 필요하므로
+	//데이터의 초기값과 마지막값을 더미데이터로 삽입한다.
 	keyFrameRotation[0] = { 0, data[0].rotation };
 	keyFrameRotation[1] = { 0, data[0].rotation };
 	keyFrameRotation[2] = { dataSize / 2, data[dataSize / 2].rotation };
@@ -60,14 +130,14 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 	keyFrameRotation[4] = { dataSize - 1, data[dataSize - 1].rotation };
 	int32 keyFrameSize = 5;
 
-	//Compression Start
+	//모든 구간에서 오차가 threshold보다 작아질 때 까지 압축을 진행한다.
 	bool isCompressed = false;
 	while (isCompressed == false)
 	{
 		float maxOffset = 0.0f;
 		int32 maxRangeIndex = 0;
 
-		//Threshold check
+		//압축된 keyframe으로 Spline을 계산하며
 		for (int32 i = 0; i < keyFrameSize - 3; ++i)
 		{
 			glm::quat p0 = keyFrameRotation[i].second;
@@ -79,6 +149,7 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 			int32 endFrame = keyFrameRotation[i + 2].first;
 			int32 frameRange = endFrame - startFrame;
 
+			// 원본 데이터와 오차를 비교한다.
 			for (int32 t = startFrame + 1; t < endFrame; ++t)
 			{
 				glm::quat frameQuat = data[t].rotation;
@@ -97,20 +168,21 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 			}
 		}
 
+		//모든 구간에서 가장 큰 오차가 threshold보다 작으면 압축이 완료된다.
 		if (maxOffset < kThreshold)
 		{
 			isCompressed = true;
 			continue;
 		}
 
-		//If is not compressed enough, insert new key frame
+		//압축이 완료되지 않았다면, 오차가 가장 컸던 범위에서 새로운 keyframe을 설정한다.
 		int32 targetFrame = (keyFrameRotation[maxRangeIndex + 1].first + keyFrameRotation[maxRangeIndex + 2].first) / 2;
 		std::pair<int32, glm::quat> newFrame = { targetFrame, data[targetFrame].rotation };
 		keyFrameRotation.insert(keyFrameRotation.begin() + maxRangeIndex + 2, newFrame);
 		keyFrameSize++;
 	}
 
-	//Generate Compressed Animation Data
+	//압축된 keyframe 데이터를 Quantization하여 최종적으로 저장한다.
 	std::vector<CompressedAnimationData> compressedAnimation(keyFrameSize);
 	for (int32 i = 0; i < keyFrameSize; ++i)
 	{
@@ -121,51 +193,6 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 }
 ```
 
-#### Decompress & Get Animation Data
-//데이터 압축해제 설명
-```c++
-glm::quat	Motion::getBoneAnimation(int32 boneIndex)
-{
-	std::vector<CompressedAnimationData>& boneAnimation = _keyFrameAnimations[boneIndex];
-	if (boneAnimation.empty() == true)
-		return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-
-	//Binary Search to find target index
-	int32 targetFrameIndex = 1;
-	int32 lowerFrameIndex = 1, upperFrameIndex = boneAnimation.size() - 3;
-	while (lowerFrameIndex <= upperFrameIndex)
-	{
-		int32 midFrameIndex = lowerFrameIndex + (upperFrameIndex - lowerFrameIndex) / 2;
-
-		if (boneAnimation[midFrameIndex].keyTime <= _keyFrameTime)
-		{
-			targetFrameIndex = midFrameIndex;
-			lowerFrameIndex = midFrameIndex + 1;
-		}
-		else
-			upperFrameIndex = midFrameIndex - 1;
-	}
-
-	//DequnatizeQuaternion
-	glm::quat p0 = dequantizeQuaternion(boneAnimation[targetFrameIndex - 1].rotation);
-	glm::quat p1 = dequantizeQuaternion(boneAnimation[targetFrameIndex].rotation);
-	glm::quat p2 = dequantizeQuaternion(boneAnimation[targetFrameIndex + 1].rotation);
-	glm::quat p3 = dequantizeQuaternion(boneAnimation[targetFrameIndex + 2].rotation);
-	
-	//Interpolate Catmull-Rom
-	int32 startKeyTime = boneAnimation[targetFrameIndex].keyTime;
-	int32 endKeyTime = boneAnimation[targetFrameIndex + 1].keyTime;
-	
-	float t = (_keyFrameTime - startKeyTime) / (endKeyTime - startKeyTime);
-	float x = interpolateCatmullRomSpline(p0.x, p1.x, p2.x, p3.x, t);
-	float y = interpolateCatmullRomSpline(p0.y, p1.y, p2.y, p3.y, t);
-	float z = interpolateCatmullRomSpline(p0.z, p1.z, p2.z, p3.z, t);
-	float w = interpolateCatmullRomSpline(p0.w, p1.w, p2.w, p3.w, t);
-
-	//Return normalized quaternion
-	return glm::normalize(glm::quat(w, x, y, z));
-}
-```
 #### Results:
 ##### Threshold 0.01f :: Average 1086 frames per joint -> 457 frames per joint (0.42 compression ratio)
 https://github.com/Icefin/CharacterEngine/assets/76864202/f53cf788-5df6-495c-bfa5-d5ccb894ec4a
@@ -183,22 +210,10 @@ https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.htm
 
 #### Animation Transition
 
-//한글 번역
 A transition involves two motions and a weight function that
 starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according
 to a constant weight function.
 
-//animation transition 로직?
-
-##### Before Motion Blending
-https://github.com/Icefin/CharacterEngine/assets/76864202/f7bba69e-c020-42fe-94aa-38eb51a85f8c
-
-##### After Motion Blending
-https://github.com/Icefin/CharacterEngine/assets/76864202/68c6a325-3091-4e15-932c-9c320aeeba17
-
-
-#### Animation Layering
-//animation layering 설명
 ```c++
 constexpr float kBlendTime = 30.0f;
 
@@ -212,6 +227,35 @@ enum class AnimationState : uint8
 	ATTACK
 };
 
+class Animator
+{
+public :
+			Animator(std::vector<Motion*>& motionList);
+			~Animator();
+
+	void		update(AnimationState state, float deltaTime);
+
+	glm::quat	getJointAnimation(int32 jointIndex);
+
+private :
+	void			updateAnimationLayerListState(AnimationState state, float deltaTime);
+	std::vector<Motion*>	_motionList;
+	std::vector<LayerInfo>	_animationLayerList;
+};
+```
+
+##### Before Motion Blending
+https://github.com/Icefin/CharacterEngine/assets/76864202/f7bba69e-c020-42fe-94aa-38eb51a85f8c
+
+##### After Motion Blending
+https://github.com/Icefin/CharacterEngine/assets/76864202/68c6a325-3091-4e15-932c-9c320aeeba17
+
+
+#### Animation Layering
+
+//animation layering 설명
+
+```c++
 struct LayerInfo
 {
 	int32		parentLayerIndex = -1;
@@ -229,23 +273,8 @@ struct LayerInfo
 	int32		maxFrameTime = 0;
 	bool		isLooping = true;
 };
-
-class Animator
-{
-public :
-                         Animator(std::vector<Motion*>& motionList);
-                        ~Animator();
-
-	void		update(AnimationState state, float deltaTime);
-
-	glm::quat	getJointAnimation(int32 jointIndex);
-
-private :
-	void		updateAnimationLayerListState(AnimationState state, float deltaTime);
-	std::vector<Motion*>	_motionList;
-	std::vector<LayerInfo>	_animationLayerList;
-};
 ```
+
 ##### After Animation Layering
 https://github.com/Icefin/CharacterEngine/assets/76864202/5a8f4fbf-35e1-449a-a95d-4300f9d409c1
 
@@ -258,6 +287,8 @@ http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/
 ## Cloth Simulation
 
 #### Cloth class with Constraint
+
+//MassPoint, Constraint Setting
 ```c++
 struct MassPoint
 {
@@ -281,7 +312,10 @@ struct DistanceConstraint
 	MassPoint*	left;
 	MassPoint*	right;
 };
+```
 
+//Cloth Class 설명
+```c++
 class PlaneCloth : public GameObject
 {
 public:
@@ -315,15 +349,13 @@ private:
 ```
 
 #### Position Based Dynamics with Collision
-![pbd_algo](https://github.com/Icefin/CharacterEngine/assets/76864202/7dad8ab8-3eaf-453b-ba90-9fe850963a9b)
-
 
 ```c++
 void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 {
 	static int32 kIterationCount = 5;
 
-	//Store Initial Values by using Sympletic Euler integration
+	//초기값 설정
 	for (MassPoint& massPoint : _massPointList)
 	{
 		massPoint.velocity = massPoint.velocity + pa::gravity * massPoint.invMass * deltaTime;
@@ -332,13 +364,13 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 		massPoint.color = glm::vec3(0.9f, 0.9f, 0.9f);
 	}
 
-	//Collision Detection && Generate Collision Constraint
+	//충돌을 확인하고, 충돌이 발생하면 collisionConstraint를 생성한다.
 	std::vector<CollisionConstraint> collisionConstraints;
 	collisionConstraints.reserve(_massPointList.size());
 	for (MassPoint& massPoint : _massPointList)
 		generateCollisionConstraint(massPoint, colliders, &collisionConstraints);
 
-	//Solve Constraints
+	//생성된 모든 constraint를 iterationCount만큼 반복하며 massPoint의 위치를 결정한다.
 	for (int32 cnt = 0; cnt < kIterationCount; ++cnt)
 	{
 		for (DistanceConstraint& constraint : _internalConstraints)
@@ -348,7 +380,7 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 			solveCollisionConstraint(constraint);
 	}
 
-	//Velocity Update
+	//최종적으로 결정된 위치를 이용하여 massPoint의 속도를 결정한다.
 	for (MassPoint& massPoint : _massPointList)
 		massPoint.velocity = 0.99f * (massPoint.position - massPoint.prevPosition) / deltaTime;
 
@@ -356,6 +388,9 @@ void PlaneCloth::update(float deltaTime, std::vector<pa::OBB>& colliders)
 }
 ```
 
+generateCollisionConstraint함수에서는 Scene에 존재하는 모든 OBB와 massPoint의 충돌을 검사한다.
+massPoint가 OBB의 내부에 존재하면 충돌이 발생한 상황 이므로
+충돌을 해소할 수 있는 위치로 massPoint를 밀어내는 constraint를 생성한다.
 ```c++
 void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<pa::OBB> colliders, std::vector<CollisionConstraint>* collisionConstraints)
 {
@@ -397,6 +432,8 @@ void PlaneCloth::generateCollisionConstraint(MassPoint& massPoint, std::vector<p
 }
 ```
 
+Point가 OBB내부에 위치하는지 확인하는 함수는 아래와 같다.
+OBB의 중심점과 변의 길이를 사용하여 Point가 OBB의 내부에 위치하는지 검사한다.
 ```c++
 bool isPointInside(const Point& point, const OBB& obb)
 {
@@ -417,6 +454,7 @@ bool isPointInside(const Point& point, const OBB& obb)
 }
 ```
 
+Distance Constraint와 Collision Constraint를 해소하는데 사용한 함수는 아래와 같다.
 ```c++
 void PlaneCloth::solveDistanceConstraint(DistanceConstraint& constraint)
 {
@@ -449,23 +487,22 @@ void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
 ```
 
 #### Result :
-##### First try with Fixed Volume + Force based Explicit Euler Method
+
+![res](https://github.com/Icefin/CharacterEngine/assets/76864202/8b91ed6b-2270-44bc-8cf5-fb3d95caf2bd)
+
+##### First :: Fixed Volume + Mass-Spring System
 
 https://github.com/Icefin/CharacterEngine/assets/76864202/b2d7e7f4-0658-4454-9d6f-6fc19bdacc7d
 
-##### Second try with Collision Detection + Force based Verlet Integration
+##### Second :: OBB Collider + Mass-Spring System
 
 https://github.com/Icefin/CharacterEngine/assets/76864202/79cca57a-cb96-4bd2-86e4-e4db2ce76b0a
 
-##### Third try with Collision Detection + Position Based Dynamics
+##### Final :: OBB Collider + Position Based Dynamics
 
 https://github.com/Icefin/CharacterEngine/assets/76864202/b6a18c6c-c777-4bf8-a5d4-6b92fca674ff
 
-
-#### Optimization
-![res](https://github.com/Icefin/CharacterEngine/assets/76864202/8b91ed6b-2270-44bc-8cf5-fb3d95caf2bd)
-
-Constraint - Vertex Number Relation (Force based Simulation)
+Constraint - Vertex Number Relation (per frame)
 |     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
 |:---:|:-------:|:-------:|:-------:|:-------:|
 |**1**| 0.016ms | 0.016ms | 0.027ms | 0.047ms |
@@ -474,7 +511,7 @@ Constraint - Vertex Number Relation (Force based Simulation)
 |**4**| 0.016ms | 0.020ms | 0.045ms | 0.077ms |
 |**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
 
-Iteration Count - Vertex Number Relation (Position based Simulation, 3 constraints)
+Iteration Count - Vertex Number Relation (per frame)
 |     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
 |:---:|:-------:|:-------:|:-------:|:-------:|
 |**1**| 0.016ms | 0.016ms | 0.031ms | 0.055ms |
@@ -482,14 +519,6 @@ Iteration Count - Vertex Number Relation (Position based Simulation, 3 constrain
 |**3**| 0.016ms | 0.019ms | 0.040ms | 0.071ms |
 |**4**| 0.016ms | 0.021ms | 0.045ms | 0.080ms |
 |**5**| 0.016ms | 0.023ms | 0.050ms | 0.087ms |
-
-1. Vertex Number Effect
-- Jacobi-Iteration rather than Gauss-Seidel Method
-- Parallelize Normal Calculation
-2. Constraint Number Effect
-- BVH for character mesh
-3. Iteration Count Effect
-- XPBD?
 
 #### Reference :
 https://graphics.stanford.edu/~mdfisher/cloth.html  
