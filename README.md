@@ -1,119 +1,35 @@
-# AnimationPlayer
+# 3D Character Animation Engine
 
 ![temp](https://github.com/Icefin/CharacterEngine/assets/76864202/73a4a525-380e-4221-b38f-687b38c4e773)
 
 https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc19-8b3b037336ec
 
-This project use .asf file for skeleton data and .amc file for motion data.
+//전체 프로젝트 설명
 
-#### Acclaim Skeleton File (a.k.a ASF)
-Important properties : units, root, bonedata, hierarchy  
-```
-:units     # multiplier (optional.)
-mass 1.0   # float unit system
-length 1.0 # float
-angle deg  # token (rad or deg)
-```
-The units are interpreted by multiplying the relevant data directly on reading. Ex)if the length unit s 2.54, then all incoming translation or length values should be multiplied by 2.54. This is also the case for the .amc file. Any translations or length values must be multiplied by 2.54. This allows direct scaling of the skeleton and it’s motion.  
+##### [Animation Compression](#animation-compression)  
+1. Quaternion -> Quantized Quaternion으로 자료형을 압축.  
+ -> 128bit (x, y, z, w의 4float) -> 48bit으로 변경되며, 0.375의 압축률
+2. Catmull-Rom Spline을 사용하여 모션 데이터를 압축.  
+ -> Threshold 0.01을 기준으로 약 1000 프레임의 애니메이션이 460프레임으로 압축되어, 0.46의 압축률
+   
+##### [Motion Blending](#motion-blending)  
+1. Animation Transition을 통해 부드러운 모션 전환 구현
+2. Animation Layering을 통해 상/하체가 분리된 모션 구현
 
-```
-:root
-axis xyz                # token (rot. order for orientation offset)
-order tx ty tz rz ry rx # tokens (order of transformation for root)
-position 0.0 0.0 0.0.   # float (translation offset for root node)
-orientation 0.0 0.0 0.0 # float (rotation offset)
-```
-This defines the base location and orientation of the entire skeleton. All motion is relative to this point. Typically the root is located at the origin and oriented along the z-axis.  
-
-```
-:bonedata # definition data for all the bones
-begin
-id 1                    # int (optional. unique numeric id)
-name h_waist            # string (uses the body naming convention)
-direction 0.0 1.0 0.0   # float (direction vector of bone in global space)
-length 3.0              # float (length of bone)
-axis 0.0 90.0 0.0 zyx   # float (global orientation of the axis specifies order of rotation)
-dof tx ty tz rx ry rz l # tokens (only include tokens required)
-limits (-inf inf)       # float/token 
-bodymass 10.0           # float (optional. mass of skinbody assoc. with bone)
-cofmass 1.0             # (optional. position of center of mass along bone)
-end
-begin
-id 2
-name l_waist
-direction
-…
-```
-This section holds all the data for each bone in global space. The data for a bone is delimited by begin/end tokens. Each tokens needs to appear in the following order. Dof specification allows for xyz translation and rotation as well as movement along the bone (”l”). This movement is translation, not scaling data and corresponds to stretching the skin. The limit information should not be used to clip data from the .amc file. The data in the .amc file has been precliped. Limits are there to aid the animator and help to define the range of motion of individual bones
-
-```
-:hierarchy
-begin
-root h_waist h_R_hip h_L_hip
-…
-```
-This section defines the hierarchical relationships between the bones. The motion in the .amc file is defined in terms of this hierarchy. The data is delimited by begin/end tokens. The first entry in a line is the parent. Subsequent bones are the direct inferiors of that parent.
-
-#### Acclaim Motion Captured Data (a.k.a AMC)
-```
-#Comments
-...
-:fully-specified
-1
-root 12.0 33.0 45.0 0.0 90.0 45.0
-h_torso_l 0.0 0.0 0.0
-h_torso_2 0.0 0.0 0.0
-...
-...
-2
-root ...
-h_torso_l ...
-h_torso_2 ...
-...
-...
-```
-This motion data is tied to a particular skeleton or .asf file. The format is very simple. Comments at the top followed by the format identifier. Then the data is grouped by frame. First the frame number and then each bone name followed by the values associated with each dof token in the corresponding dof line in the .asf file. The bones are in the same order for every frame.
-
-Simple Character Animation Player
-
-[Animation Compression](#animation-compression)  
-[Motion Blending](#motion-blending)  
-[Cloth Simulation](#cloth-simulation)
-
-
----
-### Parsing ASF / AMC Data
-#### Reference :
-https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/ASF-AMC.html  
-http://www.cs.cmu.edu/~kiranb/animation/StartupCodeDescription.htm  
-http://graphics.cs.cmu.edu/nsp/course/cs229/info/Acclaim_Skeleton_Format.html  
-
+##### [Cloth Simulation](#cloth-simulation)
+1. Collision Detection을 위해 Sphere/OBB/AABB의 Collider 구현
+2. 옷감의 음영을 확인하기 위해 Phong Light Model을 사용하여 Lighting
+3. Position Based Dynamics를 사용하여 보다 안정적인 Cloth Simulation 구현 
 
 
 ---
 ## Animation Compression
-#### Reference :  
-https://technology.riotgames.com/news/compressing-skeletal-animation-data  
-https://www.cs.cmu.edu/~fp/courses/graphics/asst5/catmullRom.pdf  
-https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.html  
-  
-#### Final format :  
-Transform.h  
-float	interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float t);  
-  
-Motion.h  
-public :  
-Posture getBonePostureAtFrame(int32 boneIndex, float time);  
-void	setBoneCompressedAnimation(int32 boneIndex, CompressedAnimation anim);  
-  
-private :  
-Posture decompressAnimationData(CompressedAnimation anim);  
-std::vector<std::vector<CompressedAnimation>> _keyFrameAnimations;  
-  
-CharacterLoader.h  
-std::vector<CompressedAnimationData>	compressAnimation(std::vector<AnimationData>& data);  
+
+#### Quaternion Quantization
+// Quantization 설명
   
 #### Catmull-Rom Interpolation with u = 0.5
+//catmull-rom spline을 어떻게 적용하는지 설명
 ```c++
 float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float t)
 {
@@ -126,6 +42,7 @@ float interpolateCatmullRomSpline(float p0, float p1, float p2, float p3, float 
 ```
 
 #### Animation Data Compression
+//데이터 압축되는 로직 설명
 ```c++
 std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vector<AnimationData>& data)
 {
@@ -205,6 +122,7 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 ```
 
 #### Decompress & Get Animation Data
+//데이터 압축해제 설명
 ```c++
 glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 {
@@ -249,25 +167,28 @@ glm::quat	Motion::getBoneAnimation(int32 boneIndex)
 }
 ```
 #### Results:
-#### Threshold 0.01f :: Average 1086 frames per joint -> 457 frames per joint (0.42 compression ratio)
+##### Threshold 0.01f :: Average 1086 frames per joint -> 457 frames per joint (0.42 compression ratio)
 https://github.com/Icefin/CharacterEngine/assets/76864202/f53cf788-5df6-495c-bfa5-d5ccb894ec4a
 
-
-#### Threshold 0.1f  :: Average 1086 frames per joint -> 105 frames per joint (0.1 compression ratio)
+##### Threshold 0.1f  :: Average 1086 frames per joint -> 105 frames per joint (0.1 compression ratio)
 https://github.com/Icefin/CharacterEngine/assets/76864202/50d63c9d-025d-4fbc-8035-72719ec1158b
 
+#### Reference :  
+https://technology.riotgames.com/news/compressing-skeletal-animation-data  
+https://www.cs.cmu.edu/~fp/courses/graphics/asst5/catmullRom.pdf  
+https://splines.readthedocs.io/en/latest/euclidean/catmull-rom-barry-goldman.html  
 
 ---
 ## Motion Blending
-https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
-https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games   
-http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/   
 
-#### Full Body Animation
+#### Animation Transition
 
+//한글 번역
 A transition involves two motions and a weight function that
 starts at (1,0) and smoothly changes to (0,1), and an interpolation combines an arbitrary number of motions according
 to a constant weight function.
+
+//animation transition 로직?
 
 ##### Before Motion Blending
 https://github.com/Icefin/CharacterEngine/assets/76864202/f7bba69e-c020-42fe-94aa-38eb51a85f8c
@@ -277,6 +198,7 @@ https://github.com/Icefin/CharacterEngine/assets/76864202/68c6a325-3091-4e15-932
 
 
 #### Animation Layering
+//animation layering 설명
 ```c++
 constexpr float kBlendTime = 30.0f;
 
@@ -327,13 +249,13 @@ private :
 ##### After Animation Layering
 https://github.com/Icefin/CharacterEngine/assets/76864202/5a8f4fbf-35e1-449a-a95d-4300f9d409c1
 
+#### References :
+https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
+https://www.gamedeveloper.com/design/third-person-camera-view-in-games---a-record-of-the-most-common-problems-in-modern-games-solutions-taken-from-new-and-retro-games   
+http://number-none.com/product/Understanding%20Slerp,%20Then%20Not%20Using%20It/   
 
 ---
 ## Cloth Simulation
-#### Reference :
-https://graphics.stanford.edu/~mdfisher/cloth.html
-https://learnopengl.com/Lighting/Basic-Lighting  
-https://carmencincotti.com/2022-07-11/position-based-dynamics/
 
 #### Cloth class with Constraint
 ```c++
@@ -568,3 +490,8 @@ Iteration Count - Vertex Number Relation (Position based Simulation, 3 constrain
 - BVH for character mesh
 3. Iteration Count Effect
 - XPBD?
+
+#### Reference :
+https://graphics.stanford.edu/~mdfisher/cloth.html  
+https://learnopengl.com/Lighting/Basic-Lighting  
+https://carmencincotti.com/2022-07-11/position-based-dynamics/
