@@ -2,7 +2,7 @@
 
 ![temp](https://github.com/Icefin/CharacterEngine/assets/76864202/73a4a525-380e-4221-b38f-687b38c4e773)
 
-https://github.com/Icefin/CharacterEngine/assets/76864202/f0e61863-dc8a-45bb-bc19-8b3b037336ec
+![Project_Overview](https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/fbf6b0ba-94a9-49d8-a0d8-9c0e3a39b26f)
 
 3D Character Animation을 위한 C++/OpenGL 프로젝트입니다.  
 Character Skeleton Data로 .asf 형식을 사용하며  
@@ -77,7 +77,7 @@ QuantizedQuaternion quantizeQuaternion(const glm::quat quaternion)
 	quantizedQuaternion.largest = maxIndex;
 	quantizedQuaternion.sign = static_cast<uint16>(quat[maxIndex] < 0.f ? 1 : 0);
 
-	//가장 큰 원소를 제외한 나머지 원소들에서 sqrt(2)보다 큰 값은 나올 수 없으므로
+	//가장 큰 원소를 제외한 나머지 원소들에서 1/sqrt(2)보다 큰 값은 나올 수 없으므로
 	//정밀도를 높이기 위해 16383에 sqrt(2)를 곱한 값을 사용하여 변환.
 	const static float Float2Int = 16383.f * sqrtf(2);
 	const int permutation[4][3] = { {1, 2, 3}, {0, 2, 3}, {0, 1, 3}, {0, 1, 2} };
@@ -208,10 +208,12 @@ std::vector<CompressedAnimationData>	CharacterLoader::compressAnimation(std::vec
 
 #### Results:
 ##### Threshold 0.01f :: Average 1086 frames per joint -> 457 frames per joint (0.42 compression ratio)
-https://github.com/Icefin/CharacterEngine/assets/76864202/f53cf788-5df6-495c-bfa5-d5ccb894ec4a
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/a8a6c4e1-bf93-4c06-a710-565b2d88c6b9
 
 ##### Threshold 0.1f  :: Average 1086 frames per joint -> 105 frames per joint (0.1 compression ratio)
-https://github.com/Icefin/CharacterEngine/assets/76864202/50d63c9d-025d-4fbc-8035-72719ec1158b
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/936de5b1-c96c-4e44-a5d7-8826a7fd7e1c
+
+
 
 #### Reference :  
 https://technology.riotgames.com/news/compressing-skeletal-animation-data  
@@ -259,10 +261,12 @@ private :
 ```
 
 ##### Before Motion Blending
-https://github.com/Icefin/CharacterEngine/assets/76864202/f7bba69e-c020-42fe-94aa-38eb51a85f8c
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/3d6898ce-2c56-48cf-a304-a07b03534ddb
 
 ##### After Motion Blending
-https://github.com/Icefin/CharacterEngine/assets/76864202/68c6a325-3091-4e15-932c-9c320aeeba17
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/82b50c52-4fa7-4a9b-89b7-2d3ad344d3d0
+
+
 
 
 #### Animation Layering
@@ -344,7 +348,8 @@ glm::quat Animator::getJointAnimation(int32 jointIndex)
 ```
 
 ##### After Animation Layering
-https://github.com/Icefin/CharacterEngine/assets/76864202/5a8f4fbf-35e1-449a-a95d-4300f9d409c1
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/2d2df6fa-1998-4254-be3c-78814e5dd270
+
 
 #### References :
 https://graphics.cs.wisc.edu/Papers/2003/KG03/regCurves.pdf  
@@ -570,15 +575,17 @@ void PlaneCloth::solveCollisionConstraint(CollisionConstraint& constraint)
 
 ##### First :: Fixed Volume + Mass-Spring System
 
-https://github.com/Icefin/CharacterEngine/assets/76864202/b2d7e7f4-0658-4454-9d6f-6fc19bdacc7d
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/d40502b3-1c3d-47b6-9ea8-2aa391b69b45
 
 ##### Second :: OBB Collider + Mass-Spring System
 
-https://github.com/Icefin/CharacterEngine/assets/76864202/79cca57a-cb96-4bd2-86e4-e4db2ce76b0a
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/16797d70-caf2-4e10-8b7f-24d0502104bf
 
 ##### Final :: OBB Collider + Position Based Dynamics
 
-https://github.com/Icefin/CharacterEngine/assets/76864202/b6a18c6c-c777-4bf8-a5d4-6b92fca674ff
+https://github.com/Icefin/3DCharacterAnimEngine/assets/76864202/d5e510c2-2a6f-4158-a684-8310e3560180
+
+
 
 Constraint - Vertex Number Relation (per frame)
 |     | 10 * 10 | 20 * 20 | 30 * 30 | 40 * 40 |
